@@ -4,9 +4,10 @@
     <string name="market">Market</string>
     <string name="notification_bell">Notification Bell</string>
     <string name="option">Option</string>
-    <string name="John">Good morning <b>John</b>, Everything you will discover here</string>
+    <string name="john">Good morning <b>John</b>, Everything you will discover here</string>
     <string name="searchbar">Search Bar</string>
     <string name="searching">What are you searching for?</string>
     <string name="filter_icon">Filter Icon</string>
     <string name="categories">Categories</string>
+    <string name="images">Images</string>
 </resources>

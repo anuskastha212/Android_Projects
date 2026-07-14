@@ -3,7 +3,6 @@ package com.example.esewa_project
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.ImageView
-import android.widget.Toast
 import android.widget.LinearLayout
 import androidx.core.text.HtmlCompat
 import androidx.activity.enableEdgeToEdge
@@ -33,7 +32,7 @@ class MainActivity : AppCompatActivity(){
         val john = findViewById<TextView>(R.id.john)
 
         john.text = HtmlCompat.fromHtml(
-            getString(R.string.John),
+            getString(R.string.john),
             HtmlCompat.FROM_HTML_MODE_LEGACY
         )
 
