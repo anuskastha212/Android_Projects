@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity(){
 
@@ -29,6 +30,12 @@ class MainActivity : AppCompatActivity(){
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
         val john = findViewById<TextView>(R.id.john)
 
         john.text = HtmlCompat.fromHtml(
@@ -40,7 +47,7 @@ class MainActivity : AppCompatActivity(){
         layoutDots = findViewById(R.id.layout_dots)
 
         val adapter = BannerAdapter(bannerImages)
-        viewPager.adapter=adapter
+        viewPager.adapter = adapter
 
         setupIndicators(bannerImages.size)
 
@@ -52,7 +59,20 @@ class MainActivity : AppCompatActivity(){
                 setCurrentIndicator(position)
             }
         })
+
+        val categoryList = listOf(
+            Category("Mobile", R.drawable.c_mobile) ,
+            Category("Home and Lifestyle", R.drawable.c_home_and_lifestyle),
+            Category("Electronic Devices", R.drawable.c_electronic_devices),
+            Category("Fashion", R.drawable.c_fashion),
+            Category("Grocery", R.drawable.c_grocery),
+            Category("Automotive",R.drawable.c_automotive)
+            )
+
+        val rvCategories = findViewById<RecyclerView>(R.id.rv_categories)
+        rvCategories.adapter = CategoryAdapter(categoryList)
     }
+
     private fun setupIndicators(count: Int) {
         dots = arrayOfNulls(count)
         val params = LinearLayout.LayoutParams(
@@ -87,12 +107,5 @@ class MainActivity : AppCompatActivity(){
                 )
             }
         }
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
     }
-
 }
