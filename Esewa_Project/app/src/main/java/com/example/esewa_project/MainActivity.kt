@@ -66,7 +66,8 @@ class MainActivity : AppCompatActivity(){
             Category("Electronic Devices", R.drawable.c_electronic_devices),
             Category("Fashion", R.drawable.c_fashion),
             Category("Grocery", R.drawable.c_grocery),
-            Category("Automotive",R.drawable.c_automotive)
+            Category("Automotive",R.drawable.c_automotive),
+            Category("Baby Care",R.drawable.c_baby_care)
             )
 
         val rvCategories = findViewById<RecyclerView>(R.id.rv_categories)
