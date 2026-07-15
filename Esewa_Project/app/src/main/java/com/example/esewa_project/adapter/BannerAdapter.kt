@@ -1,10 +1,11 @@
-package com.example.esewa_project
+package com.example.esewa_project.adapter
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.esewa_project.R
 
 class BannerAdapter(private val bannerList: List<Int>) : RecyclerView.Adapter<BannerAdapter.BannerViewHolder>() {
     class BannerViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){

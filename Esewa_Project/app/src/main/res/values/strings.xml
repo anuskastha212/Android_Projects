@@ -13,4 +13,10 @@
     <string name="categories_images">Categories Images</string>
     <string name="mobile">Mobile</string>
     <string name="featured_products">Featured Products</string>
+    <string name="products">Products</string>
+    <string name="product_name">Product Name</string>
+    <string name="in_stock">IN STOCK</string>
+    <string name="rs">Rs.</string>
+    <string name="_8200">8200</string>
+    <string name="plus_sign">Plus Sign</string>
 </resources>

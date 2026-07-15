@@ -1,9 +1,11 @@
 package com.example.esewa_project
 
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.text.HtmlCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -12,8 +14,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
 import androidx.recyclerview.widget.RecyclerView
+import com.example.esewa_project.api.Product
+import com.example.esewa_project.api.RetrofitInstance
+import com.example.esewa_project.adapter.CategoryAdapter
+import com.example.esewa_project.adapter.BannerAdapter
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity(){
+
 
     private lateinit var viewPager: ViewPager2
     private lateinit var layoutDots: LinearLayout
@@ -29,6 +39,8 @@ class MainActivity : AppCompatActivity(){
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        getData()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -72,6 +84,25 @@ class MainActivity : AppCompatActivity(){
 
         val rvCategories = findViewById<RecyclerView>(R.id.rv_categories)
         rvCategories.adapter = CategoryAdapter(categoryList)
+    }
+
+    private fun getData() {
+
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setMessage("Please wait while data is fetch")
+        progressDialog.show()
+
+        RetrofitInstance.apiInterface.getData().enqueue(object : Callback<Product> {
+            override fun onResponse(p0: Call<Product?>, p1: Response<Product?>) {
+                progressDialog.dismiss()
+            }
+
+            override fun onFailure(p0: Call<Product?>, p1: Throwable) {
+                Toast.makeText(this@MainActivity, "${p1.localizedMessage}", Toast.LENGTH_SHORT)
+                    .show()
+                progressDialog.dismiss()
+            }
+        })
     }
 
     private fun setupIndicators(count: Int) {

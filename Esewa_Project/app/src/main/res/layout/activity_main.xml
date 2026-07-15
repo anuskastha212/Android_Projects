@@ -40,7 +40,7 @@
 
                 <ImageView
                     android:id="@+id/img_market"
-                    android:layout_width="50dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/market"
                     android:contentDescription="@string/market"
@@ -50,19 +50,19 @@
 
                 <ImageView
                     android:id="@+id/img_bell"
-                    android:layout_width="120dp"
-                    android:layout_height="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:src="@drawable/notification_bell"
                     android:contentDescription="@string/notification_bell"
                     app:layout_constraintTop_toTopOf="@+id/img_logo"
                     app:layout_constraintBottom_toBottomOf="@id/img_bell"
                     app:layout_constraintStart_toEndOf="@id/img_market"
-                    android:layout_marginStart="100dp" />
+                    android:layout_marginStart="120dp" />
 
                 <ImageView
                     android:id="@+id/img_option"
-                    android:layout_width="10dp"
-                    android:layout_height="30dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:src="@drawable/option"
                     android:contentDescription="@string/option"
                     app:layout_constraintTop_toTopOf="@+id/img_logo"
@@ -167,6 +167,17 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:drawableEndCompat="@drawable/view_more_btn"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_products"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:clipToPadding="false"
+                android:paddingEnd="16dp"
+                android:paddingStart="0dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
