@@ -99,8 +99,7 @@ class MainActivity : AppCompatActivity() {
                     val productList = response.body()
 
                     if (productList != null) {
-                        productAdapter.product = productList
-                    }
+                        productAdapter.submitList(productList)                    }
                 } else {
                     Log.e("MainActivity", "API Error: ${response.message()}")
                 }
