@@ -1,4 +1,4 @@
-package com.example.esewa_project.adapter
+package com.example.esewa_project.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View

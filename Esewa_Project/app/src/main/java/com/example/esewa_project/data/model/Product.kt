@@ -1,4 +1,4 @@
-package com.example.esewa_project.api
+package com.example.esewa_project.data.model
 
 data class Product(
     val id: Int,

@@ -1,30 +1,28 @@
 package com.example.esewa_project
 
-import android.app.ProgressDialog
 import android.os.Bundle
-import android.widget.TextView
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.core.text.HtmlCompat
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.content.ContextCompat
-import androidx.viewpager2.widget.ViewPager2
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.esewa_project.api.Product
-import com.example.esewa_project.api.RetrofitInstance
-import com.example.esewa_project.adapter.CategoryAdapter
-import com.example.esewa_project.adapter.BannerAdapter
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.viewpager2.widget.ViewPager2
+import com.example.esewa_project.ui.adapter.BannerAdapter
+import com.example.esewa_project.ui.adapter.CategoryAdapter
+import com.example.esewa_project.ui.adapter.ProductAdapter
+import com.example.esewa_project.data.source.CategoryData
+import com.example.esewa_project.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity(){
+class MainActivity : AppCompatActivity() {
 
-
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var productAdapter: ProductAdapter
     private lateinit var viewPager: ViewPager2
     private lateinit var layoutDots: LinearLayout
     private lateinit var dots: Array<ImageView?>
@@ -35,18 +33,21 @@ class MainActivity : AppCompatActivity(){
         R.drawable.banner3,
     )
 
+    private val bannerIndicator by lazy { BannerIndicator() }
+    private val categoryData by lazy { CategoryData() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-
-        getData()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        setupFeaturedProductRecyclerView()
 
         val john = findViewById<TextView>(R.id.john)
 
@@ -61,83 +62,80 @@ class MainActivity : AppCompatActivity(){
         val adapter = BannerAdapter(bannerImages)
         viewPager.adapter = adapter
 
-        setupIndicators(bannerImages.size)
+//        setupIndicators(bannerImages.size)
 
-        setCurrentIndicator(0)
+        dots = bannerIndicator.setupIndicator(
+            this@MainActivity,
+            bannerImages.size,
+            layoutDots
+        )
+        bannerIndicator.setCurrentIndicator(
+            this@MainActivity,
+            0,
+            layoutDots
+        )
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                setCurrentIndicator(position)
+                bannerIndicator.setCurrentIndicator(
+                    this@MainActivity,
+                    position,
+                    layoutDots
+                )
             }
         })
-
-        val categoryList = listOf(
-            Category("Mobile", R.drawable.c_mobile) ,
-            Category("Home and Lifestyle", R.drawable.c_home_and_lifestyle),
-            Category("Electronic Devices", R.drawable.c_electronic_devices),
-            Category("Fashion", R.drawable.c_fashion),
-            Category("Grocery", R.drawable.c_grocery),
-            Category("Automotive",R.drawable.c_automotive),
-            Category("Baby Care",R.drawable.c_baby_care)
-            )
 
         val rvCategories = findViewById<RecyclerView>(R.id.rv_categories)
-        rvCategories.adapter = CategoryAdapter(categoryList)
+        rvCategories.adapter = CategoryAdapter(categoryData.getCategoryData())
     }
 
-    private fun getData() {
-
-        val progressDialog = ProgressDialog(this)
-        progressDialog.setMessage("Please wait while data is fetch")
-        progressDialog.show()
-
-        RetrofitInstance.apiInterface.getData().enqueue(object : Callback<Product> {
-            override fun onResponse(p0: Call<Product?>, p1: Response<Product?>) {
-                progressDialog.dismiss()
-            }
-
-            override fun onFailure(p0: Call<Product?>, p1: Throwable) {
-                Toast.makeText(this@MainActivity, "${p1.localizedMessage}", Toast.LENGTH_SHORT)
-                    .show()
-                progressDialog.dismiss()
-            }
-        })
+    private fun setupFeaturedProductRecyclerView() = binding.rvProducts.apply {
+        productAdapter = ProductAdapter()
+        adapter = productAdapter
+        layoutManager = LinearLayoutManager(this@MainActivity)
     }
 
-    private fun setupIndicators(count: Int) {
-        dots = arrayOfNulls(count)
-        val params = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(8, 0, 8, 0) }
+//    private fun setupIndicators(count: Int) {
+//        dots = arrayOfNulls(count)
+//        val params = LinearLayout.LayoutParams(
+//            LinearLayout.LayoutParams.WRAP_CONTENT,
+//            LinearLayout.LayoutParams.WRAP_CONTENT
+//        ).apply { setMargins(8, 0, 8, 0) }
+//
+//        for (i in 0 until count) {
+//            dots[i] = ImageView(this)
+//            dots[i]?.setImageDrawable(
+//                ContextCompat.getDrawable(
+//                    this,
+//                    R.drawable.indicator_inactive
+//                )
+//            )
+//            layoutDots.addView(dots[i], params)
+//        }
+//    }
 
-        for (i in 0 until count) {
-            dots[i] = ImageView(this)
-            dots[i]?.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.indicator_inactive))
-            layoutDots.addView(dots[i], params)
-        }
-    }
+//    private fun setCurrentIndicator(index: Int) {
+//        val childCount = layoutDots.childCount
+//        for (i in 0 until childCount) {
+//            val imageView = layoutDots.getChildAt(i) as ImageView
+//            if (i == index) {
+//                imageView.setImageDrawable(
+//                    ContextCompat.getDrawable(
+//                        this,
+//                        R.drawable.indicator_active
+//                    )
+//                )
+//            } else {
+//                imageView.setImageDrawable(
+//                    ContextCompat.getDrawable(
+//                        this,
+//                        R.drawable.indicator_inactive
+//                    )
+//                )
+//            }
+//        }
+//    }
 
-    private fun setCurrentIndicator(index: Int) {
-        val childCount = layoutDots.childCount
-        for (i in 0 until childCount) {
-            val imageView = layoutDots.getChildAt(i) as ImageView
-            if (i == index) {
-                imageView.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        this,
-                        R.drawable.indicator_active
-                    )
-                )
-            } else {
-                imageView.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        this,
-                        R.drawable.indicator_inactive
-                    )
-                )
-            }
-        }
-    }
+
 }

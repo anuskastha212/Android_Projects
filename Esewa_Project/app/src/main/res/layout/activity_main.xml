@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -13,16 +12,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:layout_marginTop="20dp">
+            android:padding="16dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -33,8 +32,8 @@
                     android:id="@+id/img_logo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/esewa_logo"
                     android:contentDescription="@string/esewa_logo"
+                    android:src="@drawable/esewa_logo"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -42,33 +41,33 @@
                     android:id="@+id/img_market"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/market"
+                    android:layout_marginStart="8dp"
                     android:contentDescription="@string/market"
-                    app:layout_constraintStart_toEndOf="@+id/img_logo"
+                    android:src="@drawable/market"
                     app:layout_constraintBottom_toBottomOf="@+id/img_logo"
-                    android:layout_marginStart="8dp" />
+                    app:layout_constraintStart_toEndOf="@+id/img_logo" />
 
                 <ImageView
                     android:id="@+id/img_bell"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/notification_bell"
+                    android:layout_marginStart="120dp"
                     android:contentDescription="@string/notification_bell"
-                    app:layout_constraintTop_toTopOf="@+id/img_logo"
+                    android:src="@drawable/notification_bell"
                     app:layout_constraintBottom_toBottomOf="@id/img_bell"
                     app:layout_constraintStart_toEndOf="@id/img_market"
-                    android:layout_marginStart="120dp" />
+                    app:layout_constraintTop_toTopOf="@+id/img_logo" />
 
                 <ImageView
                     android:id="@+id/img_option"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/option"
                     android:contentDescription="@string/option"
-                    app:layout_constraintTop_toTopOf="@+id/img_logo"
+                    android:src="@drawable/option"
                     app:layout_constraintBottom_toBottomOf="@id/img_bell"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/img_bell"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintTop_toTopOf="@+id/img_logo" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -76,46 +75,46 @@
                 android:id="@+id/john"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
                 android:text="@string/john"
-                android:textSize="11sp"
-                android:layout_marginBottom="20dp" />
+                android:textSize="11sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_gravity="center_vertical"
                 android:background="@drawable/rounded_edittext"
+                android:orientation="horizontal"
                 android:paddingHorizontal="16dp">
 
                 <ImageView
                     android:layout_width="30dp"
                     android:layout_height="40dp"
                     android:layout_marginTop="5dp"
-                    android:src="@drawable/search"
-                    android:contentDescription="@string/searchbar" />
+                    android:contentDescription="@string/searchbar"
+                    android:src="@drawable/search" />
 
                 <EditText
                     android:id="@+id/search_input"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_weight="1"
-                    android:hint="@string/searching"
-                    android:paddingHorizontal="12dp"
                     android:background="@android:color/transparent"
+                    android:hint="@string/searching"
+                    android:imeOptions="actionSearch"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
+                    android:paddingHorizontal="12dp"
                     android:singleLine="true"
                     android:textColorHint="#9E9E9E"
-                    android:textSize="14sp"
-                    android:imeOptions="actionSearch"
-                    android:inputType="text"
-                    android:importantForAutofill="no" />
+                    android:textSize="14sp" />
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/filter"
+                    android:layout_marginTop="5dp"
                     android:contentDescription="@string/filter_icon"
-                    android:layout_marginTop="5dp" />
+                    android:src="@drawable/filter" />
 
             </LinearLayout>
 
@@ -143,18 +142,18 @@
                 android:text="@string/categories"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:drawableEndCompat="@drawable/view_more_btn"/>
+                app:drawableEndCompat="@drawable/view_more_btn" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_categories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:clipToPadding="false"
-                android:paddingEnd="16dp"
+                android:orientation="horizontal"
                 android:paddingStart="0dp"
+                android:paddingEnd="16dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                />
+                tools:listitem="@layout/item_catergory" />
 
             <TextView
                 android:id="@+id/featured_photos"
@@ -166,18 +165,18 @@
                 android:text="@string/featured_products"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:drawableEndCompat="@drawable/view_more_btn"/>
+                app:drawableEndCompat="@drawable/view_more_btn" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_products"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:clipToPadding="false"
-                android:paddingEnd="16dp"
+                android:orientation="horizontal"
                 android:paddingStart="0dp"
+                android:paddingEnd="16dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                />
+                tools:listitem="@layout/item_product" />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
