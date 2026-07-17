@@ -45,8 +45,12 @@ class ProductAdapter(
         holder.binding.apply {
             val product = products[position]
             titleProduct.text = product.title
-            desProduct.text = product.des
+            brandProduct.text = product.brand
             priceProduct.text = product.price.toString()
+
+            root.setOnClickListener {
+                onClick(product)
+            }
 
             Glide.with(imgProduct.context)
                 .load(product.image)

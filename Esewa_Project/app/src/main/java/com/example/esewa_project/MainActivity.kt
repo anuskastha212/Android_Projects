@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                     val actualProducts = apiResponse?.data
 
                     if (actualProducts != null) {
-                        productAdapter.products = actualProducts                  }
+                        productAdapter.products = actualProducts.take(4)               }
                 } else {
                     Log.e("MainActivity", "API Error: ${response.message()}")
                 }
