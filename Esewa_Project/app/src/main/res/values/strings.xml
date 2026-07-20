@@ -4,7 +4,7 @@
     <string name="market">Market</string>
     <string name="notification_bell">Notification Bell</string>
     <string name="option">Option</string>
-    <string name="john">Good morning <b>John</b>, Everything you will discover here</string>
+    <string name="john">Good morning John, Everything you will discover here</string>
     <string name="searchbar">Search Bar</string>
     <string name="searching">What are you searching for?</string>
     <string name="filter_icon">Filter Icon</string>
@@ -19,6 +19,6 @@
     <string name="rs">Rs.</string>
     <string name="_8200">8200</string>
     <string name="plus_sign">Plus Sign</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="most_popular">Most Popular</string>
 </resources>
