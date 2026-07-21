@@ -23,4 +23,6 @@
     <string name="most_popular">Most Popular</string>
     <string name="hot_deals">Hot Deals of The Day</string>
     <string name="popular_brand">Popular Brand</string>
+    <string name="loading">LOADING...</string>
+    <string name="recommended_for_you">Recommended for you</string>
 </resources>

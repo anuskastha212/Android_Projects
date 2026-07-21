@@ -105,7 +105,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/plus"
+                android:src="@drawable/add"
                 android:contentDescription="@string/plus_sign"/>
 
         </com.google.android.material.card.MaterialCardView>

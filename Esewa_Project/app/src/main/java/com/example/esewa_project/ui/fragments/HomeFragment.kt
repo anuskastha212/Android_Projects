@@ -24,6 +24,7 @@ import com.example.esewa_project.ui.adapter.MostPopularAdapter
 import com.example.esewa_project.ui.adapter.FeaturedProductAdapter
 import com.example.esewa_project.ui.adapter.HotDealsAdapter
 import com.example.esewa_project.ui.adapter.PopularBrandAdapter
+import com.example.esewa_project.ui.adapter.RecommendedAdapter
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -46,6 +47,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     private lateinit var mostPopularAdapter: MostPopularAdapter
     private lateinit var hotDealsAdapter: HotDealsAdapter
     private lateinit var popularBrandAdapter: PopularBrandAdapter
+    private lateinit var recommendedAdapter: RecommendedAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,6 +67,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         setupHotDealsRecyclerView()
         getAllProducts()
         setupPopularBrandRecyclerView()
+        setupRecommendedRecyclerView()
         setupMostPopularRecyclerView()
         getMostPopularCategories()
     }
@@ -135,6 +138,22 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         layoutManager = GridLayoutManager(    requireContext(),2)
     }
 
+    private fun setupRecommendedRecyclerView() = binding.rvRecommended.apply {
+
+        recommendedAdapter = RecommendedAdapter() { product ->
+            Toast.makeText(
+                requireContext(),
+                product.title,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        adapter = recommendedAdapter
+
+        layoutManager = GridLayoutManager(    requireContext(),2)
+    }
+
+
 
     private fun getAllProducts() {
 
@@ -153,7 +172,9 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
                         hotDealsAdapter.products = allProducts.drop(2).take(2)
 
-                        popularBrandAdapter.products = allProducts.drop(4).take(10)
+                        popularBrandAdapter.products = allProducts.drop(4).take(4)
+
+                        recommendedAdapter.products = allProducts.drop(8).take(8)
                     }
 
                 } else {
