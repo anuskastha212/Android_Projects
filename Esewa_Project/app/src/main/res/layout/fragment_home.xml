@@ -196,13 +196,22 @@
                 tools:listitem="@layout/item_product"
                 tools:itemCount="2"/>
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/banner4"
-                android:contentDescription="@string/images"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginBottom="50dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/banner4"
+                    android:contentDescription="@string/images"
+                    android:scaleType="centerCrop"/>
+
+            </androidx.cardview.widget.CardView>
 
             <TextView
                 android:id="@+id/most_popular"
@@ -215,6 +224,23 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_most_popular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="16dp" />
+
+            <TextView
+                android:id="@+id/popular_brand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/popular_brand"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="50dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_popular_brands"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"

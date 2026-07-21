@@ -60,11 +60,10 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         setupBanner()
         setupCategories()
         setupFeaturedProductRecyclerView()
-        getFeaturedProducts()
         setupHotDealsRecyclerView()
-        getHotDealsProducts()
+        getAllProducts()
         setupMostPopularRecyclerView()
-        fetchMostPopularCategories()
+        getMostPopularCategories()
     }
     private fun setupBanner() {
         viewPager = binding.viewPagerBanner
@@ -102,33 +101,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         layoutManager = GridLayoutManager(    requireContext(),2)
     }
 
-    private fun getFeaturedProducts() {
-
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            try {
-
-                val response = RetrofitInstance.productApi.getFeaturedData()
-
-                if (response.isSuccessful) {
-
-                    val apiResponse = response.body()
-                    val actualProducts = apiResponse?.data
-
-                    if (actualProducts != null) {
-                        featuredProductAdapter.products = actualProducts.take(2)
-                    }
-
-                } else {
-                    Log.e("HomeFragment", "API Error: ${response.message()}")
-                }
-
-            } catch (e: Exception) {
-                Log.e("HomeFragment", "Exception: ${e.message}")
-            }
-        }
-    }
-
     private fun setupHotDealsRecyclerView() = binding.rvHotDeals.apply {
 
         hotDealsAdapter = HotDealsAdapter() { product ->
@@ -145,21 +117,22 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     }
 
 
-    private fun getHotDealsProducts() {
+    private fun getAllProducts() {
 
         viewLifecycleOwner.lifecycleScope.launch {
 
             try {
 
-                val response = RetrofitInstance.productApi.getHotDealsData()
+                val response = RetrofitInstance.productApi.getAllProducts()
 
                 if (response.isSuccessful) {
 
-                    val apiResponse = response.body()
-                    val actualProducts = apiResponse?.data
+                    val allProducts = response.body()?.data
 
-                    if (actualProducts != null) {
-                        hotDealsAdapter.products = actualProducts.drop(2).take(2)
+                    if (allProducts != null) {
+                        featuredProductAdapter.products = allProducts.take(2)
+
+                        hotDealsAdapter.products = allProducts.drop(2).take(2)
                     }
 
                 } else {
@@ -172,7 +145,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
     }
 
-
     private fun setupMostPopularRecyclerView(){
         val flexboxLayoutManager = FlexboxLayoutManager(requireContext()).apply {
             flexDirection = FlexDirection.ROW
@@ -180,7 +152,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
             mostPopularAdapter = MostPopularAdapter(emptyList()){ categoryData ->
                 Toast.makeText(requireContext(),
-                    "Clicked: $categoryData",
+                    " $categoryData",
                     Toast.LENGTH_SHORT)
                     .show()
             }
@@ -190,7 +162,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 isNestedScrollingEnabled = false
             }
     }
-    private fun fetchMostPopularCategories() {
+    private fun getMostPopularCategories() {
 
         viewLifecycleOwner.lifecycleScope.launch {
 
@@ -198,8 +170,8 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 val response = RetrofitInstance.api.getMostPopular()
 
                 if (response.isSuccessful) {
-                    response.body()?.let {
-                        mostPopularAdapter.updateData(it)
+                    response.body()?.let {categories ->
+                        mostPopularAdapter.updateData(categories.take((7)))
                     }
                 }
             } catch (e: Exception) {

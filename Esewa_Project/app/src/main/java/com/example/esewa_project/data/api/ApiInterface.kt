@@ -7,10 +7,7 @@ import retrofit2.http.GET
 
 interface ApiInterface {
     @GET("api/walmartproducts/")
-    suspend fun getFeaturedData(): Response<ProductResponse>
-
-    @GET("api/walmartproducts/")
-    suspend fun getHotDealsData(): Response<ProductResponse>
+    suspend fun getAllProducts(): Response<ProductResponse>
 
     @GET("products/categories")
     suspend fun getMostPopular(): Response<List<MostPopular>>
