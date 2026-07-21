@@ -23,6 +23,7 @@ import com.example.esewa_project.ui.adapter.CategoryAdapter
 import com.example.esewa_project.ui.adapter.MostPopularAdapter
 import com.example.esewa_project.ui.adapter.FeaturedProductAdapter
 import com.example.esewa_project.ui.adapter.HotDealsAdapter
+import com.example.esewa_project.ui.adapter.PopularBrandAdapter
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -44,6 +45,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     private lateinit var featuredProductAdapter: FeaturedProductAdapter
     private lateinit var mostPopularAdapter: MostPopularAdapter
     private lateinit var hotDealsAdapter: HotDealsAdapter
+    private lateinit var popularBrandAdapter: PopularBrandAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,6 +64,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         setupFeaturedProductRecyclerView()
         setupHotDealsRecyclerView()
         getAllProducts()
+        setupPopularBrandRecyclerView()
         setupMostPopularRecyclerView()
         getMostPopularCategories()
     }
@@ -117,6 +120,22 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     }
 
 
+    private fun setupPopularBrandRecyclerView() = binding.rvPopularBrands.apply {
+
+        popularBrandAdapter = PopularBrandAdapter() { product ->
+            Toast.makeText(
+                requireContext(),
+                product.title,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        adapter = popularBrandAdapter
+
+        layoutManager = GridLayoutManager(    requireContext(),2)
+    }
+
+
     private fun getAllProducts() {
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -133,6 +152,8 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                         featuredProductAdapter.products = allProducts.take(2)
 
                         hotDealsAdapter.products = allProducts.drop(2).take(2)
+
+                        popularBrandAdapter.products = allProducts.drop(4).take(10)
                     }
 
                 } else {

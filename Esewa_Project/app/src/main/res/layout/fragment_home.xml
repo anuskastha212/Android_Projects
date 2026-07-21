@@ -231,20 +231,24 @@
 
             <TextView
                 android:id="@+id/popular_brand"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="center_vertical"
                 android:text="@string/popular_brand"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginTop="50dp"/>
+                app:drawableEndCompat="@drawable/view_more_btn" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_popular_brands"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginHorizontal="16dp" />
+                android:clipToPadding="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_product"
+                tools:itemCount="2"/>
 
         </LinearLayout>
 
