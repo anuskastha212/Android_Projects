@@ -123,13 +123,19 @@
                 android:layout_height="180dp"
                 android:layout_marginTop="25dp" />
 
-            <LinearLayout
+            <com.google.android.material.tabs.TabLayout
                 android:id="@+id/layout_dots"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="25dp"
-                android:orientation="horizontal" />
+                android:layout_height="12dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                app:tabMinWidth="20dp"
+                android:background="@android:color/transparent"
+                app:tabBackground="@drawable/indicator_selector"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                app:tabIndicatorHeight="0dp"
+                app:tabRippleColor="@android:color/transparent"/>
 
             <TextView
                 android:id="@+id/categories"

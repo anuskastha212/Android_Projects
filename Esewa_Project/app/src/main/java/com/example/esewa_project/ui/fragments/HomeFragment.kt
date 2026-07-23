@@ -7,14 +7,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.viewpager2.widget.ViewPager2
-import com.example.esewa_project.BannerIndicator
 import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.R
 import com.example.esewa_project.data.api.RetrofitInstance
@@ -33,16 +28,12 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
 import kotlinx.coroutines.launch
 import kotlin.collections.take
+import com.google.android.material.tabs.TabLayoutMediator
 
 
 class HomeFragment : Fragment(R.layout.fragment_home){
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewPager: ViewPager2
-    private lateinit var layoutDots: LinearLayout
-    private lateinit var dots: Array<ImageView?>
-
-    private val bannerIndicator by lazy { BannerIndicator() }
     private val categoryData by lazy { CategoryData() }
     private val bannerImages by lazy { BannerImages() }
 
@@ -75,21 +66,14 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         getMostPopularCategories()
     }
     private fun setupBanner() {
-        viewPager = binding.viewPagerBanner
-        layoutDots = binding.layoutDots
-
         val imagesList = bannerImages.getBannerImages()
-        viewPager.adapter = BannerAdapter(imagesList)
+        binding.viewPagerBanner.adapter = BannerAdapter(imagesList)
 
-        dots = bannerIndicator.setupIndicator(requireContext(), imagesList.size, layoutDots)
-        bannerIndicator.setCurrentIndicator(requireContext(), 0, layoutDots)
-
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                bannerIndicator.setCurrentIndicator(requireContext(), position, layoutDots)
-            }
-        })
+        TabLayoutMediator(
+            binding.layoutDots,
+            binding.viewPagerBanner
+        ) { tab, position ->
+        }.attach()
     }
 
     private fun setupCategories() {
@@ -177,22 +161,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
             } catch (e: Exception) {
                 Log.e("API", "Exception", e)
-            }
-        }
-    }
-
-    private fun getProduct(id: Int) {
-
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            try {
-
-                val product = RetrofitInstance.productApi.getProductById(id)
-
-                Log.d("PRODUCT", product.toString())
-
-            } catch (e: Exception) {
-                Log.e("PRODUCT", "Error", e)
             }
         }
     }
