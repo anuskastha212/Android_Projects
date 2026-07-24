@@ -16,6 +16,7 @@ class FeaturedProductAdapter(
 
     inner class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
 
+    //An inner class can access members of the outer FeaturedProductAdapter class if needed.
     private val diffCallback = object : DiffUtil.ItemCallback<Product>(){
         override fun areItemsTheSame(oldItem: Product, newItem: Product): Boolean {
             return oldItem.id == newItem.id
@@ -30,8 +31,6 @@ class FeaturedProductAdapter(
     var products: List<Product>
         get() = differ.currentList
         set(value) {differ.submitList(value)}
-
-    override fun getItemCount() = products.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         return ProductViewHolder(ItemProductBinding.inflate(
@@ -57,6 +56,8 @@ class FeaturedProductAdapter(
                 .into(imgProduct)
         }
     }
+
+    override fun getItemCount() = products.size
 
     fun submitList(list: List<Product>) {
         differ.submitList(list)

@@ -157,9 +157,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
                 val products = RetrofitInstance.productApi.getAllProducts()
 
-                Log.d("API", "Products = ${products.size}")
-                Log.d("API", products.toString())
-
                 featuredProductAdapter.products = products.take(7)
                 hotDealsAdapter.products = products.drop(7).take(7)
                 popularBrandAdapter.products = products.drop(14).take(4)
