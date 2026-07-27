@@ -6,11 +6,12 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.example.esewa_project.data.api.RetrofitInstance
 import com.example.esewa_project.data.model.Product
 import com.example.esewa_project.databinding.ActivityProductDetailBinding
 import kotlinx.coroutines.launch
+import com.example.esewa_project.ui.adapter.ProductDetailAdapter
+import com.google.android.material.tabs.TabLayoutMediator
 
 class ProductDetailActivity : AppCompatActivity() {
 
@@ -19,7 +20,6 @@ class ProductDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
 
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -64,13 +64,16 @@ class ProductDetailActivity : AppCompatActivity() {
     private fun showProduct(product: Product) {
 
         binding.apply {
-
             tvProductName.text = product.title
             des.text = product.description
             tvProductPrice.text = getString(R.string.product_price, product.price)
-            Glide.with(this@ProductDetailActivity)
-                .load(product.thumbnail)
-                .into(productImageDet)
+
+            val adapter = ProductDetailAdapter(product.images)
+            productImageDet.adapter = adapter
+
+            TabLayoutMediator(indicatorProductImage, productImageDet){tab,position ->
+
+            }.attach()
         }
     }
 }

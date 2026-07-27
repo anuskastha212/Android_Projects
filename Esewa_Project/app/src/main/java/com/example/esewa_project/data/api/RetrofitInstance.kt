@@ -5,11 +5,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
 
-    private const val BASE_URL = "https://dummyjson.com/"
+    private const val DUMMY_BASE_URL = "https://dummyjson.com/"
+    private const val PRODUCT_BASE_URL = "http://10.19.16.53:8080/"
 
     val api: ApiInterface by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(DUMMY_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiInterface::class.java)
@@ -17,7 +18,7 @@ object RetrofitInstance {
 
     val productApi: ApiInterface by lazy {
         Retrofit.Builder()
-            .baseUrl("https://casualty-elevator-yodel.ngrok-free.dev/")
+            .baseUrl(PRODUCT_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiInterface::class.java)
