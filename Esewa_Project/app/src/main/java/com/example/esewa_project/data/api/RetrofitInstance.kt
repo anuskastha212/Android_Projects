@@ -17,7 +17,7 @@ object RetrofitInstance {
 
     val productApi: ApiInterface by lazy {
         Retrofit.Builder()
-            .baseUrl("http://10.19.16.53:8080/")
+            .baseUrl("https://casualty-elevator-yodel.ngrok-free.dev/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiInterface::class.java)
