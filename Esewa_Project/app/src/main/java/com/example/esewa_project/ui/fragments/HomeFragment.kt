@@ -56,6 +56,26 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.homeToolBar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId){
+                R.id.action_notifications -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "Notifications Clicked",
+                        Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.action_options -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "Options Clicked",
+                        Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
         setupBanner()
         setupCategories()
         setupFeaturedProductRecyclerView()
@@ -80,7 +100,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     private fun setupCategories() {
         binding.rvCategories.adapter = CategoryAdapter(categoryData.getCategoryData())
         { category ->
-
             Toast.makeText(
                 requireContext(),
                 category.name,
