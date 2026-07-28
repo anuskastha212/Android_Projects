@@ -41,4 +41,7 @@
     <string name="back_button">Back Button</string>
     <string name="product_price">Rs. %1$.2f</string>
     <string name="checkmark_icon">Checkmark_Icon</string>
+    <string name="s">S</string>
+    <string name="select_size">Select Size</string>
+    <string name="select_color">Select Color</string>
 </resources>

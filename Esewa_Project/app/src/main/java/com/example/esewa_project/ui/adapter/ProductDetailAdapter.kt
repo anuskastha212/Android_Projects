@@ -22,11 +22,12 @@ class ProductDetailAdapter(private val images: List<String>) :
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = images[position]
-        
+
         Glide.with(holder.binding.imgBanner.context)
             .load(imageUrl)
             .into(holder.binding.imgBanner)
     }
 
     override fun getItemCount(): Int = images.size
+
 }

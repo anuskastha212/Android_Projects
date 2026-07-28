@@ -6,16 +6,24 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.data.api.RetrofitInstance
 import com.example.esewa_project.data.model.Product
+import com.example.esewa_project.data.source.ColorsData
 import com.example.esewa_project.databinding.ActivityProductDetailBinding
+import com.example.esewa_project.ui.adapter.ProductColorAdapter
 import kotlinx.coroutines.launch
 import com.example.esewa_project.ui.adapter.ProductDetailAdapter
+import com.example.esewa_project.ui.adapter.ProductSizeAdapter
 import com.google.android.material.tabs.TabLayoutMediator
 
 class ProductDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProductDetailBinding
+    private lateinit var productSizeAdapter: ProductSizeAdapter
+    private lateinit var productColorAdapter: ProductColorAdapter
+//    private val sizesData by lazy { SizesData() }
+    private val colorsData by lazy { ColorsData() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +73,7 @@ class ProductDetailActivity : AppCompatActivity() {
 
         binding.apply {
             tvProductName.text = product.title
-            des.text = product.description
+            productDescription.text = product.description
             tvProductPrice.text = getString(R.string.product_price, product.price)
 
             val adapter = ProductDetailAdapter(product.images)
@@ -74,6 +82,21 @@ class ProductDetailActivity : AppCompatActivity() {
             TabLayoutMediator(indicatorProductImage, productImageDet){tab,position ->
 
             }.attach()
+
+            rvProductSize.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
+            val sizes = product.options["Size"] ?: emptyList()
+            productSizeAdapter = ProductSizeAdapter({ selectedSize ->
+                Toast.makeText(this@ProductDetailActivity, "Selected Size: $selectedSize", Toast.LENGTH_SHORT).show()
+            }, sizes)
+            rvProductSize.adapter = productSizeAdapter
+
+            rvProductColors.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
+            val colors = colorsData.getColorData()
+            productColorAdapter = ProductColorAdapter({ selectedColor ->
+                Toast.makeText(this@ProductDetailActivity, "Selected Color: $selectedColor", Toast.LENGTH_SHORT).show()
+            }, colors)
+            rvProductColors.adapter = productColorAdapter
         }
     }
+
 }
