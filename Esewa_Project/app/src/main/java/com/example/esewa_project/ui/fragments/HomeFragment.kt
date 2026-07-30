@@ -8,14 +8,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.R
-import com.example.esewa_project.data.api.RetrofitInstance
-import com.example.esewa_project.data.source.BannerImages
-import com.example.esewa_project.data.source.CategoryData
+import androidx.fragment.app.viewModels
 import com.example.esewa_project.databinding.FragmentHomeBinding
 import com.example.esewa_project.ui.adapter.BannerAdapter
 import com.example.esewa_project.ui.adapter.CategoryAdapter
@@ -24,19 +21,18 @@ import com.example.esewa_project.ui.adapter.FeaturedProductAdapter
 import com.example.esewa_project.ui.adapter.HotDealsAdapter
 import com.example.esewa_project.ui.adapter.PopularBrandAdapter
 import com.example.esewa_project.ui.adapter.RecommendedAdapter
+import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
-import kotlinx.coroutines.launch
 import kotlin.collections.take
 import com.google.android.material.tabs.TabLayoutMediator
 
-
 class HomeFragment : Fragment(R.layout.fragment_home){
+
+    private val viewModel: HomeViewModel by viewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val categoryData by lazy { CategoryData() }
-    private val bannerImages by lazy { BannerImages() }
 
     private lateinit var featuredProductAdapter: FeaturedProductAdapter
     private lateinit var mostPopularAdapter: MostPopularAdapter
@@ -80,14 +76,21 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         setupCategories()
         setupFeaturedProductRecyclerView()
         setupHotDealsRecyclerView()
-        getAllProducts()
         setupPopularBrandRecyclerView()
         setupRecommendedRecyclerView()
         setupMostPopularRecyclerView()
-        getMostPopularCategories()
+
+        viewModel.products.observe(viewLifecycleOwner){ allProducts ->
+            featuredProductAdapter.products = allProducts.take(7)
+            hotDealsAdapter.products = allProducts.drop(7).take(7)
+            popularBrandAdapter.products = allProducts.drop(14).take(4)
+            recommendedAdapter.products = allProducts.drop(18).take(8)
+        }
+
+
     }
     private fun setupBanner() {
-        val imagesList = bannerImages.getBannerImages()
+        val imagesList = viewModel.banners
         binding.viewPagerBanner.adapter = BannerAdapter(imagesList)
 
         TabLayoutMediator(
@@ -98,7 +101,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     }
 
     private fun setupCategories() {
-        binding.rvCategories.adapter = CategoryAdapter(categoryData.getCategoryData())
+        binding.rvCategories.adapter = CategoryAdapter(viewModel.localCategories)
         { category ->
             Toast.makeText(
                 requireContext(),
@@ -170,27 +173,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         isNestedScrollingEnabled = false
     }
 
-    private fun getAllProducts() {
-
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            try {
-
-                val products = RetrofitInstance.productApi.getAllProducts()
-                Log.d("API", "Products count = ${products.size}")
-                Log.d("API", "Products = $products")
-
-                featuredProductAdapter.products = products.take(7)
-                hotDealsAdapter.products = products.drop(7).take(7)
-                popularBrandAdapter.products = products.drop(14).take(4)
-                recommendedAdapter.products = products.drop(18).take(8)
-
-            } catch (e: Exception) {
-                Log.e("API", "Exception", e)
-            }
-        }
-    }
-
     private fun setupMostPopularRecyclerView() {
 
         val flexboxLayoutManager = FlexboxLayoutManager(requireContext()).apply {
@@ -211,28 +193,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             layoutManager = flexboxLayoutManager
             adapter = mostPopularAdapter
             isNestedScrollingEnabled = false
-        }
-    }
-    private fun getMostPopularCategories() {
-
-        viewLifecycleOwner.lifecycleScope.launch {
-
-            try {
-                val response = RetrofitInstance.api.getMostPopular()
-
-                if (response.isSuccessful) {
-                    response.body()?.let {categories ->
-                        mostPopularAdapter.mostPopular = categories.take(7)
-                    }
-                }
-            } catch (e: Exception) {
-
-                Toast.makeText(
-                    requireContext(),
-                    e.message,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
         }
     }
 
