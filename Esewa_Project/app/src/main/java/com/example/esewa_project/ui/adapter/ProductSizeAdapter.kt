@@ -28,8 +28,6 @@ class ProductSizeAdapter(
             onClick(sizes[position])
         }
 
-
-
     }
 
     override fun getItemCount(): Int = sizes.size
