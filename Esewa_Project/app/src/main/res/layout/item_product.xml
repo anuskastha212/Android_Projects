@@ -91,7 +91,7 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <FrameLayout
-            android:id="@+id/btn_add"
+            android:id="@+id/layoutAdd"
             android:layout_width="45dp"
             android:layout_height="56dp"
             android:background="@drawable/bg_add"
@@ -110,5 +110,53 @@
                 app:tint="@android:color/white"/>
 
         </FrameLayout>
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/addSub"
+            android:layout_width="45dp"
+            android:layout_height="150dp"
+            android:visibility="gone"
+            app:cardCornerRadius="18dp"
+            app:cardBackgroundColor="@color/green"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/minusButton"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/minus"
+                    android:tint="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/productQuantity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="12dp"
+                    android:text="1"
+                    android:textColor="@android:color/white"
+                    android:textSize="22sp"
+                    android:textStyle="bold"/>
+
+                <ImageButton
+                    android:id="@+id/addButton"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/add"
+                    android:tint="@android:color/white"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </com.google.android.material.card.MaterialCardView>

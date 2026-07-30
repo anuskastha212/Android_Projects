@@ -155,8 +155,10 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     }
 
     private fun setupRecommendedRecyclerView() = binding.rvRecommended.apply {
+        Log.d("Recommended", "setupRecommendedRecyclerView called")
 
         recommendedAdapter = RecommendedAdapter() { product ->
+            Log.d("Recommended", "Clicked product: ${product.id}")
             val intent = Intent(requireContext(), ProductDetailActivity::class.java)
             intent.putExtra("product_id", product.id)
             startActivity(intent)
@@ -175,6 +177,8 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             try {
 
                 val products = RetrofitInstance.productApi.getAllProducts()
+                Log.d("API", "Products count = ${products.size}")
+                Log.d("API", "Products = $products")
 
                 featuredProductAdapter.products = products.take(7)
                 hotDealsAdapter.products = products.drop(7).take(7)

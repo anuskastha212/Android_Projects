@@ -10,7 +10,8 @@
     android:paddingHorizontal="6dp"
     android:paddingVertical="12dp"
     android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp">
+    android:layout_marginEnd="16dp"
+    android:baselineAligned="false">
 
     <LinearLayout
         android:id="@+id/navItemShop"
@@ -19,7 +20,7 @@
         android:layout_weight="1"
         android:minHeight="5dp"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:background="@drawable/bg_bottom_nav"
         android:clickable="true"
         android:focusable="true"
@@ -55,7 +56,7 @@
         android:layout_weight="1"
         android:minHeight="5dp"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
@@ -91,7 +92,7 @@
         android:layout_weight="1"
         android:minHeight="5dp"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
@@ -127,7 +128,7 @@
         android:layout_weight="1"
         android:minHeight="5dp"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
