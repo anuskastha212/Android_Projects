@@ -61,9 +61,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.2.0")
 
     implementation("com.google.android.flexbox:flexbox:3.0.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
 
     implementation(platform(libs.firebase.bom))
 

@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.esewa_project.data.model.MostPopular
+import com.example.esewa_project.data.model.ProductCategory
 import com.example.esewa_project.databinding.ItemMostpopularBinding
 
 class MostPopularAdapter(
@@ -16,24 +16,24 @@ class MostPopularAdapter(
         val binding: ItemMostpopularBinding
     ) : RecyclerView.ViewHolder(binding.root)
 
-    private val diffCallback = object : DiffUtil.ItemCallback<MostPopular>() {
+    private val diffCallback = object : DiffUtil.ItemCallback<ProductCategory>() {
 
         override fun areItemsTheSame(
-            oldItem: MostPopular,
-            newItem: MostPopular): Boolean {
+            oldItem: ProductCategory,
+            newItem: ProductCategory): Boolean {
             return oldItem.name == newItem.name
         }
 
         override fun areContentsTheSame(
-            oldItem: MostPopular,
-            newItem: MostPopular): Boolean {
+            oldItem: ProductCategory,
+            newItem: ProductCategory): Boolean {
             return oldItem == newItem
         }
     }
 
     private val differ = AsyncListDiffer(this, diffCallback)
 
-    var mostPopular: List<MostPopular>
+    var mostPopular: List<ProductCategory>
         get() = differ.currentList
         set(value) {
             differ.submitList(value)
@@ -66,7 +66,7 @@ class MostPopularAdapter(
 
     override fun getItemCount(): Int = mostPopular.size
 
-    fun submitList(list: List<MostPopular>) {
+    fun submitList(list: List<ProductCategory>) {
         differ.submitList(list)
     }
 }

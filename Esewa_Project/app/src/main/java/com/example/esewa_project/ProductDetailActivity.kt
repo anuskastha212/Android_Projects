@@ -52,7 +52,7 @@ class ProductDetailActivity : AppCompatActivity() {
 
             try {
 
-                val product = RetrofitInstance.productApi.getProductById(id)
+                val product = RetrofitInstance.api.getProductById(id)
 
                 showProduct(product)
 
@@ -78,9 +78,7 @@ class ProductDetailActivity : AppCompatActivity() {
 
             val adapter = ProductDetailAdapter(product.images)
             productImageDet.adapter = adapter
-
             TabLayoutMediator(indicatorProductImage, productImageDet){tab,position ->
-
             }.attach()
 
             rvProductSize.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
