@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.Category
-import com.example.esewa_project.data.model.Product
 
 class CategoryAdapter(
     private val categoryList: List<Category>,

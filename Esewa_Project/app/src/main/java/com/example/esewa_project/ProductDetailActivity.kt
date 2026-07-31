@@ -81,8 +81,12 @@ class ProductDetailActivity : AppCompatActivity() {
             TabLayoutMediator(indicatorProductImage, productImageDet){tab,position ->
             }.attach()
 
+            Log.d("ProductDetail", "Available options: ${product.options.keys}")
+            Log.d("ProductDetail", "Tags content: ${product.options["Tags"]}")
+
+
             rvProductSize.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
-            val sizes = product.options["Size"] ?: emptyList()
+            val sizes = product.options["size"] ?: emptyList()
             productSizeAdapter = ProductSizeAdapter({ selectedSize ->
                 Toast.makeText(this@ProductDetailActivity, "Selected Size: $selectedSize", Toast.LENGTH_SHORT).show()
             }, sizes)
