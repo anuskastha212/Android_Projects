@@ -8,11 +8,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.esewa_project.data.model.Product
 import com.example.esewa_project.databinding.ItemProductBinding
+import android.view.View
 import kotlin.apply
 
-class FeaturedProductAdapter(
-    private val onClick: (Product) -> Unit
-) : RecyclerView.Adapter<FeaturedProductAdapter.ProductViewHolder>() {
+class AllProductAdapter(
+    private val onClick: (Product) -> Unit,
+    private val onAddClick: (Product, Int) -> Unit,
+    private val onPlusClick: (Product, Int) -> Unit,
+    private val onMinusClick: (Product, Int) -> Unit
+) : RecyclerView.Adapter<AllProductAdapter.ProductViewHolder>() {
 
     inner class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -44,11 +48,32 @@ class FeaturedProductAdapter(
         holder.binding.apply {
             val product = products[position]
             titleProduct.text = product.title
-            brandProduct.text = product.category
+            brandProduct.text = product.category.name
             priceProduct.text = product.price.toString()
+
+            if (product.stock > 0){
+                layoutAdd.visibility = View.GONE
+                addSub.visibility = View.VISIBLE
+                productQuantity.text = product.stock.toString()
+            } else {
+                layoutAdd.visibility = View.VISIBLE
+                addSub.visibility = View.GONE
+            }
 
             root.setOnClickListener {
                 onClick(product)
+            }
+
+            layoutAdd.setOnClickListener {
+                onAddClick(product, position)
+            }
+
+            addButton.setOnClickListener {
+                onPlusClick(product, position)
+            }
+
+            minusButton.setOnClickListener {
+                onMinusClick(product, position)
             }
 
             Glide.with(imgProduct.context)

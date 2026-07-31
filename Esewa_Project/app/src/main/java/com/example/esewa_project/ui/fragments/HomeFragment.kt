@@ -1,26 +1,20 @@
 package com.example.esewa_project.ui.fragments
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.R
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.databinding.FragmentHomeBinding
 import com.example.esewa_project.ui.adapter.BannerAdapter
 import com.example.esewa_project.ui.adapter.CategoryAdapter
 import com.example.esewa_project.ui.adapter.MostPopularAdapter
-import com.example.esewa_project.ui.adapter.FeaturedProductAdapter
-import com.example.esewa_project.ui.adapter.HotDealsAdapter
-import com.example.esewa_project.ui.adapter.PopularBrandAdapter
-import com.example.esewa_project.ui.adapter.RecommendedAdapter
+import com.example.esewa_project.ui.adapter.AllProductAdapter
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -34,11 +28,11 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var featuredProductAdapter: FeaturedProductAdapter
+    private lateinit var featuredProductAdapter: AllProductAdapter
     private lateinit var mostPopularAdapter: MostPopularAdapter
-    private lateinit var hotDealsAdapter: HotDealsAdapter
-    private lateinit var popularBrandAdapter: PopularBrandAdapter
-    private lateinit var recommendedAdapter: RecommendedAdapter
+    private lateinit var hotDealsAdapter: AllProductAdapter
+    private lateinit var popularBrandAdapter: AllProductAdapter
+    private lateinit var recommendedAdapter: AllProductAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -74,17 +68,24 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
         setupBanner()
         setupCategories()
-        setupFeaturedProductRecyclerView()
-        setupHotDealsRecyclerView()
-        setupPopularBrandRecyclerView()
-        setupRecommendedRecyclerView()
+        setupRecyclerViews()
+//        setupFeaturedProductRecyclerView()
+//        setupHotDealsRecyclerView()
+//        setupPopularBrandRecyclerView()
+//        setupRecommendedRecyclerView()
         setupMostPopularRecyclerView()
+
+        viewModel.fetchData()
 
         viewModel.products.observe(viewLifecycleOwner){ allProducts ->
             featuredProductAdapter.products = allProducts.take(7)
             hotDealsAdapter.products = allProducts.drop(7).take(7)
             popularBrandAdapter.products = allProducts.drop(14).take(4)
             recommendedAdapter.products = allProducts.drop(18).take(8)
+        }
+
+        viewModel.popularCategories.observe(viewLifecycleOwner){categories ->
+            mostPopularAdapter.mostPopular = categories.take(7)
         }
 
 
@@ -111,67 +112,106 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
         }
     }
-    private fun setupFeaturedProductRecyclerView() = binding.rvFeaturedProducts.apply {
+//    private fun setupFeaturedProductRecyclerView() = binding.rvFeaturedProducts.apply {
+//
+//        featuredProductAdapter = FeaturedProductAdapter { product ->
+//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+//            intent.putExtra("product_id", product.id)
+//            startActivity(intent)
+//        }
+//
+//        adapter = featuredProductAdapter
+//
+//        layoutManager = LinearLayoutManager(requireContext(),
+//            LinearLayoutManager.HORIZONTAL,
+//            false)
+//        isNestedScrollingEnabled = false
+//    }
+//
+//    private fun setupHotDealsRecyclerView() = binding.rvHotDeals.apply {
+//
+//        hotDealsAdapter = HotDealsAdapter() { product ->
+//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+//            intent.putExtra("product_id", product.id)
+//            startActivity(intent)
+//        }
+//
+//        adapter = hotDealsAdapter
+//
+//        layoutManager = LinearLayoutManager(requireContext(),
+//            LinearLayoutManager.HORIZONTAL,
+//            false)
+//        isNestedScrollingEnabled = false
+//    }
+//
+//    private fun setupPopularBrandRecyclerView() = binding.rvPopularBrands.apply {
+//
+//        popularBrandAdapter = PopularBrandAdapter() { product ->
+//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+//            intent.putExtra("product_id", product.id)
+//            startActivity(intent)
+//        }
+//
+//        adapter = popularBrandAdapter
+//
+//        layoutManager = GridLayoutManager(requireContext(),2)
+//        isNestedScrollingEnabled = false
+//    }
+//
+//    private fun setupRecommendedRecyclerView() = binding.rvRecommended.apply {
+//        Log.d("Recommended", "setupRecommendedRecyclerView called")
+//
+//        recommendedAdapter = RecommendedAdapter() { product ->
+//            Log.d("Recommended", "Clicked product: ${product.id}")
+//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+//            intent.putExtra("product_id", product.id)
+//            startActivity(intent)
+//        }
+//
+//        adapter = recommendedAdapter
+//
+//        layoutManager = GridLayoutManager(requireContext(),2)
+//        isNestedScrollingEnabled = false
+//    }
 
-        featuredProductAdapter = FeaturedProductAdapter { product ->
-            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-            intent.putExtra("product_id", product.id)
-            startActivity(intent)
+    private fun setupRecyclerViews(){
+        featuredProductAdapter = createProductAdapter()
+        binding.rvFeaturedProducts.apply {
+            adapter = featuredProductAdapter
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         }
 
-        adapter = featuredProductAdapter
-
-        layoutManager = LinearLayoutManager(requireContext(),
-            LinearLayoutManager.HORIZONTAL,
-            false)
-        isNestedScrollingEnabled = false
-    }
-
-    private fun setupHotDealsRecyclerView() = binding.rvHotDeals.apply {
-
-        hotDealsAdapter = HotDealsAdapter() { product ->
-            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-            intent.putExtra("product_id", product.id)
-            startActivity(intent)
+        hotDealsAdapter = createProductAdapter()
+        binding.rvHotDeals.apply {
+            adapter = hotDealsAdapter
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         }
 
-        adapter = hotDealsAdapter
-
-        layoutManager = LinearLayoutManager(requireContext(),
-            LinearLayoutManager.HORIZONTAL,
-            false)
-        isNestedScrollingEnabled = false
-    }
-
-    private fun setupPopularBrandRecyclerView() = binding.rvPopularBrands.apply {
-
-        popularBrandAdapter = PopularBrandAdapter() { product ->
-            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-            intent.putExtra("product_id", product.id)
-            startActivity(intent)
+        popularBrandAdapter = createProductAdapter()
+        binding.rvPopularBrands.apply {
+            adapter = popularBrandAdapter
+            layoutManager = GridLayoutManager(requireContext(), 2)
         }
 
-        adapter = popularBrandAdapter
-
-        layoutManager = GridLayoutManager(requireContext(),2)
-        isNestedScrollingEnabled = false
-    }
-
-    private fun setupRecommendedRecyclerView() = binding.rvRecommended.apply {
-        Log.d("Recommended", "setupRecommendedRecyclerView called")
-
-        recommendedAdapter = RecommendedAdapter() { product ->
-            Log.d("Recommended", "Clicked product: ${product.id}")
-            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-            intent.putExtra("product_id", product.id)
-            startActivity(intent)
+        recommendedAdapter = createProductAdapter()
+        binding.rvRecommended.apply {
+            adapter = recommendedAdapter
+            layoutManager = GridLayoutManager(requireContext(), 2)
         }
-
-        adapter = recommendedAdapter
-
-        layoutManager = GridLayoutManager(requireContext(),2)
-        isNestedScrollingEnabled = false
     }
+
+    private fun createProductAdapter(): AllProductAdapter {
+        return AllProductAdapter(
+            onClick = { product ->  },
+            onAddClick = { product, pos ->
+//                product.stock = 1
+            },
+            onPlusClick = { product, pos ->  },
+            onMinusClick = { product, pos ->  }
+        )
+    }
+
 
     private fun setupMostPopularRecyclerView() {
 
