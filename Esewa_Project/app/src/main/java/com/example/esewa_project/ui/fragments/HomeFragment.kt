@@ -9,9 +9,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.example.esewa_project.R
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.ProductDetailActivity
+import com.example.esewa_project.data.source.LocalDataStore
 import com.example.esewa_project.databinding.FragmentHomeBinding
 import com.example.esewa_project.ui.adapter.BannerAdapter
 import com.example.esewa_project.ui.adapter.CategoryAdapter
@@ -23,6 +25,7 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
 import kotlin.collections.take
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(R.layout.fragment_home){
 
@@ -36,6 +39,8 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     private lateinit var popularBrandAdapter: AllProductAdapter
     private lateinit var recommendedAdapter: AllProductAdapter
 
+    private val localDataStore by lazy { LocalDataStore(requireContext()) }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -47,6 +52,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         binding.homeToolBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId){
@@ -84,6 +90,22 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
         viewModel.popularCategories.observe(viewLifecycleOwner){categories ->
             mostPopularAdapter.mostPopular = categories.take(7)
+        }
+
+        lifecycleScope.launch {
+            viewModel.cartQuantities.collect { quantities ->
+                featuredProductAdapter.currentQuantities = quantities
+                featuredProductAdapter.notifyDataSetChanged()
+
+                hotDealsAdapter.currentQuantities = quantities
+                hotDealsAdapter.notifyDataSetChanged()
+
+                popularBrandAdapter.currentQuantities = quantities
+                popularBrandAdapter.notifyDataSetChanged()
+
+                recommendedAdapter.currentQuantities = quantities
+                recommendedAdapter.notifyDataSetChanged()
+            }
         }
     }
     private fun setupBanner() {
@@ -143,54 +165,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
     }
 
-    private fun createProductAdapter(): AllProductAdapter {
-        return AllProductAdapter(
-
-            onClick = { product ->
-                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-                intent.putExtra("product_id", product.id)
-                startActivity(intent)
-            },
-            onAddClick = { product, pos, itemBinding ->
-                itemBinding.apply{
-                    layoutAdd.animate()
-                        .translationY(-100f)
-                        .alpha(0f)
-                        .setDuration(150)
-                        .withEndAction {
-                            layoutAdd.visibility = View.GONE
-
-                            addSub.visibility = View.VISIBLE
-                            addSub.alpha = 0f
-                            addSub.translationY = 100f
-
-                            addSub.animate()
-                                .translationY(0f)
-                                .alpha(1f)
-                                .setDuration(150)
-                                .start()
-                        }
-                        .start()
-                }
-            },
-            onPlusClick = { product, pos ->
-                Toast.makeText(
-                    requireContext(),
-                    "Increased ${product.title}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            },
-            onMinusClick = { product, pos ->
-                Toast.makeText(
-                    requireContext(),
-                    "Decreased ${product.title}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        )
-    }
-
-
     private fun setupMostPopularRecyclerView() {
 
         val flexboxLayoutManager = FlexboxLayoutManager(requireContext()).apply {
@@ -213,6 +187,55 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             isNestedScrollingEnabled = false
         }
     }
+
+
+    private fun createProductAdapter(): AllProductAdapter {
+        return AllProductAdapter(
+            onClick = { product ->
+                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+                intent.putExtra("product_id", product.id)
+                startActivity(intent)
+            },
+            onFavouriteClick = { product ->
+                lifecycleScope.launch { localDataStore.toggleFavourite(product.id) }
+            },
+            onAddClick = { product, pos, itemBinding ->
+                viewModel.updateQuantity(product.id, 1)
+                lifecycleScope.launch{localDataStore.updateCount(1)
+                    itemBinding.apply{
+                        layoutAdd.animate()
+                            .translationY(-100f)
+                            .alpha(0f)
+                            .setDuration(150)
+                            .withEndAction {
+                                layoutAdd.visibility = View.GONE
+
+                                addSub.visibility = View.VISIBLE
+                                addSub.alpha = 0f
+                                addSub.translationY = 100f
+
+                                addSub.animate()
+                                    .translationY(0f)
+                                    .alpha(1f)
+                                    .setDuration(150)
+                                    .start()
+                            }
+                            .start()
+                    }}
+            },
+            onPlusClick = { product, pos ->
+                viewModel.updateQuantity(product.id, 1)
+                lifecycleScope.launch {
+                    localDataStore.updateCount(1)
+                }
+            },
+            onMinusClick = { product, pos ->
+                val currentQty = viewModel.cartQuantities.value[product.id] ?: 0
+                if (currentQty > 0) {
+                    viewModel.updateQuantity(product.id, -1)
+                    lifecycleScope.launch { localDataStore.updateCount(-1) }
+                }})}
+
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -49,12 +49,14 @@
 
     </LinearLayout>
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/navItemCart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:minHeight="5dp"
+        android:orientation="horizontal"
+        android:gravity="center"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
@@ -75,7 +77,7 @@
             android:layout_width="16dp"
             android:layout_height="16dp"
             android:layout_gravity="top|end"
-            android:background="@drawable/bg_cart_notification"
+            android:background="@drawable/bg_notification_badge"
             android:gravity="center"
             android:text="@string/_1"
             android:textColor="@android:color/white"
@@ -94,7 +96,7 @@
             android:textStyle="bold"
             android:visibility="gone"/>
 
-    </FrameLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/navItemFavourite"
@@ -118,6 +120,19 @@
             android:src="@drawable/heart"
             android:contentDescription="@string/favourite_icon"
             app:tint="#28AD17" />
+
+        <TextView
+            android:id="@+id/favouriteBadge"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/bg_notification_badge"
+            android:gravity="center"
+            android:text="@string/_1"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/textFavourite"

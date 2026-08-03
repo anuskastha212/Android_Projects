@@ -79,12 +79,14 @@
             app:layout_constraintStart_toEndOf="@id/currency_product" />
 
         <ImageButton
-            android:id="@+id/btn_favorite"
+            android:id="@+id/favouriteButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/heart"
             android:contentDescription="@string/favourite_icon"
             android:background="@android:color/transparent"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="16dp"

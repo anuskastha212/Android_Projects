@@ -9,6 +9,8 @@ import com.example.esewa_project.data.model.ProductCategory
 import com.example.esewa_project.data.repository.BannerRepository
 import com.example.esewa_project.data.repository.CategoryRepository
 import com.example.esewa_project.data.repository.ProductRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
@@ -23,8 +25,18 @@ class HomeViewModel : ViewModel() {
     private val _popularCategories = MutableLiveData<List<ProductCategory>>()
     val popularCategories : LiveData<List<ProductCategory>> = _popularCategories
 
+    private val _cartQuantities = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    val cartQuantities: StateFlow<Map<Int, Int>> = _cartQuantities
+
     val banners = bannerRepo.getBanners()
     val localCategories = categoryRepo.getCategories()
+
+    fun updateQuantity(productId:Int, delta:Int){
+        val current = _cartQuantities.value.toMutableMap()
+        val qty = (current[productId]?:0)+delta
+        current[productId] = qty.coerceAtLeast(0)
+        _cartQuantities.value = current
+    }
 
     fun fetchData(){
         viewModelScope.launch {
