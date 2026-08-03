@@ -80,8 +80,8 @@
 
         <ImageButton
             android:id="@+id/btn_favorite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@drawable/heart"
             android:contentDescription="@string/favourite_icon"
             android:background="@android:color/transparent"
@@ -112,53 +112,50 @@
 
         </FrameLayout>
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <LinearLayout
             android:id="@+id/addSub"
-            android:layout_width="45dp"
-            android:layout_height="150dp"
+            android:layout_width="40dp"
+            android:layout_height="115dp"
+            android:gravity="center"
             android:visibility="gone"
-            app:cardCornerRadius="18dp"
-            app:cardBackgroundColor="@color/green"
+            android:background="@drawable/bg_add"
+            android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/minusButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/minus"
+                android:contentDescription="@string/minus_sign"
+                app:tint="@android:color/white"
+                android:paddingTop="16dp"/>
 
-                <ImageButton
-                    android:id="@+id/minusButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/minus"
-                    android:contentDescription="@string/minus_sign"
-                    app:tint="@android:color/white" />
+            <TextView
+                android:id="@+id/productQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="16dp"
+                android:text="@string/_1"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
 
-                <TextView
-                    android:id="@+id/productQuantity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="12dp"
-                    android:text="@string/_1"
-                    android:textColor="@android:color/white"
-                    android:textSize="22sp"
-                    android:textStyle="bold"/>
+            <ImageButton
+                android:id="@+id/addButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/add"
+                android:contentDescription="@string/add_sign"
+                app:tint="@android:color/white"
+                android:paddingBottom="16dp"/>
 
-                <ImageButton
-                    android:id="@+id/addButton"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/add"
-                    android:contentDescription="@string/add_sign"
-                    app:tint="@android:color/white"/>
+        </LinearLayout>
 
-            </LinearLayout>
-
-        </com.google.android.material.appbar.MaterialToolbar>
+<!--        </LinearLayout>-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

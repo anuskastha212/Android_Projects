@@ -3,8 +3,8 @@ package com.example.esewa_project
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -12,15 +12,21 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.esewa_project.data.source.CartDataStore
 import com.example.esewa_project.databinding.ActivityMainBinding
 import com.example.esewa_project.ui.fragments.CartFragment
 import com.example.esewa_project.ui.fragments.FavouriteFragment
 import com.example.esewa_project.ui.fragments.HomeFragment
 import com.example.esewa_project.ui.fragments.MoreFragment
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+//    private val cartDataStore by lazy { CartDataStore(this) }
 
     private var selectedTab = 1
 
@@ -220,7 +226,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onSelect(
-        layout: LinearLayout,
+        layout: View,
         text: TextView,
         icon: ImageView
     ) {
@@ -249,11 +255,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onDeselect(
-        layout: LinearLayout,
+        layout: View,
         text: TextView,
         icon: ImageView
     ) {
-
         text.visibility = View.GONE
 
         icon.imageTintList =
@@ -261,6 +266,7 @@ class MainActivity : AppCompatActivity() {
                 ContextCompat.getColor(this, R.color.black)
             )
 
-        layout.setBackgroundResource(android.R.color.transparent)
+        layout.background = ContextCompat.getDrawable(this, android.R.color.transparent)
     }
+
 }

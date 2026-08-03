@@ -1,5 +1,6 @@
 package com.example.esewa_project.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import com.example.esewa_project.R
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.databinding.FragmentHomeBinding
 import com.example.esewa_project.ui.adapter.BannerAdapter
 import com.example.esewa_project.ui.adapter.CategoryAdapter
@@ -69,10 +71,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         setupBanner()
         setupCategories()
         setupRecyclerViews()
-//        setupFeaturedProductRecyclerView()
-//        setupHotDealsRecyclerView()
-//        setupPopularBrandRecyclerView()
-//        setupRecommendedRecyclerView()
         setupMostPopularRecyclerView()
 
         viewModel.fetchData()
@@ -81,14 +79,12 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             featuredProductAdapter.products = allProducts.take(7)
             hotDealsAdapter.products = allProducts.drop(7).take(7)
             popularBrandAdapter.products = allProducts.drop(14).take(4)
-            recommendedAdapter.products = allProducts.drop(18).take(8)
+            recommendedAdapter.products = allProducts.drop(18).take(30)
         }
 
         viewModel.popularCategories.observe(viewLifecycleOwner){categories ->
             mostPopularAdapter.mostPopular = categories.take(7)
         }
-
-
     }
     private fun setupBanner() {
         val imagesList = viewModel.banners
@@ -97,7 +93,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         TabLayoutMediator(
             binding.layoutDots,
             binding.viewPagerBanner
-        ) { tab, position ->
+        ) { _, _ ->
         }.attach()
     }
 
@@ -112,80 +108,26 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
         }
     }
-//    private fun setupFeaturedProductRecyclerView() = binding.rvFeaturedProducts.apply {
-//
-//        featuredProductAdapter = FeaturedProductAdapter { product ->
-//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-//            intent.putExtra("product_id", product.id)
-//            startActivity(intent)
-//        }
-//
-//        adapter = featuredProductAdapter
-//
-//        layoutManager = LinearLayoutManager(requireContext(),
-//            LinearLayoutManager.HORIZONTAL,
-//            false)
-//        isNestedScrollingEnabled = false
-//    }
-//
-//    private fun setupHotDealsRecyclerView() = binding.rvHotDeals.apply {
-//
-//        hotDealsAdapter = HotDealsAdapter() { product ->
-//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-//            intent.putExtra("product_id", product.id)
-//            startActivity(intent)
-//        }
-//
-//        adapter = hotDealsAdapter
-//
-//        layoutManager = LinearLayoutManager(requireContext(),
-//            LinearLayoutManager.HORIZONTAL,
-//            false)
-//        isNestedScrollingEnabled = false
-//    }
-//
-//    private fun setupPopularBrandRecyclerView() = binding.rvPopularBrands.apply {
-//
-//        popularBrandAdapter = PopularBrandAdapter() { product ->
-//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-//            intent.putExtra("product_id", product.id)
-//            startActivity(intent)
-//        }
-//
-//        adapter = popularBrandAdapter
-//
-//        layoutManager = GridLayoutManager(requireContext(),2)
-//        isNestedScrollingEnabled = false
-//    }
-//
-//    private fun setupRecommendedRecyclerView() = binding.rvRecommended.apply {
-//        Log.d("Recommended", "setupRecommendedRecyclerView called")
-//
-//        recommendedAdapter = RecommendedAdapter() { product ->
-//            Log.d("Recommended", "Clicked product: ${product.id}")
-//            val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-//            intent.putExtra("product_id", product.id)
-//            startActivity(intent)
-//        }
-//
-//        adapter = recommendedAdapter
-//
-//        layoutManager = GridLayoutManager(requireContext(),2)
-//        isNestedScrollingEnabled = false
-//    }
 
     private fun setupRecyclerViews(){
         featuredProductAdapter = createProductAdapter()
+
         binding.rvFeaturedProducts.apply {
             adapter = featuredProductAdapter
-            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false)
         }
 
         hotDealsAdapter = createProductAdapter()
         binding.rvHotDeals.apply {
             adapter = hotDealsAdapter
             layoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+                LinearLayoutManager(
+                    requireContext(),
+                    LinearLayoutManager.HORIZONTAL,
+                    false)
         }
 
         popularBrandAdapter = createProductAdapter()
@@ -203,12 +145,48 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
     private fun createProductAdapter(): AllProductAdapter {
         return AllProductAdapter(
-            onClick = { product ->  },
-            onAddClick = { product, pos ->
-//                product.stock = 1
+
+            onClick = { product ->
+                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+                intent.putExtra("product_id", product.id)
+                startActivity(intent)
             },
-            onPlusClick = { product, pos ->  },
-            onMinusClick = { product, pos ->  }
+            onAddClick = { product, pos, itemBinding ->
+                itemBinding.apply{
+                    layoutAdd.animate()
+                        .translationY(-100f)
+                        .alpha(0f)
+                        .setDuration(150)
+                        .withEndAction {
+                            layoutAdd.visibility = View.GONE
+
+                            addSub.visibility = View.VISIBLE
+                            addSub.alpha = 0f
+                            addSub.translationY = 100f
+
+                            addSub.animate()
+                                .translationY(0f)
+                                .alpha(1f)
+                                .setDuration(150)
+                                .start()
+                        }
+                        .start()
+                }
+            },
+            onPlusClick = { product, pos ->
+                Toast.makeText(
+                    requireContext(),
+                    "Increased ${product.title}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onMinusClick = { product, pos ->
+                Toast.makeText(
+                    requireContext(),
+                    "Decreased ${product.title}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         )
     }
 
