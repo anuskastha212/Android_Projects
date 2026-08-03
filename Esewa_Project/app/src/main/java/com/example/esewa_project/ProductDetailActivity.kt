@@ -5,12 +5,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.data.api.RetrofitInstance
 import com.example.esewa_project.data.model.Product
-import com.example.esewa_project.data.source.CartDataStore
 import com.example.esewa_project.data.source.ColorsData
+import com.example.esewa_project.data.source.LocalDataStore
 import com.example.esewa_project.databinding.ActivityProductDetailBinding
 import com.example.esewa_project.ui.adapter.ProductColorAdapter
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ class ProductDetailActivity : AppCompatActivity() {
     private lateinit var productSizeAdapter: ProductSizeAdapter
     private lateinit var productColorAdapter: ProductColorAdapter
     private val colorsData by lazy { ColorsData() }
-    private val cartDataStore by lazy { CartDataStore(this) }
+    private val localDataStore by lazy { LocalDataStore(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +40,7 @@ class ProductDetailActivity : AppCompatActivity() {
 
         binding.favouriteButton.setOnClickListener {
             lifecycleScope.launch {
-                cartDataStore.updateCount(1)
+                localDataStore.updateCount(1)
                 Toast.makeText(
                     this@ProductDetailActivity,
                     "Added to Favourite!",
@@ -83,8 +84,10 @@ class ProductDetailActivity : AppCompatActivity() {
 
         binding.apply {
             tvProductName.text = product.title
+            bottomProductName.text = product.title
             productDescription.text = product.description
             tvProductPrice.text = getString(R.string.product_price, product.price)
+            bottomProductPrice.text = getString(R.string.product_price, product.price)
 
             val adapter = ProductDetailAdapter(product.images)
             productImageDet.adapter = adapter
@@ -93,7 +96,6 @@ class ProductDetailActivity : AppCompatActivity() {
 
             Log.d("ProductDetail", "Available options: ${product.options.keys}")
             Log.d("ProductDetail", "Tags content: ${product.options["Tags"]}")
-
 
             rvProductSize.layoutManager = LinearLayoutManager(
                 this@ProductDetailActivity,
@@ -121,7 +123,32 @@ class ProductDetailActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT).show()
             }, colors)
             rvProductColors.adapter = productColorAdapter
+
+            btnAddToCart.setOnClickListener {
+                lifecycleScope.launch {
+                    localDataStore.updateCount(1)
+                    Toast.makeText(
+                        this@ProductDetailActivity,
+                        "Added to Cart!",
+                        Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            favouriteButton.setOnClickListener {
+                lifecycleScope.launch {
+                    localDataStore.toggleFavourite(product.id)
+                }
+            }
+
+            lifecycleScope.launch{
+                localDataStore.favouriteIds.collect{ids->
+                    val isFav = ids.contains(product.id.toString())
+                    favouriteButton.setCardBackgroundColor(
+                            ContextCompat.getColor(this@ProductDetailActivity, if (isFav) R.color.green else R.color.white)
+                    )
+                }
+            }
+
         }
     }
-
 }
