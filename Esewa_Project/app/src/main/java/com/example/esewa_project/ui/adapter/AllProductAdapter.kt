@@ -8,12 +8,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.esewa_project.data.model.Product
 import com.example.esewa_project.databinding.ItemProductBinding
-import android.view.View
 import kotlin.apply
 
 class AllProductAdapter(
     private val onClick: (Product) -> Unit,
-    private val onAddClick: (Product, Int) -> Unit,
+    private val onAddClick: (Product, Int, ItemProductBinding) -> Unit,
     private val onPlusClick: (Product, Int) -> Unit,
     private val onMinusClick: (Product, Int) -> Unit
 ) : RecyclerView.Adapter<AllProductAdapter.ProductViewHolder>() {
@@ -51,21 +50,12 @@ class AllProductAdapter(
             brandProduct.text = product.category.name
             priceProduct.text = product.price.toString()
 
-            if (product.stock > 0){
-                layoutAdd.visibility = View.GONE
-                addSub.visibility = View.VISIBLE
-                productQuantity.text = product.stock.toString()
-            } else {
-                layoutAdd.visibility = View.VISIBLE
-                addSub.visibility = View.GONE
-            }
-
             root.setOnClickListener {
                 onClick(product)
             }
 
             layoutAdd.setOnClickListener {
-                onAddClick(product, position)
+                onAddClick(product, position, this)
             }
 
             addButton.setOnClickListener {
