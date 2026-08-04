@@ -21,12 +21,13 @@ import com.example.esewa_project.ui.fragments.CartFragment
 import com.example.esewa_project.ui.fragments.FavouriteFragment
 import com.example.esewa_project.ui.fragments.HomeFragment
 import com.example.esewa_project.ui.fragments.MoreFragment
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val cartDataStore by lazy { LocalDataStore(this) }
+    private val localDataStore by lazy { LocalDataStore(this) }
 
     private var selectedTab = 1
 
@@ -40,13 +41,27 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                cartDataStore.cartCount.collect { count: Int ->
-                    binding.bottomNav.apply {
-                        if (count > 0) {
-                            cartBadge.text = count.toString()
-                            cartBadge.visibility = View.VISIBLE
-                        } else {
-                            cartBadge.visibility = View.GONE
+                launch {
+                    localDataStore.cartCount.collectLatest { count ->
+                        binding.bottomNav.apply {
+                            if (count > 0) {
+                                cartBadge.text = count.toString()
+                                cartBadge.visibility = View.VISIBLE
+                            } else {
+                                cartBadge.visibility = View.GONE
+                            }
+                        }
+                    }
+                }
+                launch {
+                    localDataStore.favouriteCount.collectLatest { count ->
+                        binding.bottomNav.apply {
+                            if (count > 0) {
+                                favouriteBadge.text = count.toString()
+                                favouriteBadge.visibility = View.VISIBLE
+                            } else {
+                                favouriteBadge.visibility = View.GONE
+                            }
                         }
                     }
                 }
