@@ -11,6 +11,7 @@ import com.example.esewa_project.data.repository.BannerRepository
 import com.example.esewa_project.data.repository.CategoryRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.source.LocalDataStore
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -20,8 +21,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val productRepo = ProductRepository()
     private val categoryRepo = CategoryRepository()
     private val bannerRepo = BannerRepository()
-    private val localDataStore = LocalDataStore(application)
-
     private val _products = MutableLiveData<List<Product>>()
     val products: LiveData<List<Product>> = _products
 
@@ -33,6 +32,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     val banners = bannerRepo.getBanners()
     val localCategories = categoryRepo.getCategories()
+
+    private val localDataStore = LocalDataStore(application)
+    val cartCount: Flow<Int> = localDataStore.cartCount
+    val favouriteCount: Flow<Int> = localDataStore.favouriteCount
 
     init {
         viewModelScope.launch {

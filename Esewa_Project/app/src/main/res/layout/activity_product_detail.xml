@@ -270,7 +270,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/rs_2500"
                             android:textStyle="bold"
-                            android:textSize="22sp"/>
+                            android:textSize="20sp"/>
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton

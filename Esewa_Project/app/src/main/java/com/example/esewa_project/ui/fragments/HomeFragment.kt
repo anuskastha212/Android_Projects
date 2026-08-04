@@ -224,7 +224,9 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 startActivity(intent)
             },
             onFavouriteClick = { product ->
-                lifecycleScope.launch { localDataStore.toggleFavourite(product.id) }
+                lifecycleScope.launch {
+                    localDataStore.toggleFavourite(product.id)
+                }
             },
             onIncrementClick = { product, pos ->
                 viewModel.updateQuantity(product.id, 1)

@@ -15,19 +15,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.activity.viewModels
 import com.example.esewa_project.data.source.LocalDataStore
 import com.example.esewa_project.databinding.ActivityMainBinding
 import com.example.esewa_project.ui.fragments.CartFragment
 import com.example.esewa_project.ui.fragments.FavouriteFragment
 import com.example.esewa_project.ui.fragments.HomeFragment
 import com.example.esewa_project.ui.fragments.MoreFragment
+import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val localDataStore by lazy { LocalDataStore(this) }
+    private val viewModel: HomeViewModel by viewModels()
+//    private val localDataStore by lazy { LocalDataStore(this) }
 
     private var selectedTab = 1
 
@@ -42,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    localDataStore.cartCount.collectLatest { count ->
+                    viewModel.cartCount.collectLatest { count ->
                         binding.bottomNav.apply {
                             if (count > 0) {
                                 cartBadge.text = count.toString()
@@ -54,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 launch {
-                    localDataStore.favouriteCount.collectLatest { count ->
+                    viewModel.favouriteCount.collectLatest { count ->
                         binding.bottomNav.apply {
                             if (count > 0) {
                                 favouriteBadge.text = count.toString()
