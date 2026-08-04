@@ -17,13 +17,11 @@ import kotlin.apply
 class AllProductAdapter(
     private val onClick: (Product) -> Unit,
     private val onFavouriteClick: (Product) -> Unit,
-    private val onAddClick: (Product, Int, ItemProductBinding) -> Unit,
-    private val onPlusClick: (Product, Int) -> Unit,
-    private val onMinusClick: (Product, Int) -> Unit
+    private val onIncrementClick: (Product, Int) -> Unit,
+    private val onDecrementClick: (Product, Int) -> Unit
 ) : RecyclerView.Adapter<AllProductAdapter.ProductViewHolder>() {
 
-    inner class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
-    //An inner class can access members of the outer FeaturedProductAdapter class if needed.
+    class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
 
     var currentQuantities: Map<Int, Int> = emptyMap()
     var favouriteIds: Set<String> = emptySet()
@@ -53,7 +51,7 @@ class AllProductAdapter(
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
-        val qty = currentQuantities[product.id]?:0
+        val qty = currentQuantities[product.id]?: 0
         val isFav = favouriteIds.contains(product.id.toString())
 
         holder.binding.apply {
@@ -64,7 +62,7 @@ class AllProductAdapter(
             favouriteButton.imageTintList = ColorStateList.valueOf(
                 ContextCompat.getColor(root.context, if (isFav) R.color.green else R.color.light_gray)
             )
-            if(qty>0){
+            if(qty > 0){
                 layoutAdd.visibility = View.GONE
                 addSub.visibility = View.VISIBLE
                 productQuantity.text = String.format("%02d", qty)
@@ -78,15 +76,15 @@ class AllProductAdapter(
             }
 
             layoutAdd.setOnClickListener {
-                onAddClick(product, position, this)
+                onIncrementClick(product, position)
             }
 
             addButton.setOnClickListener {
-                onPlusClick(product, position)
+                onIncrementClick(product, position)
             }
 
             minusButton.setOnClickListener {
-                onMinusClick(product, position)
+                onDecrementClick(product, position)
             }
 
             favouriteButton.setOnClickListener {

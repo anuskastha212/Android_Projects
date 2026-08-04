@@ -1,5 +1,6 @@
 package com.example.esewa_project
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 import com.example.esewa_project.ui.adapter.ProductDetailAdapter
 import com.example.esewa_project.ui.adapter.ProductSizeAdapter
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.flow.first
 
 class ProductDetailActivity : AppCompatActivity() {
 
@@ -36,16 +38,6 @@ class ProductDetailActivity : AppCompatActivity() {
 
         binding.btnBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
-        }
-
-        binding.favouriteButton.setOnClickListener {
-            lifecycleScope.launch {
-                localDataStore.updateCount(1)
-                Toast.makeText(
-                    this@ProductDetailActivity,
-                    "Added to Favourite!",
-                    Toast.LENGTH_SHORT).show()
-            }
         }
 
         val productId = intent.getIntExtra("product_id", -1)
@@ -126,6 +118,10 @@ class ProductDetailActivity : AppCompatActivity() {
 
             btnAddToCart.setOnClickListener {
                 lifecycleScope.launch {
+                    val currentMap = localDataStore.cartMap.first().toMutableMap()
+                    val currentQty = currentMap[product.id] ?: 0
+                    currentMap[product.id] = currentQty + 1
+                    localDataStore.saveCart(currentMap)
                     localDataStore.updateCount(1)
                     Toast.makeText(
                         this@ProductDetailActivity,
@@ -143,12 +139,12 @@ class ProductDetailActivity : AppCompatActivity() {
             lifecycleScope.launch{
                 localDataStore.favouriteIds.collect{ids->
                     val isFav = ids.contains(product.id.toString())
-                    favouriteButton.setCardBackgroundColor(
-                            ContextCompat.getColor(this@ProductDetailActivity, if (isFav) R.color.green else R.color.white)
+                    
+                    binding.favouriteIcon.imageTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(this@ProductDetailActivity, if (isFav) R.color.white else R.color.light_gray)
                     )
                 }
             }
-
         }
     }
 }

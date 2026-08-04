@@ -2,6 +2,7 @@ package com.example.esewa_project.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.example.esewa_project.R
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.ProductDetailActivity
@@ -32,7 +35,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     private val viewModel: HomeViewModel by viewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var featuredProductAdapter: AllProductAdapter
     private lateinit var mostPopularAdapter: MostPopularAdapter
     private lateinit var hotDealsAdapter: AllProductAdapter
@@ -52,8 +54,18 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.cartQuantities.collect { c ->
+                    Log.d("Cart", "${c.keys}")
+                }
+            }
+        }
+//        lifecycleScope.launch {
+//            viewLifecycleOwner.lifecycleScope(Life
+//
+//            Log.d("Cart", "${viewModel.cartQuantities.value}")
+//        }
         binding.homeToolBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId){
                 R.id.action_notifications -> {
@@ -104,6 +116,21 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 popularBrandAdapter.notifyDataSetChanged()
 
                 recommendedAdapter.currentQuantities = quantities
+                recommendedAdapter.notifyDataSetChanged()
+            }
+        }
+        lifecycleScope.launch {
+            localDataStore.favouriteIds.collect { ids ->
+                featuredProductAdapter.favouriteIds = ids
+                featuredProductAdapter.notifyDataSetChanged()
+
+                hotDealsAdapter.favouriteIds = ids
+                hotDealsAdapter.notifyDataSetChanged()
+
+                popularBrandAdapter.favouriteIds = ids
+                popularBrandAdapter.notifyDataSetChanged()
+
+                recommendedAdapter.favouriteIds = ids
                 recommendedAdapter.notifyDataSetChanged()
             }
         }
@@ -197,45 +224,25 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 startActivity(intent)
             },
             onFavouriteClick = { product ->
-                lifecycleScope.launch { localDataStore.toggleFavourite(product.id) }
+                lifecycleScope.launch {
+                    localDataStore.toggleFavourite(product.id)
+                }
             },
-            onAddClick = { product, pos, itemBinding ->
-                viewModel.updateQuantity(product.id, 1)
-                lifecycleScope.launch{localDataStore.updateCount(1)
-                    itemBinding.apply{
-                        layoutAdd.animate()
-                            .translationY(-100f)
-                            .alpha(0f)
-                            .setDuration(150)
-                            .withEndAction {
-                                layoutAdd.visibility = View.GONE
-
-                                addSub.visibility = View.VISIBLE
-                                addSub.alpha = 0f
-                                addSub.translationY = 100f
-
-                                addSub.animate()
-                                    .translationY(0f)
-                                    .alpha(1f)
-                                    .setDuration(150)
-                                    .start()
-                            }
-                            .start()
-                    }}
-            },
-            onPlusClick = { product, pos ->
+            onIncrementClick = { product, pos ->
                 viewModel.updateQuantity(product.id, 1)
                 lifecycleScope.launch {
                     localDataStore.updateCount(1)
                 }
             },
-            onMinusClick = { product, pos ->
+            onDecrementClick = { product, pos ->
                 val currentQty = viewModel.cartQuantities.value[product.id] ?: 0
-                if (currentQty > 0) {
+                if (currentQty > 0 ) {
                     viewModel.updateQuantity(product.id, -1)
                     lifecycleScope.launch { localDataStore.updateCount(-1) }
-                }})}
-
+                }
+            }
+        )
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
