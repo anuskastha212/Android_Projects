@@ -7,6 +7,7 @@
     android:background="#F5F5F5">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/registerTopbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@android:color/white"
@@ -30,21 +31,22 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Create Your Account"
+                android:text="@string/create_your_account"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="#28293D"
                 android:gravity="center"
+                android:layout_marginTop="32dp"
                 android:layout_marginBottom="8dp"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sign up to get started!"
+                android:text="@string/sign_up_to_get_started"
                 android:textSize="14sp"
                 android:textColor="#757575"
                 android:gravity="center"
-                android:layout_marginBottom="24dp"/>
+                android:layout_marginBottom="32dp"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -60,14 +62,14 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-<!--                    Full Name-->
+                    <!--                    Full Name-->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/fullName"
                         app:boxBackgroundMode="filled"
                         app:boxBackgroundColor="@android:color/white"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Full Name"
+                        android:hint="@string/full_name"
                         android:layout_marginBottom="16dp">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -87,7 +89,7 @@
                         android:layout_height="wrap_content"
                         app:boxBackgroundMode="filled"
                         app:boxBackgroundColor="@android:color/white"
-                        android:hint="Phone Number"
+                        android:hint="@string/phone_number"
                         android:layout_marginBottom="16dp">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -107,7 +109,7 @@
                         android:layout_height="wrap_content"
                         app:boxBackgroundMode="filled"
                         app:boxBackgroundColor="@android:color/white"
-                        android:hint="Email Address"
+                        android:hint="@string/email_address"
                         android:layout_marginBottom="16dp">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -127,7 +129,7 @@
                         android:layout_height="wrap_content"
                         app:boxBackgroundMode="filled"
                         app:boxBackgroundColor="@android:color/white"
-                        android:hint="Password"
+                        android:hint="@string/password"
                         app:endIconMode="password_toggle"
                         android:layout_marginBottom="16dp">
 
@@ -147,7 +149,7 @@
                         android:layout_height="wrap_content"
                         app:boxBackgroundMode="filled"
                         app:boxBackgroundColor="@android:color/white"
-                        android:hint="Confirm Password"
+                        android:hint="@string/confirm_password"
                         app:endIconMode="password_toggle"
                         android:layout_marginBottom="24dp">
 

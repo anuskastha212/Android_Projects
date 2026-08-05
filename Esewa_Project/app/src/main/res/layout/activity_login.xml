@@ -7,6 +7,7 @@
     android:background="#F5F5F5">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/loginTopbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@android:color/white"
@@ -27,18 +28,18 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="30dp"
-                    android:src="@drawable/esewa_logo"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginBottom="16dp"
-                    android:contentDescription="@string/esewa_logo"/>
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:src="@drawable/esewa_logo"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="@string/esewa_logo"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Continue with Your Account"
+                android:text="@string/continue_with_your_account"
                 android:textSize="14sp"
                 android:textColor="#757575"
                 android:gravity="center"
@@ -61,16 +62,16 @@
 
                     <!-- Email -->
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilLoginEmail"
+                        android:id="@+id/loginEmail"
                         app:boxBackgroundMode="filled"
                         app:boxBackgroundColor="@android:color/white"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Email Address"
+                        android:hint="@string/email_address"
                         android:layout_marginBottom="16dp">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etLoginEmail"
+                            android:id="@+id/inputLoginEmail"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textEmailAddress"
@@ -81,30 +82,31 @@
 
                     <!-- Password -->
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilLoginPassword"
+                        android:id="@+id/loginPassword"
                         app:boxBackgroundMode="filled"
                         app:boxBackgroundColor="@android:color/white"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Password"
+                        android:hint="@string/password"
                         app:endIconMode="password_toggle"
                         android:layout_marginBottom="8dp">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etLoginPassword"
+                            android:id="@+id/inputLoginPassword"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPassword"
                             android:maxLines="1"
-                            android:paddingStart="0dp"/>
+                            android:paddingStart="0dp"
+                            android:paddingEnd="0dp"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Forgot Password Link -->
+                    <!-- Forgot Password -->
                     <TextView
-                        android:id="@+id/tvForgotPassword"
+                        android:id="@+id/forgotPassword"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Forgot Password?"
+                        android:text="@string/forgot_password"
                         android:textColor="@color/green"
                         android:textSize="14sp"
                         android:layout_gravity="end"
@@ -114,7 +116,7 @@
 
                     <!-- Login Submit Button -->
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSubmitLogin"
+                        android:id="@+id/submitLoginButton"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:text="@string/login"
@@ -142,7 +144,7 @@
                     android:textSize="14sp"/>
 
                 <TextView
-                    android:id="@+id/tvGoToRegister"
+                    android:id="@+id/register"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/register"
