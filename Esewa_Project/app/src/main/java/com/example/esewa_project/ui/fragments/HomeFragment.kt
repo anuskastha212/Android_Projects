@@ -66,6 +66,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 //
 //            Log.d("Cart", "${viewModel.cartQuantities.value}")
 //        }
+
         binding.homeToolBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId){
                 R.id.action_notifications -> {
