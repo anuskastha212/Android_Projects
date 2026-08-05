@@ -16,7 +16,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.activity.viewModels
-import com.example.esewa_project.data.source.LocalDataStore
 import com.example.esewa_project.databinding.ActivityMainBinding
 import com.example.esewa_project.ui.fragments.CartFragment
 import com.example.esewa_project.ui.fragments.FavouriteFragment
@@ -30,7 +29,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: HomeViewModel by viewModels()
-//    private val localDataStore by lazy { LocalDataStore(this) }
 
     private var selectedTab = 1
 
