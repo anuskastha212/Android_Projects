@@ -48,4 +48,21 @@
     <string name="_1">1</string>
     <string name="minus_sign">Minus Sign</string>
     <string name="add_to_cart">ADD TO CART</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="hello_welcome_to_ebazar">Hello, Welcome to eBazar!</string>
+    <string name="mairea_doe">Mairea Doe</string>
+    <string name="_997_9841235678">+997-9841235678</string>
+    <string name="view_profile">VIEW PROFILE</string>
+    <string name="user_profile_image">User Profile Image</string>
+    <string name="my_profile">My Profile</string>
+    <string name="my_products">My Products</string>
+    <string name="shipping_address">Shipping Address</string>
+    <string name="my_order">My Order</string>
+    <string name="my_return">My Return</string>
+    <string name="my_cancellation">My Cancellation</string>
+    <string name="reward_promotions"><![CDATA[Reward & Promotions]]></string>
+    <string name="reward_points">Rewards Points</string>
+    <string name="apply_promocode">Apply Promocode</string>
+    <string name="daily_buy_bonus">Daily Buy Bonus</string>
 </resources>
