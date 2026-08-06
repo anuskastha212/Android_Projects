@@ -20,7 +20,6 @@
             android:layout_height="140dp"
             android:scaleType="centerInside"
             android:padding="16dp"
-            android:background="#F5F5F5"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

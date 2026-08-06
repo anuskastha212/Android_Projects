@@ -7,6 +7,8 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.data.api.RetrofitInstance
@@ -39,6 +41,20 @@ class ProductDetailActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
+
+//        ViewCompat.setOnApplyWindowInsetsListener(binding.productDetail) { view, insets ->
+//
+//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+//
+//            view.setPadding(
+//                systemBars.left,
+//                systemBars.top,
+//                systemBars.right,
+//                systemBars.bottom
+//            )
+//
+//            insets
+//        }
 
         val productId = intent.getIntExtra("product_id", -1)
 

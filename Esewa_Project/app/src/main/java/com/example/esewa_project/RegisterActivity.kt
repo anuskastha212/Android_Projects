@@ -1,5 +1,6 @@
 package com.example.esewa_project
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -40,6 +41,10 @@ class RegisterActivity : AppCompatActivity() {
 
         }
 
+        binding.registerTopbar.setNavigationOnClickListener {
+            this.onBackPressedDispatcher.onBackPressed()
+        }
+
         binding.submitRegisterButton.setOnClickListener {
             val email = binding.inputEmail.text.toString().trim()
             val password = binding.inputPassword.text.toString().trim()
@@ -68,7 +73,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         binding.login.setOnClickListener {
-            finish()
+            startActivity(Intent(this, LoginActivity::class.java))
         }
     }
 }

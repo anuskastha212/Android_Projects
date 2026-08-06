@@ -25,6 +25,11 @@ class LoginActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.loginTopbar){ view, insets ->
             val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
 
+            view.layoutParams.height =
+                view.context.resources.getDimensionPixelSize(
+                    com.google.android.material.R.dimen.mtrl_toolbar_default_height
+                ) + top
+
             view.setPadding(
                 view.paddingLeft,
                 top,
@@ -32,6 +37,10 @@ class LoginActivity : AppCompatActivity() {
                 view.paddingBottom
             )
             insets
+        }
+
+        binding.loginTopbar.setNavigationOnClickListener {
+            this.onBackPressedDispatcher.onBackPressed()
         }
 
         binding.submitLoginButton.setOnClickListener {
