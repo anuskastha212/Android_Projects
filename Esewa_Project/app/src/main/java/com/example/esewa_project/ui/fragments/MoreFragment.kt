@@ -5,9 +5,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat.enableEdgeToEdge
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.esewa_project.LoginActivity
+import com.example.esewa_project.MainActivity
+import com.example.esewa_project.R
 import com.example.esewa_project.RegisterActivity
 import com.example.esewa_project.databinding.FragmentMoreBinding
 import com.example.esewa_project.ui.viewmodel.AuthViewModel
@@ -16,7 +22,6 @@ class MoreFragment : Fragment() {
 
     private var _binding: FragmentMoreBinding? = null
     private val binding get() = _binding!!
-
     private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
@@ -30,6 +35,36 @@ class MoreFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+//        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarMore){ view, insets ->
+//            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+//
+//            view.layoutParams.height =
+//                view.context.resources.getDimensionPixelSize(
+//                    com.google.android.material.R.dimen.mtrl_toolbar_default_height
+//                ) + top
+//
+//            view.setPadding(
+//                view.paddingLeft,
+//                top,
+//                view.paddingRight,
+//                view.paddingBottom
+//            )
+//            insets
+//
+//        }
+
+        binding.toolbarMore.setNavigationOnClickListener {
+            val mainActivity = requireActivity() as? MainActivity
+            val navHome = mainActivity?.findViewById<View>(R.id.navItemShop)
+            navHome?.performClick()
+        }
+
+
+        val menu = binding.toolbarMore.menu
+        menu.findItem(R.id.action_cart)?.isVisible = false
+        menu.findItem(R.id.action_notifications)?.isVisible = false
+        menu.findItem(R.id.action_options)?.isVisible = false
 
         authViewModel.userData.observe(viewLifecycleOwner) { data ->
             if (data != null) {

@@ -61,11 +61,9 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 }
             }
         }
-//        lifecycleScope.launch {
-//            viewLifecycleOwner.lifecycleScope(Life
-//
-//            Log.d("Cart", "${viewModel.cartQuantities.value}")
-//        }
+
+        val menu = binding.homeToolBar.menu
+        menu.findItem(R.id.action_cart).isVisible= false
 
         binding.homeToolBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId){

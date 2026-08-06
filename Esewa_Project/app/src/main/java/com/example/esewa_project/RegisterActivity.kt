@@ -1,5 +1,6 @@
 package com.example.esewa_project
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -40,13 +41,50 @@ class RegisterActivity : AppCompatActivity() {
 
         }
 
+        binding.registerTopbar.setNavigationOnClickListener {
+            this.onBackPressedDispatcher.onBackPressed()
+        }
+
         binding.submitRegisterButton.setOnClickListener {
             val email = binding.inputEmail.text.toString().trim()
-            val password = binding.inputPassword.text.toString().trim()
             val name = binding.inputFullName.text.toString().trim()
             val phone = binding.inputPhone.text.toString().trim()
-            viewModel.register(email, password, name, phone)
+            val password = binding.inputPassword.text.toString().trim()
+            val confirmPassword = binding.inputConfirmPassword.text.toString().trim()
 
+
+            binding.fullName.error = null
+            binding.phone.error = null
+            binding.email.error = null
+            binding.password.error = null
+            binding.confirmPassword.error = null
+
+            if (name.isEmpty()) {
+                binding.fullName.error = "Full name is required"
+                return@setOnClickListener
+            }
+            if (phone.isEmpty()) {
+                binding.phone.error = "Phone number is required"
+                return@setOnClickListener
+            }
+            if (email.isEmpty()) {
+                binding.email.error = "Email address is required"
+                return@setOnClickListener
+            }
+            if (password.isEmpty()) {
+                binding.password.error = "Password is required"
+                return@setOnClickListener
+            }
+            if (confirmPassword.isEmpty()) {
+                binding.confirmPassword.error = "Please confirm your password"
+                return@setOnClickListener
+            }
+            if (password != confirmPassword) {
+                binding.confirmPassword.error = "Passwords do not match"
+                return@setOnClickListener
+            }
+
+            viewModel.register(email, password, name, phone)
         }
 
         viewModel.authResult.observe(this) { result ->
@@ -68,7 +106,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         binding.login.setOnClickListener {
-            finish()
+            startActivity(Intent(this, LoginActivity::class.java))
         }
     }
 }

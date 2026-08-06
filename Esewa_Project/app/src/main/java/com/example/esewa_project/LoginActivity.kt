@@ -25,6 +25,11 @@ class LoginActivity : AppCompatActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.loginTopbar){ view, insets ->
             val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
 
+            view.layoutParams.height =
+                view.context.resources.getDimensionPixelSize(
+                    com.google.android.material.R.dimen.mtrl_toolbar_default_height
+                ) + top
+
             view.setPadding(
                 view.paddingLeft,
                 top,
@@ -34,15 +39,32 @@ class LoginActivity : AppCompatActivity() {
             insets
         }
 
+        binding.loginTopbar.setNavigationOnClickListener {
+            this.onBackPressedDispatcher.onBackPressed()
+        }
+
         binding.submitLoginButton.setOnClickListener {
             val email = binding.inputLoginEmail.text.toString().trim()
-            val pass = binding.inputLoginPassword.text.toString().trim()
+            val password = binding.inputLoginPassword.text.toString().trim()
 
-            viewModel.login(email, pass)
+            binding.loginEmail.error = null
+            binding.loginPassword.error = null
+
+            if (email.isEmpty()) {
+                binding.loginEmail.error = "Email address is required"
+                return@setOnClickListener
+            }
+            if (password.isEmpty()) {
+                binding.loginPassword.error = "Password is required"
+                return@setOnClickListener
+            }
+
+            viewModel.login(email, password)
         }
 
         binding.register.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
+            finish()
         }
 
         viewModel.authResult.observe(this){result ->
