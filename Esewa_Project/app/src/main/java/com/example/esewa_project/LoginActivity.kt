@@ -45,13 +45,26 @@ class LoginActivity : AppCompatActivity() {
 
         binding.submitLoginButton.setOnClickListener {
             val email = binding.inputLoginEmail.text.toString().trim()
-            val pass = binding.inputLoginPassword.text.toString().trim()
+            val password = binding.inputLoginPassword.text.toString().trim()
 
-            viewModel.login(email, pass)
+            binding.loginEmail.error = null
+            binding.loginPassword.error = null
+
+            if (email.isEmpty()) {
+                binding.loginEmail.error = "Email address is required"
+                return@setOnClickListener
+            }
+            if (password.isEmpty()) {
+                binding.loginPassword.error = "Password is required"
+                return@setOnClickListener
+            }
+
+            viewModel.login(email, password)
         }
 
         binding.register.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
+            finish()
         }
 
         viewModel.authResult.observe(this){result ->
