@@ -23,67 +23,62 @@ class RegisterActivity : AppCompatActivity() {
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.registerTopbar){ view, insets ->
-            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-
-            view.layoutParams.height =
-                view.context.resources.getDimensionPixelSize(
-                    com.google.android.material.R.dimen.mtrl_toolbar_default_height
-                ) + top
+        ViewCompat.setOnApplyWindowInsetsListener(binding.registerFooter){ view, insets ->
+            val navigationBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
 
             view.setPadding(
                 view.paddingLeft,
-                top,
+                view.paddingTop,
                 view.paddingRight,
-                view.paddingBottom
-            )
+                navigationBarHeight )
             insets
-
-        }
-
-        binding.registerTopbar.setNavigationOnClickListener {
-            this.onBackPressedDispatcher.onBackPressed()
         }
 
         binding.submitRegisterButton.setOnClickListener {
-            val email = binding.inputEmail.text.toString().trim()
-            val name = binding.inputFullName.text.toString().trim()
-            val phone = binding.inputPhone.text.toString().trim()
-            val password = binding.inputPassword.text.toString().trim()
-            val confirmPassword = binding.inputConfirmPassword.text.toString().trim()
+            val email = binding.inputRegisterEmail.text.toString().trim()
+            val name = binding.inputRegisterFullName.text.toString().trim()
+            val phone = binding.inputRegisterPhone.text.toString().trim()
+            val password = binding.inputRegisterPassword.text.toString().trim()
 
+            binding.registerFullName.error = null
+            binding.registerPhone.error = null
+            binding.registerEmail.error = null
+            binding.registerPassword.error = null
 
-            binding.fullName.error = null
-            binding.phone.error = null
-            binding.email.error = null
-            binding.password.error = null
-            binding.confirmPassword.error = null
+            if (!binding.termsCheckBox.isChecked) {
+                Toast.makeText(
+                    this,
+                    "Please agree to the Terms & Conditions",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
 
             if (name.isEmpty()) {
-                binding.fullName.error = "Full name is required"
+                binding.registerFullName.error = "Full name is required"
                 return@setOnClickListener
             }
             if (phone.isEmpty()) {
-                binding.phone.error = "Phone number is required"
+                binding.registerPhone.error = "Phone number is required"
                 return@setOnClickListener
             }
             if (email.isEmpty()) {
-                binding.email.error = "Email address is required"
+                binding.registerEmail.error = "Email address is required"
                 return@setOnClickListener
             }
             if (password.isEmpty()) {
-                binding.password.error = "Password is required"
-                return@setOnClickListener
-            }
-            if (confirmPassword.isEmpty()) {
-                binding.confirmPassword.error = "Please confirm your password"
-                return@setOnClickListener
-            }
-            if (password != confirmPassword) {
-                binding.confirmPassword.error = "Passwords do not match"
+                binding.registerPassword.error = "Password is required"
                 return@setOnClickListener
             }
 
+            if (password.length < 6) {
+                Toast.makeText(
+                    this,
+                    "Password must be at least 6 characters",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
             viewModel.register(email, password, name, phone)
         }
 
@@ -92,8 +87,11 @@ class RegisterActivity : AppCompatActivity() {
                 if (it.isSuccess) {
                     Toast.makeText(
                         this,
-                        "Registration Successful!",
-                        Toast.LENGTH_SHORT).show()
+                        "Succussful Registration",
+                        Toast.LENGTH_LONG).show()
+                    val intent = Intent (this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    startActivity(intent)
                     finish()
                 } else {
                     Toast.makeText(
