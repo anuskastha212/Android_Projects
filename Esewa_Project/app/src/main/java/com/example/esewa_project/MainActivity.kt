@@ -1,8 +1,14 @@
 package com.example.esewa_project
 
 import android.content.res.ColorStateList
+import android.graphics.Rect
+import android.inputmethodservice.InputMethodService
 import android.os.Bundle
+import android.renderscript.ScriptGroup
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -29,14 +35,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: HomeViewModel by viewModels()
-
     private var selectedTab = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -84,9 +87,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-
             loadFragment(HomeFragment())
-
             onSelect(
                 binding.bottomNav.navItemShop,
                 binding.bottomNav.textShop,
@@ -254,6 +255,22 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(binding.fragmentContainer.id, fragment)
             .commit()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev?.action == MotionEvent.ACTION_DOWN){
+            val v=currentFocus
+            if(v is EditText){
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())){
+                    v.clearFocus()
+                    val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.windowToken,0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun onSelect(
