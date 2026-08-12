@@ -2,9 +2,7 @@ package com.example.esewa_project
 
 import android.content.res.ColorStateList
 import android.graphics.Rect
-import android.inputmethodservice.InputMethodService
 import android.os.Bundle
-import android.renderscript.ScriptGroup
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -27,6 +25,7 @@ import com.example.esewa_project.ui.fragments.CartFragment
 import com.example.esewa_project.ui.fragments.FavouriteFragment
 import com.example.esewa_project.ui.fragments.HomeFragment
 import com.example.esewa_project.ui.fragments.MoreFragment
+import com.example.esewa_project.ui.viewmodel.CartViewModel
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -34,7 +33,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: HomeViewModel by viewModels()
+    private val cartViewModel: CartViewModel by viewModels()
     private var selectedTab = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.cartCount.collectLatest { count ->
+                    cartViewModel.cartCount.collectLatest { count ->
                         binding.bottomNav.apply {
                             if (count > 0) {
                                 cartBadge.text = count.toString()
@@ -57,32 +56,17 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-                launch {
-                    viewModel.favouriteCount.collectLatest { count ->
-                        binding.bottomNav.apply {
-                            if (count > 0) {
-                                favouriteBadge.text = count.toString()
-                                favouriteBadge.visibility = View.VISIBLE
-                            } else {
-                                favouriteBadge.visibility = View.GONE
-                            }
-                        }
-                    }
-                }
             }
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { view, insets ->
-
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
             view.setPadding(
                 systemBars.left,
                 systemBars.top,
                 systemBars.right,
                 systemBars.bottom
             )
-
             insets
         }
 

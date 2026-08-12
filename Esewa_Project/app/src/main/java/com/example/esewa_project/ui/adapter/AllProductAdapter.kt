@@ -17,8 +17,8 @@ import kotlin.apply
 class AllProductAdapter(
     private val onClick: (Product) -> Unit,
     private val onFavouriteClick: (Product) -> Unit,
-    private val onIncrementClick: (Product, Int) -> Unit,
-    private val onDecrementClick: (Product, Int) -> Unit
+    private val onIncrementClick: (Product) -> Unit,
+    private val onDecrementClick: (Product) -> Unit
 ) : RecyclerView.Adapter<AllProductAdapter.ProductViewHolder>() {
 
     class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
@@ -76,15 +76,15 @@ class AllProductAdapter(
             }
 
             layoutAdd.setOnClickListener {
-                onIncrementClick(product, position)
+                onIncrementClick(product)
             }
 
             addButton.setOnClickListener {
-                onIncrementClick(product, position)
+                onIncrementClick(product)
             }
 
             minusButton.setOnClickListener {
-                onDecrementClick(product, position)
+                onDecrementClick(product)
             }
 
             favouriteButton.setOnClickListener {
