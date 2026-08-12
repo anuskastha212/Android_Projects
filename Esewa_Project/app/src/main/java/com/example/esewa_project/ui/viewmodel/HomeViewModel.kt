@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.MutableLiveData
 import com.example.esewa_project.data.local.AppDatabase
-import com.example.esewa_project.data.local.entity.CartEntity
 import com.example.esewa_project.data.model.Product
 import com.example.esewa_project.data.model.ProductCategory
 import com.example.esewa_project.data.repository.BannerRepository
@@ -14,15 +13,10 @@ import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.CategoryRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.local.entity.ProductEntity
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val productRepo = ProductRepository()
+    private val productRepo = ProductRepository(AppDatabase.getDatabase(application).productDao())
     private val categoryRepo = CategoryRepository()
     private val bannerRepo = BannerRepository()
     private val cartRepo = CartRepository(AppDatabase.getDatabase(application).cartDao())
@@ -33,14 +27,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val banners = bannerRepo.getBanners()
     val localCategories = categoryRepo.getCategories()
 
-
     fun fetchData(){
         viewModelScope.launch {
             try{
                 val apiProducts = productRepo.getAllProducts()
-                _products.value = productRepo.getAllProducts()
+                _products.value = apiProducts
 
-                cartRepo.cacheProducts(apiProducts.map {
+                productRepo.cacheProducts(apiProducts.map {
                     ProductEntity(it.id, it.title, it.price, it.thumbnail, it.category.name)
                 })
 

@@ -7,34 +7,54 @@ import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.local.entity.CartEntity
 import com.example.esewa_project.data.repository.CartRepository
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CartViewModel(application: Application) : AndroidViewModel(application) {
     private val cartRepo = CartRepository(AppDatabase.getDatabase(application).cartDao())
     private val auth = FirebaseAuth.getInstance()
-    private val userId get() = auth.currentUser?.uid ?: ""
 
-    val cartCount: Flow<Int> = cartRepo.getCartCount(userId).map { it ?: 0 }
+    private val _navigateToLogin = MutableSharedFlow<Unit>()
+    val navigateToLogin = _navigateToLogin.asSharedFlow()
 
-    val cartQuantities: StateFlow<Map<Int, Int>> = cartRepo.getCartWithProducts(userId).map{itemsMap ->
-        itemsMap.keys.associate { it.productId to it.quantity }
+    private val userSession: Flow<String> = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val uid = firebaseAuth.currentUser?.uid ?: ""
+            trySend(uid)
+        }
+        auth.addAuthStateListener(listener)
+        awaitClose { auth.removeAuthStateListener(listener) }
+    }.shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
+
+    val cartCount: Flow<Int> = userSession.flatMapLatest { uid ->
+        if (uid.isEmpty()) flowOf(0)
+        else cartRepo.getCartCount(uid).map { it ?: 0 }
     }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    fun updateQuantity(productId:Int, delta:Int){
+    val cartQuantities: StateFlow<Map<Int, Int>> = userSession.flatMapLatest { uid ->
+        if (uid.isEmpty()) flowOf(emptyMap())
+        else cartRepo.getCartWithProducts(uid).map { itemsMap ->
+            itemsMap.keys.associate { it.productId to it.quantity }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    fun updateQuantity(productId: Int, delta: Int) {
+        val currentUid = auth.currentUser?.uid
+        if (currentUid == null) {
+            viewModelScope.launch { _navigateToLogin.emit(Unit) }
+            return
+        }
         viewModelScope.launch {
-            val currentQty = cartQuantities.value[productId] ?:0
+            val currentQty = cartQuantities.value[productId] ?: 0
             val newQty = currentQty + delta
 
-            if (newQty <=0){
-                cartRepo.removeFromCart(userId,productId)
-            } else{
-                cartRepo.addToCart(CartEntity(userId, productId, newQty))
+            if (newQty <= 0) {
+                cartRepo.removeFromCart(currentUid, productId)
+            } else {
+                cartRepo.addToCart(CartEntity(currentUid, productId, newQty))
             }
         }
     }

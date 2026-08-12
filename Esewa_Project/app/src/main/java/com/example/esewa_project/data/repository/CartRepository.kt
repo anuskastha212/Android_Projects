@@ -14,10 +14,6 @@ class CartRepository(private val cartDao: CartDao) {
         return cartDao.getCartCount(userId)
     }
 
-    suspend fun cacheProducts(products:List<ProductEntity>){
-        cartDao.insertProducts(products)
-    }
-
     suspend fun addToCart(cartItem: CartEntity){
         cartDao.upsertCartItem(cartItem)
     }

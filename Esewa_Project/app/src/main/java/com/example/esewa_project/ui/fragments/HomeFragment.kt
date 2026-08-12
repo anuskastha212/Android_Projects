@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.esewa_project.LoginActivity
 import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.databinding.FragmentHomeBinding
 import com.example.esewa_project.ui.adapter.BannerAdapter
@@ -25,6 +26,7 @@ import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.collections.take
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.launch
@@ -111,6 +113,24 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 }
             }
         }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                cartViewModel.navigateToLogin.collect {
+                    showLoginRequiredDialog()
+                }
+            }
+        }
+    }
+
+    private fun showLoginRequiredDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Sign In Required")
+            .setMessage("You need an account to add items to your shopping cart. Would you like to sign in now?")
+            .setPositiveButton("Sign In") { _, _ ->
+                startActivity(Intent(requireContext(), LoginActivity::class.java))
+            }
+            .setNegativeButton("Maybe Later", null)
+            .show()
     }
     private fun setupBanner() {
         val imagesList = homeViewModel.banners
@@ -203,10 +223,10 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             onFavouriteClick = { product ->
 
             },
-            onIncrementClick = { product, _ ->
+            onIncrementClick = { product->
                 cartViewModel.updateQuantity(product.id, 1)
             },
-            onDecrementClick = { product, _ ->
+            onDecrementClick = { product ->
                 cartViewModel.updateQuantity(product.id, -1)
             }
         )

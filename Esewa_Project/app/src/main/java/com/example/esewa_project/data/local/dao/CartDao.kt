@@ -12,9 +12,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CartDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertProducts(products: List<ProductEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertCartItem(cartItem: CartEntity)
 
     @Query("""
@@ -23,9 +20,6 @@ interface CartDao {
         WHERE userId = :userId
     """)
     fun getCartWithProducts(userId: String): Flow<Map<CartEntity, ProductEntity>>
-
-   @Query("UPDATE cart_items SET quantity = :qty WHERE userID = :uId and productId= :pId")
-   suspend fun updateQuantity(uId: String, pId:Int, qty:Int)
 
     @Query("DELETE FROM cart_items WHERE userId = :uId")
     suspend fun clearCart(uId: String)
