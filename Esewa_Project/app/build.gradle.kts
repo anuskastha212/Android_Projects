@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
     alias(libs.plugins.google.firebase.crashlytics)
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
 }
 
 android {
@@ -43,7 +44,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.firebase.crashlytics)
+    implementation(libs.engage.core)
     implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -77,5 +78,8 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences:1.2.1")
 
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
 }

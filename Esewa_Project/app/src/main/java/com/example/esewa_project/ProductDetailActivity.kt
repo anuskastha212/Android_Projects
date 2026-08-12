@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.data.api.RetrofitInstance
 import com.example.esewa_project.data.model.Product
 import com.example.esewa_project.data.source.ColorsData
-import com.example.esewa_project.data.source.LocalDataStore
 import com.example.esewa_project.databinding.ActivityProductDetailBinding
 import com.example.esewa_project.ui.adapter.ProductColorAdapter
 import kotlinx.coroutines.launch
@@ -29,7 +28,6 @@ class ProductDetailActivity : AppCompatActivity() {
     private lateinit var productSizeAdapter: ProductSizeAdapter
     private lateinit var productColorAdapter: ProductColorAdapter
     private val colorsData by lazy { ColorsData() }
-    private val localDataStore by lazy { LocalDataStore(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -131,36 +129,6 @@ class ProductDetailActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT).show()
             }, colors)
             rvProductColors.adapter = productColorAdapter
-
-            btnAddToCart.setOnClickListener {
-                lifecycleScope.launch {
-                    val currentMap = localDataStore.cartMap.first().toMutableMap()
-                    val currentQty = currentMap[product.id] ?: 0
-                    currentMap[product.id] = currentQty + 1
-                    localDataStore.saveCart(currentMap)
-                    localDataStore.updateCount(1)
-                    Toast.makeText(
-                        this@ProductDetailActivity,
-                        "Added to Cart!",
-                        Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            favouriteButton.setOnClickListener {
-                lifecycleScope.launch {
-                    localDataStore.toggleFavourite(product.id)
-                }
-            }
-
-            lifecycleScope.launch{
-                localDataStore.favouriteIds.collect{ids->
-                    val isFav = ids.contains(product.id.toString())
-                    
-                    binding.favouriteIcon.imageTintList = ColorStateList.valueOf(
-                        ContextCompat.getColor(this@ProductDetailActivity, if (isFav) R.color.white else R.color.light_gray)
-                    )
-                }
-            }
         }
     }
 }
