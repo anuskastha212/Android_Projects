@@ -54,7 +54,7 @@
                             app:layout_constraintStart_toStartOf="parent"/>
 
                         <ImageButton
-                            android:id="@+id/navItemCart"
+                            android:id="@+id/btnCart"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:layout_marginTop="16dp"

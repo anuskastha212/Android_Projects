@@ -1,32 +1,32 @@
 package com.example.esewa_project
 
-import android.content.res.ColorStateList
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.esewa_project.data.api.RetrofitInstance
 import com.example.esewa_project.data.model.Product
 import com.example.esewa_project.data.source.ColorsData
 import com.example.esewa_project.databinding.ActivityProductDetailBinding
 import com.example.esewa_project.ui.adapter.ProductColorAdapter
-import kotlinx.coroutines.launch
 import com.example.esewa_project.ui.adapter.ProductDetailAdapter
 import com.example.esewa_project.ui.adapter.ProductSizeAdapter
+import com.example.esewa_project.ui.viewmodel.CartViewModel
+import com.example.esewa_project.ui.viewmodel.ProductDetailViewModel
 import com.google.android.material.tabs.TabLayoutMediator
-import kotlinx.coroutines.flow.first
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 class ProductDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProductDetailBinding
-    private lateinit var productSizeAdapter: ProductSizeAdapter
-    private lateinit var productColorAdapter: ProductColorAdapter
+    private val productDetailViewModel: ProductDetailViewModel by viewModels()
+    private val cartViewModel: CartViewModel by viewModels()
     private val colorsData by lazy { ColorsData() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,58 +36,71 @@ class ProductDetailActivity : AppCompatActivity() {
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 1. Handle Window Insets (Status Bar)
+//        ViewCompat.setOnApplyWindowInsetsListener(binding.productDetail) { view, insets ->
+//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+//            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+//            insets
+//        }
+
         binding.btnBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
 
-//        ViewCompat.setOnApplyWindowInsetsListener(binding.productDetail) { view, insets ->
-//
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//
-//            view.setPadding(
-//                systemBars.left,
-//                systemBars.top,
-//                systemBars.right,
-//                systemBars.bottom
-//            )
-//
-//            insets
-//        }
-
         val productId = intent.getIntExtra("product_id", -1)
-
         if (productId == -1) {
             finish()
             return
         }
 
-        getProductById(productId)
-    }
+        // 2. Load and Observe Product Details
+        productDetailViewModel.loadDetails(productId)
+        productDetailViewModel.product.observe(this) { product ->
+            showProduct(product)
+            setupClickListeners(product)
+        }
 
-    private fun getProductById(id: Int) {
+        // 3. Observe Favourite State (To keep the heart color synced)
+//        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                cartViewModel.favouriteIds.collect { ids ->
+//                    val isFav = ids.contains(productId)
+//                    val color = if (isFav) R.color.green else R.color.light_gray
+//                    binding.favouriteIcon.imageTintList = ColorStateList.valueOf(
+//                        ContextCompat.getColor(this@ProductDetailActivity, color)
+//                    )
+//                }
+//            }
+//        }
 
+        // 4. Observe Login Redirection (For guest users)
         lifecycleScope.launch {
-
-            try {
-
-                val product = RetrofitInstance.api.getProductById(id)
-
-                showProduct(product)
-
-            } catch (e: Exception) {
-
-                Log.e("ProductDetail", "Error", e)
-
-                Toast.makeText(
-                    this@ProductDetailActivity,
-                    e.message ?: "Something went wrong",
-                    Toast.LENGTH_SHORT).show()
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                cartViewModel.navigateToLogin.collect {
+                    startActivity(Intent(this@ProductDetailActivity, LoginActivity::class.java))
+                }
             }
         }
     }
 
-    private fun showProduct(product: Product) {
+    private fun setupClickListeners(product: Product) {
+        // ADD TO CART ACTION
+        binding.btnAddToCart.setOnClickListener {
+            cartViewModel.updateQuantity(product.id, 1)
 
+            // Show toast only if user is logged in
+            if (FirebaseAuth.getInstance().currentUser != null) {
+                Toast.makeText(this, "${product.title} added to cart", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // FAVOURITE ACTION
+//        binding.favouriteButton.setOnClickListener {
+//            cartViewModel.toggleFavourite(product.id)
+//        }
+    }
+
+    private fun showProduct(product: Product) {
         binding.apply {
             tvProductName.text = product.title
             bottomProductName.text = product.title
@@ -95,40 +108,24 @@ class ProductDetailActivity : AppCompatActivity() {
             tvProductPrice.text = getString(R.string.product_price, product.price)
             bottomProductPrice.text = getString(R.string.product_price, product.price)
 
+            // Setup ViewPager for Images
             val adapter = ProductDetailAdapter(product.images)
             productImageDet.adapter = adapter
-            TabLayoutMediator(indicatorProductImage, productImageDet){tab,position ->
-            }.attach()
+            TabLayoutMediator(indicatorProductImage, productImageDet) { _, _ -> }.attach()
 
-            Log.d("ProductDetail", "Available options: ${product.options.keys}")
-            Log.d("ProductDetail", "Tags content: ${product.options["Tags"]}")
-
-            rvProductSize.layoutManager = LinearLayoutManager(
-                this@ProductDetailActivity,
-                LinearLayoutManager.HORIZONTAL,
-                false)
-
+            // Setup Size RecyclerView
+            rvProductSize.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
             val sizes = product.options["Size"] ?: emptyList()
-            productSizeAdapter = ProductSizeAdapter({ selectedSize ->
-                Toast.makeText(
-                    this@ProductDetailActivity,
-                    "Selected Size: $selectedSize",
-                    Toast.LENGTH_SHORT).show()
+            rvProductSize.adapter = ProductSizeAdapter({ selectedSize ->
+                Toast.makeText(this@ProductDetailActivity, "Selected Size: $selectedSize", Toast.LENGTH_SHORT).show()
             }, sizes)
-            rvProductSize.adapter = productSizeAdapter
 
-            rvProductColors.layoutManager = LinearLayoutManager(
-                this@ProductDetailActivity,
-                LinearLayoutManager.HORIZONTAL,
-                false)
+            // Setup Color RecyclerView
+            rvProductColors.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
             val colors = colorsData.getColorData()
-            productColorAdapter = ProductColorAdapter({ selectedColor ->
-                Toast.makeText(
-                    this@ProductDetailActivity,
-                    "Selected Color: $selectedColor",
-                    Toast.LENGTH_SHORT).show()
+            rvProductColors.adapter = ProductColorAdapter({ selectedColor ->
+                Toast.makeText(this@ProductDetailActivity, "Selected Color: $selectedColor", Toast.LENGTH_SHORT).show()
             }, colors)
-            rvProductColors.adapter = productColorAdapter
         }
     }
 }

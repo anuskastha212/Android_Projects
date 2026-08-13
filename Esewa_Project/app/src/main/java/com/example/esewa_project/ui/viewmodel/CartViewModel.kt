@@ -1,33 +1,33 @@
 package com.example.esewa_project.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.local.entity.CartEntity
 import com.example.esewa_project.data.repository.CartRepository
+import com.example.esewa_project.data.repository.UserSessionRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class CartViewModel(application: Application) : AndroidViewModel(application) {
     private val cartRepo = CartRepository(AppDatabase.getDatabase(application).cartDao())
+    private val userSessionRepo = UserSessionRepository(application)
     private val auth = FirebaseAuth.getInstance()
 
     private val _navigateToLogin = MutableSharedFlow<Unit>()
     val navigateToLogin = _navigateToLogin.asSharedFlow()
 
-    private val userSession: Flow<String> = callbackFlow {
-        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            val uid = firebaseAuth.currentUser?.uid ?: ""
-            trySend(uid)
-        }
-        auth.addAuthStateListener(listener)
-        awaitClose { auth.removeAuthStateListener(listener) }
-    }.shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
+    val userSession: StateFlow<String> = userSessionRepo.currentUserId
+        .map { it ?: "" }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = userSessionRepo.getUid() ?: ""
+        )
 
     val cartCount: Flow<Int> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(0)
@@ -42,8 +42,9 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     fun updateQuantity(productId: Int, delta: Int) {
-        val currentUid = auth.currentUser?.uid
-        if (currentUid == null) {
+        val currentUid = userSession.value
+        if (currentUid.isEmpty()) {
+            Log.d("tag", "currentUid is null")
             viewModelScope.launch { _navigateToLogin.emit(Unit) }
             return
         }
@@ -51,6 +52,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             val currentQty = cartQuantities.value[productId] ?: 0
             val newQty = currentQty + delta
 
+            Log.d("tag", "currentQty $currentQty | newQty $newQty")
             if (newQty <= 0) {
                 cartRepo.removeFromCart(currentUid, productId)
             } else {
@@ -58,4 +60,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-}
+
+    fun addToCart(productId: Int) {
+        updateQuantity(productId, 1)
+    }}
