@@ -71,7 +71,7 @@ class AllProductAdapter(
                 addSub.visibility = View.GONE
             }
 
-            root.setOnClickListener {
+            imgProduct.setOnClickListener {
                 onClick(product)
             }
 

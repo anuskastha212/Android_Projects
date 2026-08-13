@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 class CartViewModel(application: Application) : AndroidViewModel(application) {
     private val cartRepo = CartRepository(AppDatabase.getDatabase(application).cartDao())
     private val userSessionRepo = UserSessionRepository(application)
-    private val auth = FirebaseAuth.getInstance()
 
     private val _navigateToLogin = MutableSharedFlow<Unit>()
     val navigateToLogin = _navigateToLogin.asSharedFlow()
@@ -39,7 +38,11 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         else cartRepo.getCartWithProducts(uid).map { itemsMap ->
             itemsMap.keys.associate { it.productId to it.quantity }
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyMap()
+    )
 
     fun updateQuantity(productId: Int, delta: Int) {
         val currentUid = userSession.value
@@ -61,6 +64,4 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun addToCart(productId: Int) {
-        updateQuantity(productId, 1)
-    }}
+}

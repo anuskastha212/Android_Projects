@@ -83,7 +83,8 @@
             android:layout_height="48dp"
             android:src="@drawable/heart"
             android:contentDescription="@string/favourite_icon"
-            android:background="@android:color/transparent" android:clickable="true"
+            android:background="@android:color/transparent"
+            android:clickable="true"
             android:focusable="true"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
@@ -114,7 +115,7 @@
 
         <LinearLayout
             android:id="@+id/addSub"
-            android:layout_width="40dp"
+            android:layout_width="48dp"
             android:layout_height="100dp"
             android:gravity="center"
             android:visibility="gone"
@@ -131,7 +132,7 @@
                 android:src="@drawable/minus"
                 android:contentDescription="@string/minus_sign"
                 app:tint="@android:color/white"
-                android:paddingTop="16dp"/>
+                android:paddingTop="26dp"/>
 
             <TextView
                 android:id="@+id/productQuantity"
@@ -151,7 +152,7 @@
                 android:src="@drawable/add"
                 android:contentDescription="@string/add_sign"
                 app:tint="@android:color/white"
-                android:paddingBottom="16dp"/>
+                android:paddingBottom="26dp"/>
 
         </LinearLayout>
 
