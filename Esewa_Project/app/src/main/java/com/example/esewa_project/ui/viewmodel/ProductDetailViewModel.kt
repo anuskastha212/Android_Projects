@@ -20,13 +20,18 @@ class ProductDetailViewModel (application: Application) : AndroidViewModel(appli
     private val _product = MutableLiveData<Product>()
     val product: LiveData<Product> = _product
 
-    val availableSizes = sizeColorRepo.getProductColors()
+    val availableColors = sizeColorRepo.getProductColors()
 
     fun loadDetails(id: Int) {
         viewModelScope.launch {
             try {
                 val result = productRepo.getProductById(id)
                 _product.value = result
+                productRepo.cacheProducts(listOf(
+                    com.example.esewa_project.data.local.entity.ProductEntity(
+                        result.id, result.title, result.price, result.thumbnail, result.category.name
+                    )
+                ))
             }catch (e: Exception){
                 Log.e("ViewModel", "Error: ${e.message}")
             }

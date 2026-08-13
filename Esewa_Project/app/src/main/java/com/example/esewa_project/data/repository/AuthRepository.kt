@@ -35,6 +35,10 @@ class AuthRepository {
         }
     }
 
+    fun getCurrentUserUid(): String? {
+        return auth.currentUser?.uid
+    }
+
     suspend fun getUserDetails(): Map<String, Any>? {
         val uid = auth.currentUser?.uid ?: return null
         return try {
