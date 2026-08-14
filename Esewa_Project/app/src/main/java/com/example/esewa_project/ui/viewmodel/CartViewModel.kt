@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.local.entity.CartEntity
+import com.example.esewa_project.data.local.entity.ProductEntity
 import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -33,11 +34,30 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         else cartRepo.getCartCount(uid).map { it ?: 0 }
     }
 
-    val cartQuantities: StateFlow<Map<Int, Int>> = userSession.flatMapLatest { uid ->
+    val cartItems: Flow<Map<CartEntity, ProductEntity>> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(emptyMap())
-        else cartRepo.getCartWithProducts(uid).map { itemsMap ->
-            itemsMap.keys.associate { it.productId to it.quantity }
+        else cartRepo.getCartWithProducts(uid)
+    }
+
+    val totalAmount: Flow<Double> = cartItems.map { itemsMap ->
+        itemsMap.entries.sumOf { (cart, product) ->
+            product.price * cart.quantity
         }
+    }
+
+//    val cartQuantities: StateFlow<Map<Int, Int>> = userSession.flatMapLatest { uid ->
+//        if (uid.isEmpty()) flowOf(emptyMap())
+//        else cartRepo.getCartWithProducts(uid).map { itemsMap ->
+//            itemsMap.keys.associate { it.productId to it.quantity }
+//        }
+//    }.stateIn(
+//        scope = viewModelScope,
+//        started = SharingStarted.Eagerly,
+//        initialValue = emptyMap()
+//    )
+
+    val cartQuantities: StateFlow<Map<Int, Int>> = cartItems.map { itemsMap ->
+        itemsMap.keys.associate { it.productId to it.quantity }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,

@@ -132,7 +132,7 @@
                 android:src="@drawable/minus"
                 android:contentDescription="@string/minus_sign"
                 app:tint="@android:color/white"
-                android:paddingTop="26dp"/>
+                android:paddingTop="30dp"/>
 
             <TextView
                 android:id="@+id/productQuantity"
@@ -152,7 +152,7 @@
                 android:src="@drawable/add"
                 android:contentDescription="@string/add_sign"
                 app:tint="@android:color/white"
-                android:paddingBottom="26dp"/>
+                android:paddingBottom="30dp"/>
 
         </LinearLayout>
 
