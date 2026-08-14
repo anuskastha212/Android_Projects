@@ -16,6 +16,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/productImageContainer"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginStart="12dp"
@@ -39,47 +40,51 @@
                 android:contentDescription="@string/products" />
 
         </com.google.android.material.card.MaterialCardView>
-        <TextView
-            android:id="@+id/title_product"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="8dp"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:text="@string/product_name"
-            android:textColor="#292A40"
-            android:textSize="19sp"
-            android:textStyle="bold"
 
-            app:layout_constraintStart_toEndOf="@id/img_product"
-            app:layout_constraintEnd_toStartOf="@id/addSub"
-            app:layout_constraintTop_toTopOf="@id/img_product" />
+       <LinearLayout
+           android:id="@+id/detailsContainer"
+           android:layout_width="0dp"
+           android:layout_height="wrap_content"
+           android:orientation="vertical"
+           android:layout_marginStart="16dp"
+           android:layout_marginEnd="12dp"
+           app:layout_constraintStart_toEndOf="@id/productImageContainer"
+           app:layout_constraintEnd_toStartOf="@id/addSub"
+           app:layout_constraintTop_toTopOf="@id/productImageContainer"
+           app:layout_constraintBottom_toBottomOf="@id/productImageContainer">
 
-        <TextView
-            android:id="@+id/brand_product"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/brand"
-            android:textAllCaps="true"
-            android:textColor="#A8AABB"
-            android:textSize="11sp"
-            android:letterSpacing="0.15"
-            app:layout_constraintStart_toStartOf="@id/title_product"
-            app:layout_constraintTop_toBottomOf="@id/title_product" />
+           <TextView
+               android:id="@+id/title_product"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:maxLines="1"
+               android:ellipsize="end"
+               android:text="@string/product_name"
+               android:textColor="#292A40"
+               android:textSize="17sp"
+               android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/price_product"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/rs_19_500_00"
-            android:textColor="@color/green"
-            android:textSize="21sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/title_product"
-            app:layout_constraintTop_toBottomOf="@id/brand_product" />
+           <TextView
+               android:id="@+id/brand_product"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_marginTop="4dp"
+               android:text="@string/brand"
+               android:textAllCaps="true"
+               android:textColor="#A8AABB"
+               android:textSize="11sp"
+               android:letterSpacing="0.1" />
+
+           <TextView
+               android:id="@+id/price_product"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_marginTop="8dp"
+               android:text="@string/rs_19_500_00"
+               android:textColor="@color/green"
+               android:textSize="18sp"
+               android:textStyle="bold" />
+           </LinearLayout>
 
         <LinearLayout
             android:id="@+id/addSub"

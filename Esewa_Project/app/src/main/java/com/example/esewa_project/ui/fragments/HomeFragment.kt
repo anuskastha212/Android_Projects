@@ -157,7 +157,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
     private fun setupRecyclerViews(){
         featuredProductAdapter = createProductAdapter()
-
         binding.rvFeaturedProducts.apply {
             adapter = featuredProductAdapter
             layoutManager = LinearLayoutManager(

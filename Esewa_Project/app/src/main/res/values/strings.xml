@@ -101,4 +101,6 @@
     <string name="checkout_total">Checkout Total</string>
     <string name="rs_0_00">Rs. 0.00</string>
     <string name="checkout">CHECKOUT</string>
+    <string name="my_cart">My Cart</string>
+    <string name="items_count">Items (%1$d)</string>
 </resources>

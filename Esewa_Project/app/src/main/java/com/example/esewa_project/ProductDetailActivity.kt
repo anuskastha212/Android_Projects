@@ -53,14 +53,12 @@ class ProductDetailActivity : AppCompatActivity() {
             return
         }
 
-        // 2. Load and Observe Product Details
         productDetailViewModel.loadDetails(productId)
         productDetailViewModel.product.observe(this) { product ->
             showProduct(product)
             setupClickListeners(product)
         }
 
-        // 3. Observe Favourite State (To keep the heart color synced)
 //        lifecycleScope.launch {
 //            repeatOnLifecycle(Lifecycle.State.STARTED) {
 //                cartViewModel.favouriteIds.collect { ids ->
@@ -72,8 +70,6 @@ class ProductDetailActivity : AppCompatActivity() {
 //                }
 //            }
 //        }
-
-        // 4. Observe Login Redirection (For guest users)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 cartViewModel.navigateToLogin.collect {
@@ -84,11 +80,9 @@ class ProductDetailActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners(product: Product) {
-        // ADD TO CART ACTION
         binding.btnAddToCart.setOnClickListener {
             cartViewModel.updateQuantity(product.id, 1)
 
-            // Show toast only if user is logged in
             if (FirebaseAuth.getInstance().currentUser != null) {
                 Toast.makeText(this, "${product.title} added to cart", Toast.LENGTH_SHORT).show()
             }
@@ -108,23 +102,34 @@ class ProductDetailActivity : AppCompatActivity() {
             tvProductPrice.text = getString(R.string.product_price, product.price)
             bottomProductPrice.text = getString(R.string.product_price, product.price)
 
-            // Setup ViewPager for Images
             val adapter = ProductDetailAdapter(product.images)
             productImageDet.adapter = adapter
             TabLayoutMediator(indicatorProductImage, productImageDet) { _, _ -> }.attach()
 
-            // Setup Size RecyclerView
-            rvProductSize.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
+            rvProductSize.layoutManager = LinearLayoutManager(
+                this@ProductDetailActivity,
+                LinearLayoutManager.HORIZONTAL,
+                false)
             val sizes = product.options["Size"] ?: emptyList()
             rvProductSize.adapter = ProductSizeAdapter({ selectedSize ->
-                Toast.makeText(this@ProductDetailActivity, "Selected Size: $selectedSize", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@ProductDetailActivity,
+                    "Selected Size: $selectedSize",
+                    Toast.LENGTH_SHORT
+                ).show()
             }, sizes)
 
-            // Setup Color RecyclerView
-            rvProductColors.layoutManager = LinearLayoutManager(this@ProductDetailActivity, LinearLayoutManager.HORIZONTAL, false)
+            rvProductColors.layoutManager = LinearLayoutManager(
+                this@ProductDetailActivity,
+                LinearLayoutManager.HORIZONTAL,
+                false)
             val colors = colorsData.getColorData()
             rvProductColors.adapter = ProductColorAdapter({ selectedColor ->
-                Toast.makeText(this@ProductDetailActivity, "Selected Color: $selectedColor", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@ProductDetailActivity,
+                    "Selected Color: $selectedColor",
+                    Toast.LENGTH_SHORT
+                ).show()
             }, colors)
         }
     }
