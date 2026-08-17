@@ -95,7 +95,8 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                 favouriteViewModel.toggleFavourite(product.id)
             },
             onIncrementClick = { product ->
-                cartViewModel.updateQuantity(product.id, 1) },
+                cartViewModel.updateQuantity(product.id, 1)
+            },
             onDecrementClick = { product ->
                 cartViewModel.updateQuantity(product.id, -1)
             }

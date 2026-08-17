@@ -43,6 +43,4 @@ class CartRepository(private val cartDao: CartDao) {
     suspend fun clearCart(userId: String) {
         cartDao.clearCart(userId)
     }
-
-
 }
