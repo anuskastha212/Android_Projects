@@ -5,13 +5,16 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.model.UserProfile
 import com.example.esewa_project.data.repository.AuthRepository
+import com.example.esewa_project.data.repository.CartRepository
+import com.example.esewa_project.data.repository.FavouriteRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
 import kotlinx.coroutines.launch
 
 class AuthViewModel(application: Application): AndroidViewModel(application) {
-    private val repository = AuthRepository()
+    private val authRepository = AuthRepository()
     private val userSessionRepository = UserSessionRepository(application)
 
     private val _authResult = MutableLiveData<Result<Unit>?>()
@@ -25,16 +28,23 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
 
     fun register(email: String, password: String, name: String, phone: String){
         viewModelScope.launch {
-            _authResult.value = repository.registerUser(email, password, name, phone)
+            _authResult.value = authRepository.registerUser(email, password, name, phone)
         }
     }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            val result = repository.loginUser(email, password)
+            val result = authRepository.loginUser(email, password)
             _authResult.value = result
             if (result.isSuccess) {
-                val details = repository.getUserDetails()
+                val uid =  authRepository.getCurrentUserUid() ?: ""
+                val db = AppDatabase.getDatabase(getApplication())
+                val cartRepo = CartRepository(db.cartDao())
+                val favRepo = FavouriteRepository(db.favouriteDao())
+
+                cartRepo.syncCartFromCloud(uid)
+                favRepo.syncFavouritesFromCloud(uid)
+                val details = authRepository.getUserDetails()
                 details?.let {
                     saveSessionLocally(
                         email = it["email"] as? String ?: email,
@@ -42,12 +52,14 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
                         phone = it["phone"] as? String ?: ""
                     )
                 }
+
             }
+
         }
     }
 
     private suspend fun saveSessionLocally(email: String, name: String, phone: String) {
-        val uid = repository.getCurrentUserUid() ?: ""
+        val uid = authRepository.getCurrentUserUid() ?: ""
         val profile = UserProfile(
             uid = uid,
             email = email,
@@ -57,17 +69,17 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         userSessionRepository.saveSession(profile)
     }
 
-    fun isUserLoggedIn() = repository.isUserLoggedIn()
+    fun isUserLoggedIn() = authRepository.isUserLoggedIn()
 
     fun fetchUserDetails() {
         viewModelScope.launch {
-            _userData.value = repository.getUserDetails()
+            _userData.value = authRepository.getUserDetails()
         }
     }
 
     fun sendResetEmail(email: String){
         viewModelScope.launch{
-            _resetPassword.value = repository.sendPasswordResetEmail(email)
+            _resetPassword.value = authRepository.sendPasswordResetEmail(email)
         }
     }
 
@@ -76,7 +88,7 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun logout() {
-        repository.logout()
+        authRepository.logout()
         _userData.value = null
     }
 

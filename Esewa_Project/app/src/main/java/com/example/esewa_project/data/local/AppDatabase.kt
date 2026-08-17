@@ -5,19 +5,23 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.esewa_project.data.local.dao.CartDao
+import com.example.esewa_project.data.local.dao.FavouriteDao
 import com.example.esewa_project.data.local.dao.ProductDao
 import com.example.esewa_project.data.local.entity.CartEntity
+import com.example.esewa_project.data.local.entity.FavouriteEntity
 import com.example.esewa_project.data.local.entity.ProductEntity
 
 @Database(
     entities = [
         ProductEntity::class,
-        CartEntity::class],
+        CartEntity::class,
+        FavouriteEntity::class],
     version = 1,
     exportSchema = false)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun cartDao(): CartDao
     abstract fun productDao(): ProductDao
+    abstract fun favouriteDao(): FavouriteDao
 
     companion object{
         @Volatile

@@ -22,6 +22,7 @@ import com.example.esewa_project.ui.adapter.CategoryAdapter
 import com.example.esewa_project.ui.adapter.MostPopularAdapter
 import com.example.esewa_project.ui.adapter.AllProductAdapter
 import com.example.esewa_project.ui.viewmodel.CartViewModel
+import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -29,12 +30,15 @@ import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.collections.take
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.getValue
 
 class HomeFragment : Fragment(R.layout.fragment_home){
 
     private val homeViewModel: HomeViewModel by viewModels()
     private val cartViewModel: CartViewModel by viewModels()
+    private val favouriteViewModel: FavouriteViewModel by viewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var featuredProductAdapter: AllProductAdapter
@@ -98,7 +102,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
-                cartViewModel.cartQuantities.collect { quantities ->
+                cartViewModel.cartQuantities.collectLatest { quantities ->
                     featuredProductAdapter.currentQuantities = quantities
                     featuredProductAdapter.notifyDataSetChanged()
 
@@ -113,6 +117,26 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 }
             }
         }
+
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                favouriteViewModel.favouriteIds.collectLatest { ids ->
+                    featuredProductAdapter.favouriteIds = ids
+                    featuredProductAdapter.notifyDataSetChanged()
+
+                    hotDealsAdapter.favouriteIds = ids
+                    hotDealsAdapter.notifyDataSetChanged()
+
+                    popularBrandAdapter.favouriteIds = ids
+                    popularBrandAdapter.notifyDataSetChanged()
+
+                    recommendedAdapter.favouriteIds = ids
+                    recommendedAdapter.notifyDataSetChanged()
+                }
+            }
+        }
+
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 cartViewModel.navigateToLogin.collect {
@@ -220,7 +244,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 startActivity(intent)
             },
             onFavouriteClick = { product ->
-
+                favouriteViewModel.toggleFavourite(product.id)
             },
             onIncrementClick = { product->
                 cartViewModel.updateQuantity(product.id, 1)

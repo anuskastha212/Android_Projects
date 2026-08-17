@@ -24,7 +24,7 @@ class AllProductAdapter(
     class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
 
     var currentQuantities: Map<Int, Int> = emptyMap()
-    var favouriteIds: Set<String> = emptySet()
+    var favouriteIds: Set<Int> = emptySet()
 
     private val diffCallback = object : DiffUtil.ItemCallback<Product>(){
         override fun areItemsTheSame(oldItem: Product, newItem: Product): Boolean {
@@ -52,7 +52,7 @@ class AllProductAdapter(
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
         val qty = currentQuantities[product.id]?: 0
-        val isFav = favouriteIds.contains(product.id.toString())
+        val isFav = favouriteIds.contains(product.id)
 
         holder.binding.apply {
             titleProduct.text = product.title

@@ -1,11 +1,15 @@
 package com.example.esewa_project
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -17,9 +21,11 @@ import com.example.esewa_project.ui.adapter.ProductColorAdapter
 import com.example.esewa_project.ui.adapter.ProductDetailAdapter
 import com.example.esewa_project.ui.adapter.ProductSizeAdapter
 import com.example.esewa_project.ui.viewmodel.CartViewModel
+import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.ProductDetailViewModel
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class ProductDetailActivity : AppCompatActivity() {
@@ -27,6 +33,7 @@ class ProductDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProductDetailBinding
     private val productDetailViewModel: ProductDetailViewModel by viewModels()
     private val cartViewModel: CartViewModel by viewModels()
+    private val favouriteViewModel: FavouriteViewModel by viewModels()
     private val colorsData by lazy { ColorsData() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,12 +43,11 @@ class ProductDetailActivity : AppCompatActivity() {
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 1. Handle Window Insets (Status Bar)
-//        ViewCompat.setOnApplyWindowInsetsListener(binding.productDetail) { view, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-//            insets
-//        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.productDetail) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         binding.btnBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
@@ -59,17 +65,21 @@ class ProductDetailActivity : AppCompatActivity() {
             setupClickListeners(product)
         }
 
-//        lifecycleScope.launch {
-//            repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                cartViewModel.favouriteIds.collect { ids ->
-//                    val isFav = ids.contains(productId)
-//                    val color = if (isFav) R.color.green else R.color.light_gray
-//                    binding.favouriteIcon.imageTintList = ColorStateList.valueOf(
-//                        ContextCompat.getColor(this@ProductDetailActivity, color)
-//                    )
-//                }
-//            }
-//        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                favouriteViewModel.favouriteIds.collectLatest { ids ->
+                    val isFav = ids.contains(productId)
+                    if (isFav){
+                        binding.favouriteButton.setCardBackgroundColor(ContextCompat.getColor(this@ProductDetailActivity, R.color.green))
+                        binding.favouriteIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this@ProductDetailActivity, android.R.color.white))
+                    } else{
+                        binding.favouriteButton.setCardBackgroundColor(ContextCompat.getColor(this@ProductDetailActivity, android.R.color.white))
+                        binding.favouriteIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this@ProductDetailActivity, R.color.light_gray))
+                    }
+                }
+            }
+        }
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 cartViewModel.navigateToLogin.collect {
@@ -88,10 +98,9 @@ class ProductDetailActivity : AppCompatActivity() {
             }
         }
 
-        // FAVOURITE ACTION
-//        binding.favouriteButton.setOnClickListener {
-//            cartViewModel.toggleFavourite(product.id)
-//        }
+        binding.favouriteButton.setOnClickListener {
+            favouriteViewModel.toggleFavourite(product.id)
+        }
     }
 
     private fun showProduct(product: Product) {

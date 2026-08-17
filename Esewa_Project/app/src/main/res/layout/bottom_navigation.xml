@@ -138,7 +138,7 @@
                 android:id="@+id/iconFavourite"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/heart"
+                android:src="@drawable/favourite"
                 android:layout_gravity="bottom|start"
                 android:contentDescription="@string/favourite_icon"
                 app:tint="#28AD17" />

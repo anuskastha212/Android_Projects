@@ -10,12 +10,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.esewa_project.LoginActivity
 import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.R
+import com.example.esewa_project.RegisterActivity
 import com.example.esewa_project.databinding.FragmentCartBinding
 import com.example.esewa_project.ui.adapter.AllProductAdapter
 import com.example.esewa_project.ui.adapter.CartAdapter
 import com.example.esewa_project.ui.viewmodel.CartViewModel
+import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -27,6 +30,7 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
     private val binding get() = _binding!!
 
     private val cartViewModel: CartViewModel by viewModels()
+    private val favouriteViewModel: FavouriteViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
 
     private lateinit var cartAdapter: CartAdapter
@@ -40,9 +44,33 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
+        binding.loginButton.setOnClickListener {
+            startActivity(Intent(requireContext(), LoginActivity::class.java))
+        }
+
+        binding.registerButton.setOnClickListener {
+            startActivity(Intent(requireContext(), RegisterActivity::class.java))
+        }
+
         setupAdapters()
         observeData()
         homeViewModel.fetchData()
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                cartViewModel.userSession.collect { uid ->
+                    val isLoggedIn = uid.isNotEmpty()
+
+                    if (isLoggedIn) {
+                        binding.layoutGuest.visibility = View.GONE
+                        binding.layoutCartContent.visibility = View.VISIBLE
+                    } else {
+                        binding.layoutGuest.visibility = View.VISIBLE
+                        binding.layoutCartContent.visibility = View.GONE
+                    }
+                }
+            }
+        }
     }
 
     private fun setupAdapters() {
@@ -63,9 +91,12 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                 intent.putExtra("product_id", product.id)
                 startActivity(intent)
             },
-            onFavouriteClick = {  },
+            onFavouriteClick = { product ->
+                favouriteViewModel.toggleFavourite(product.id)
+            },
             onIncrementClick = { product ->
-                cartViewModel.updateQuantity(product.id, 1) },
+                cartViewModel.updateQuantity(product.id, 1)
+            },
             onDecrementClick = { product ->
                 cartViewModel.updateQuantity(product.id, -1)
             }
