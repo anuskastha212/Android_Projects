@@ -45,17 +45,6 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-//    val cartQuantities: StateFlow<Map<Int, Int>> = userSession.flatMapLatest { uid ->
-//        if (uid.isEmpty()) flowOf(emptyMap())
-//        else cartRepo.getCartWithProducts(uid).map { itemsMap ->
-//            itemsMap.keys.associate { it.productId to it.quantity }
-//        }
-//    }.stateIn(
-//        scope = viewModelScope,
-//        started = SharingStarted.Eagerly,
-//        initialValue = emptyMap()
-//    )
-
     val cartQuantities: StateFlow<Map<Int, Int>> = cartItems.map { itemsMap ->
         itemsMap.keys.associate { it.productId to it.quantity }
     }.stateIn(
