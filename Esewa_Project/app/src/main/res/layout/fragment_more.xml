@@ -2,20 +2,20 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/more"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarMore"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="80dp"
         android:background="@android:color/white"
         app:navigationIcon="@drawable/back"
         app:title="More"
         app:titleCentered="true"
         android:elevation="0dp"
-        android:layout_marginBottom="24dp"/>
-
+        android:paddingTop="28dp"/>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -26,7 +26,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:layout_marginTop="20dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

@@ -24,7 +24,8 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
         .stateIn(viewModelScope, SharingStarted.Eagerly, sessionRepo.getUid() ?: "")
 
     val favouriteCount: Flow<Int> = userSession.flatMapLatest { uid ->
-        if (uid.isEmpty()) flowOf(0) else favRepo.getFavouriteCount(uid)
+        if (uid.isEmpty()) flowOf(0)
+        else favRepo.getFavouriteCount(uid)
     }
 
     val favouriteIds: StateFlow<Set<Int>> = userSession.flatMapLatest { uid ->
@@ -33,7 +34,8 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
     val favouriteProducts = userSession.flatMapLatest { uid ->
-        if (uid.isEmpty()) flowOf(emptyList()) else favRepo.getFavouriteProducts(uid)
+        if (uid.isEmpty()) flowOf(emptyList())
+        else favRepo.getFavouriteProducts(uid)
     }
 
     fun toggleFavourite(productId: Int) {

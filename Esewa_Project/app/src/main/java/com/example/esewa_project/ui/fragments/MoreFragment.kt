@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat.enableEdgeToEdge
@@ -36,24 +37,6 @@ class MoreFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarMore){ view, insets ->
-//            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-//
-//            view.layoutParams.height =
-//                view.context.resources.getDimensionPixelSize(
-//                    com.google.android.material.R.dimen.mtrl_toolbar_default_height
-//                ) + top
-//
-//            view.setPadding(
-//                view.paddingLeft,
-//                top,
-//                view.paddingRight,
-//                view.paddingBottom
-//            )
-//            insets
-//
-//        }
-
         binding.toolbarMore.setNavigationOnClickListener {
             val mainActivity = requireActivity() as? MainActivity
             val navHome = mainActivity?.findViewById<View>(R.id.navItemShop)
@@ -83,6 +66,11 @@ class MoreFragment : Fragment() {
 
         binding.logoutButton.setOnClickListener {
             authViewModel.logout()
+            Toast.makeText(
+                requireContext(),
+                "Logged out successfully",
+                Toast.LENGTH_SHORT
+            ).show()
             updateUI()
         }
 

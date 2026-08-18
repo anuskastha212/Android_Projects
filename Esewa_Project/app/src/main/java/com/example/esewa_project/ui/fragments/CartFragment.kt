@@ -20,6 +20,7 @@ import com.example.esewa_project.ui.adapter.CartAdapter
 import com.example.esewa_project.ui.viewmodel.CartViewModel
 import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.text.format
@@ -78,11 +79,17 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
             onIncrementClick = { id ->
                 cartViewModel.updateQuantity(id, 1) },
             onDecrementClick = { id ->
-                cartViewModel.updateQuantity(id, -1) }
+                cartViewModel.updateQuantity(id, -1) },
+            onProductClick = {productId ->
+                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+                intent.putExtra("product_id",productId)
+                startActivity(intent)
+            }
         )
         binding.rvCartItems.apply {
             adapter = cartAdapter
             layoutManager = LinearLayoutManager(requireContext())
+            itemAnimator= null
         }
 
         recommendedAdapter = AllProductAdapter(
@@ -109,43 +116,47 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
     private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                cartViewModel.cartCount.collect { count->
-                    binding.cartBadge.apply {
-                        text = String.format(Locale.getDefault(), "%02d", count)
-                        visibility = if (count > 0) View.VISIBLE else View.GONE
+                launch {
+                    cartViewModel.cartCount.collect { count ->
+                        binding.apply {
+                            if (count > 0) {
+                                cartBadge.text = count.toString()
+                                cartBadge.visibility = View.VISIBLE
+                            } else {
+                                cartBadge.visibility = View.GONE
+                            }
+                        }
                     }
                 }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                cartViewModel.cartItems.collect { itemsMap ->
-                    val list = itemsMap.toList()
-                    cartAdapter.submitList(list)
-                    binding.itemCount.text = getString(R.string.items_count, list.size)
+                launch {
+                    cartViewModel.cartItems.collect { itemsMap ->
+                        val list = itemsMap.toList()
+                        cartAdapter.submitList(list)
+                        binding.itemCount.text = getString(R.string.items_count, list.size)
+                    }
                 }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                cartViewModel.totalAmount.collect { total: Double ->
-                    binding.tvCheckoutTotal.text = getString(R.string.product_price, total)
+                launch {
+                    cartViewModel.totalAmount.collect { total ->
+                        binding.tvCheckoutTotal.text = getString(R.string.product_price, total)
+                    }
                 }
-            }
-        }
 
-        homeViewModel.products.observe(viewLifecycleOwner) { products ->
-            recommendedAdapter.products = products.drop(18).take(30)
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                cartViewModel.cartQuantities.collect { quantities ->
-                    recommendedAdapter.currentQuantities = quantities
-                    recommendedAdapter.notifyDataSetChanged()
+                launch {
+                    cartViewModel.cartQuantities.collect { quantities ->
+                        recommendedAdapter.currentQuantities = quantities
+                        recommendedAdapter.notifyDataSetChanged()
+                    }
                 }
+                launch {
+                    favouriteViewModel.favouriteIds.collect { ids ->
+                        recommendedAdapter.favouriteIds = ids
+                        recommendedAdapter.notifyDataSetChanged()
+                    }
+                }
+                homeViewModel.products.observe(viewLifecycleOwner) { products ->
+                    recommendedAdapter.products = products.drop(18).take(30)
+                }
+
             }
         }
     }

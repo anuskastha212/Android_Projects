@@ -136,11 +136,17 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             }
         }
 
-
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
-                cartViewModel.navigateToLogin.collect {
-                    showLoginRequiredDialog()
+                launch {
+                    cartViewModel.navigateToLogin.collect {
+                        showLoginRequiredDialog()
+                    }
+                }
+                launch {
+                    favouriteViewModel.navigateToLogin.collect {
+                        showLoginRequiredDialog()
+                    }
                 }
             }
         }
