@@ -26,6 +26,7 @@ import com.example.esewa_project.ui.fragments.FavouriteFragment
 import com.example.esewa_project.ui.fragments.HomeFragment
 import com.example.esewa_project.ui.fragments.MoreFragment
 import com.example.esewa_project.ui.viewmodel.CartViewModel
+import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val cartViewModel: CartViewModel by viewModels()
+    private val favouriteViewModel: FavouriteViewModel by viewModels()
     private var selectedTab = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,6 +54,18 @@ class MainActivity : AppCompatActivity() {
                                 cartBadge.visibility = View.VISIBLE
                             } else {
                                 cartBadge.visibility = View.GONE
+                            }
+                        }
+                    }
+                }
+                launch {
+                    favouriteViewModel.favouriteCount.collectLatest { count ->
+                        binding.bottomNav.apply {
+                            if (count > 0) {
+                                favouriteBadge.text = count.toString()
+                                favouriteBadge.visibility = View.VISIBLE
+                            } else {
+                                favouriteBadge.visibility = View.GONE
                             }
                         }
                     }

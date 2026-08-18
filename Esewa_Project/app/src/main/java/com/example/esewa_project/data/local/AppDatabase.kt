@@ -1,6 +1,7 @@
 package com.example.esewa_project.data.local
 
 import android.content.Context
+import android.icu.text.RelativeDateTimeFormatter
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -16,7 +17,7 @@ import com.example.esewa_project.data.local.entity.ProductEntity
         ProductEntity::class,
         CartEntity::class,
         FavouriteEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun cartDao(): CartDao
@@ -33,7 +34,7 @@ abstract class AppDatabase: RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "esewa_market_db"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

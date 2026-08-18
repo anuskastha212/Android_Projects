@@ -55,4 +55,9 @@ class UserSessionRepository(private val context: Context) {
             prefs[PreferencesKeys.PHOTO_URL] = profile.photoUrl
         }
     }
+    suspend fun clearSession(){
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

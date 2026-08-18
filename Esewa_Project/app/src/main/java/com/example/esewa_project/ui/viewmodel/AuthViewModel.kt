@@ -89,6 +89,9 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
 
     fun logout() {
         authRepository.logout()
+        viewModelScope.launch {
+            userSessionRepository.clearSession()
+        }
         _userData.value = null
     }
 

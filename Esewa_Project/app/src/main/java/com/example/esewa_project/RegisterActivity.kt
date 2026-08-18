@@ -27,14 +27,16 @@ class RegisterActivity : AppCompatActivity() {
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.registerFooter){ view, insets ->
-            val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-
+        ViewCompat.setOnApplyWindowInsetsListener(binding.registerFooter) { view, insets ->
+            val bottomInsets = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.ime()
+            ).bottom
             view.setPadding(
                 view.paddingLeft,
                 view.paddingTop,
                 view.paddingRight,
-                navBars )
+                bottomInsets
+            )
             insets
         }
 
