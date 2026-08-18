@@ -13,7 +13,8 @@ import com.example.esewa_project.databinding.ItemCartBinding
 
 class CartAdapter(
     private val onIncrementClick: (Int) -> Unit,
-    private val onDecrementClick: (Int) -> Unit
+    private val onDecrementClick: (Int) -> Unit,
+    private val onProductClick: (Int) -> Unit
 ): ListAdapter<Pair<CartEntity, ProductEntity>, CartAdapter.CartViewHolder>(DiffCallback) {
 
     class CartViewHolder(val binding: ItemCartBinding): RecyclerView.ViewHolder(binding.root)
@@ -40,6 +41,14 @@ class CartAdapter(
 
             minusButton.setOnClickListener {
                 onDecrementClick(product.id)
+            }
+
+            productImageContainer.setOnClickListener {
+                onProductClick(product.id)
+            }
+
+            detailsContainer.setOnClickListener {
+                onProductClick(product.id)
             }
         }
     }

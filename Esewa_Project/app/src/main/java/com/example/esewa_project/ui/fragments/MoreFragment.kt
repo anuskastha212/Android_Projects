@@ -37,17 +37,6 @@ class MoreFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarMore) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(
-                systemBars.left,
-                systemBars.top,
-                systemBars.right,
-                systemBars.bottom
-            )
-            insets
-        }
-
         binding.toolbarMore.setNavigationOnClickListener {
             val mainActivity = requireActivity() as? MainActivity
             val navHome = mainActivity?.findViewById<View>(R.id.navItemShop)

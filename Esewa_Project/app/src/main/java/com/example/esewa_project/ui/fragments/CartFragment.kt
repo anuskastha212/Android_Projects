@@ -79,11 +79,17 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
             onIncrementClick = { id ->
                 cartViewModel.updateQuantity(id, 1) },
             onDecrementClick = { id ->
-                cartViewModel.updateQuantity(id, -1) }
+                cartViewModel.updateQuantity(id, -1) },
+            onProductClick = {productId ->
+                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+                intent.putExtra("product_id",productId)
+                startActivity(intent)
+            }
         )
         binding.rvCartItems.apply {
             adapter = cartAdapter
             layoutManager = LinearLayoutManager(requireContext())
+            itemAnimator= null
         }
 
         recommendedAdapter = AllProductAdapter(
