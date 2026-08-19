@@ -27,12 +27,10 @@ import com.example.esewa_project.ui.fragments.HomeFragment
 import com.example.esewa_project.ui.fragments.MoreFragment
 import com.example.esewa_project.ui.viewmodel.CartViewModel
 import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
-import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
     private val cartViewModel: CartViewModel by viewModels()
     private val favouriteViewModel: FavouriteViewModel by viewModels()
@@ -43,6 +41,17 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                systemBars.left,
+                0,
+                systemBars.right,
+                systemBars.bottom
+            )
+            insets
+        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -71,17 +80,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { view, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(
-                systemBars.left,
-                0,
-                systemBars.right,
-                systemBars.bottom
-            )
-            insets
         }
 
         if (savedInstanceState == null) {

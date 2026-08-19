@@ -20,57 +20,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:paddingBottom="16dp">
-
-<!--            <androidx.constraintlayout.widget.ConstraintLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginBottom="16dp">-->
-
-<!--                <ImageView-->
-<!--                    android:id="@+id/img_logo"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:contentDescription="@string/esewa_logo"-->
-<!--                    android:src="@drawable/esewa_logo"-->
-<!--                    app:layout_constraintStart_toStartOf="parent"-->
-<!--                    app:layout_constraintTop_toTopOf="parent" />-->
-
-<!--                <ImageView-->
-<!--                    android:id="@+id/img_market"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginStart="8dp"-->
-<!--                    android:contentDescription="@string/market"-->
-<!--                    android:src="@drawable/market"-->
-<!--                    app:layout_constraintBottom_toBottomOf="@+id/img_logo"-->
-<!--                    app:layout_constraintStart_toEndOf="@+id/img_logo" />-->
-
-<!--                <ImageButton-->
-<!--                    android:id="@+id/img_bell"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginStart="120dp"-->
-<!--                    android:contentDescription="@string/notification_bell"-->
-<!--                    android:src="@drawable/notification_bell"-->
-<!--                    app:layout_constraintBottom_toBottomOf="@id/img_bell"-->
-<!--                    app:layout_constraintStart_toEndOf="@id/img_market"-->
-<!--                    app:layout_constraintTop_toTopOf="@+id/img_logo" />-->
-
-<!--                <ImageButton-->
-<!--                    android:id="@+id/img_option"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:contentDescription="@string/option"-->
-<!--                    android:src="@drawable/option"-->
-<!--                    app:layout_constraintBottom_toBottomOf="@id/img_bell"-->
-<!--                    app:layout_constraintEnd_toEndOf="parent"-->
-<!--                    app:layout_constraintStart_toEndOf="@id/img_bell"-->
-<!--                    app:layout_constraintTop_toTopOf="@+id/img_logo" />-->
-
-<!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
 
             <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/appBarLayout"
@@ -175,7 +127,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="16dp"
                 app:tabMinWidth="16dp"
                 app:tabGravity="center"
                 app:tabMode="fixed"

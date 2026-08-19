@@ -43,7 +43,6 @@ class MoreFragment : Fragment() {
             navHome?.performClick()
         }
 
-
         val menu = binding.toolbarMore.menu
         menu.findItem(R.id.action_cart)?.isVisible = false
         menu.findItem(R.id.action_notifications)?.isVisible = false

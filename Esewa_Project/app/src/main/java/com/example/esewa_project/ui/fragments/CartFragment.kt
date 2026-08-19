@@ -11,6 +11,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.esewa_project.LoginActivity
+import com.example.esewa_project.MainActivity
 import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.R
 import com.example.esewa_project.RegisterActivity
@@ -42,7 +43,9 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
         _binding = FragmentCartBinding.bind(view)
 
         binding.btnBack.setOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            val mainActivity = requireActivity() as? MainActivity
+            val navHome = mainActivity?.findViewById<View>(R.id.navItemShop)
+            navHome?.performClick()
         }
 
         binding.loginButton.setOnClickListener {
