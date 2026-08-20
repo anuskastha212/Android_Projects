@@ -76,7 +76,7 @@ class ProductDetailActivity : AppCompatActivity() {
                         binding.favouriteButton.setCardBackgroundColor(ContextCompat.getColor(this@ProductDetailActivity, R.color.green))
                         binding.favouriteIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this@ProductDetailActivity, android.R.color.white))
                     } else{
-                        binding.favouriteButton.setCardBackgroundColor(ContextCompat.getColor(this@ProductDetailActivity, android.R.color.white))
+                        binding.favouriteButton.setCardBackgroundColor(ContextCompat.getColor(this@ProductDetailActivity, R.color.green))
                         binding.favouriteIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this@ProductDetailActivity, R.color.light_gray))
                     }
                 }
@@ -97,7 +97,10 @@ class ProductDetailActivity : AppCompatActivity() {
             cartViewModel.updateQuantity(product.id, 1)
 
             if (FirebaseAuth.getInstance().currentUser != null) {
-                Toast.makeText(this, "${product.title} added to cart", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "${product.title} added to cart",
+                    Toast.LENGTH_SHORT).show()
             }
         }
 
