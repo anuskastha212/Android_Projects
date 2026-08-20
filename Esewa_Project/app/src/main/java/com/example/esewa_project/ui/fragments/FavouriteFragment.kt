@@ -6,13 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.esewa_project.MainActivity
 import com.example.esewa_project.R
+import com.example.esewa_project.ui.compose.FavouriteScreen
+import com.example.esewa_project.ui.viewmodel.CartViewModel
 import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 
 class FavouriteFragment: Fragment() {
     private val favViewModel: FavouriteViewModel by viewModels()
+    private val cartViewModel: CartViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -23,6 +27,8 @@ class FavouriteFragment: Fragment() {
             setContent {
                 FavouriteScreen(
                     favouriteViewModel = favViewModel,
+                    cartViewModel = cartViewModel,
+
                     onBackClick = {
                         requireActivity().onBackPressedDispatcher.onBackPressed()
                     },
