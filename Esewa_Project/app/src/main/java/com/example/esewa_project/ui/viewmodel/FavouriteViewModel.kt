@@ -54,4 +54,12 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
             favRepo.clearAllFavourites(uid)
         }
     }
+
+    fun removeFavourite(productId: Int) {
+        val uid = userSession.value
+        if (uid.isEmpty()) return
+        viewModelScope.launch {
+            favRepo.removeFavourite(uid, productId)
+        }
+    }
 }

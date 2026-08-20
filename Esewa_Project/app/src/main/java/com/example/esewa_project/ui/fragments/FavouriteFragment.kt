@@ -71,6 +71,15 @@ class FavouriteFragment : Fragment() {
                         } else {
                             selectedProductIds + productId
                         }
+                    },
+                    onDeleteSwipe = { product ->
+                        favViewModel.removeFavourite(product.id)
+                        selectedProductIds = selectedProductIds - product.id
+                        Toast.makeText(
+                            context,
+                            "${product.title} Removed",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 )
             }

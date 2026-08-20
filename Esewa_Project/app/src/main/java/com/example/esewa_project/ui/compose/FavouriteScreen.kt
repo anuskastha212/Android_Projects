@@ -17,7 +17,8 @@ fun FavouriteScreen(
     onCartClick: () -> Unit,
     onCheckoutClick: (ProductEntity) -> Unit,
     onDeleteAllClick: () -> Unit,
-    onProductClick: (Int) -> Unit
+    onProductClick: (Int) -> Unit,
+    onDeleteSwipe: (ProductEntity) -> Unit
 ) {
     val products by favouriteViewModel.favouriteProducts.collectAsState(initial = emptyList())
     val cartCount by cartViewModel.cartCount.collectAsState(initial = 0)
@@ -31,6 +32,7 @@ fun FavouriteScreen(
         onCartClick = onCartClick,
         onCheckoutClick = onCheckoutClick,
         onDeleteAllClick = onDeleteAllClick,
-        onProductClick = onProductClick
+        onProductClick = onProductClick,
+        onDeleteSwipe = onDeleteSwipe
     )
 }
