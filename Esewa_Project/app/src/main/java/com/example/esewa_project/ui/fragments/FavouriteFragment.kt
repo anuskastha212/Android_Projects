@@ -80,6 +80,10 @@ class FavouriteFragment : Fragment() {
                             "${product.title} Removed",
                             Toast.LENGTH_SHORT
                         ).show()
+                    },
+                    onContinueShoppingClick = {
+                        val mainActivity = requireActivity() as? MainActivity
+                        mainActivity?.findViewById<View>(R.id.navItemShop)?.performClick()
                     }
                 )
             }

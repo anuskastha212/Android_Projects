@@ -240,8 +240,6 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             isNestedScrollingEnabled = false
         }
     }
-
-
     private fun createProductAdapter(): AllProductAdapter {
         return AllProductAdapter(
             onClick = { product ->
