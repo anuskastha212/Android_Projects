@@ -29,7 +29,7 @@ fun FavouriteProductContent(
     product: ProductEntity,
     isSelected: Boolean,
     onCheckoutClick: () -> Unit,
-    onProductClick: () -> Unit
+    onProductClick: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         Card(

@@ -27,7 +27,8 @@ fun FavouriteScreenContent(
     onCheckoutClick: (ProductEntity) -> Unit,
     onDeleteAllClick: () -> Unit,
     onProductClick: (Int) -> Unit,
-    onDeleteSwipe: (ProductEntity) -> Unit
+    onDeleteSwipe: (ProductEntity) -> Unit,
+    onContinueShoppingClick: () -> Unit
 ) {
     val allSelected = products.isNotEmpty() && selectedProductIds.size == products.size
 
@@ -52,11 +53,13 @@ fun FavouriteScreenContent(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(
-                    checked = allSelected,
-                    onCheckedChange = onSelectAllClick,
-                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2ABB00))
-                )
+                if (products.isNotEmpty()){
+                    Checkbox(
+                        checked = allSelected,
+                        onCheckedChange = onSelectAllClick,
+                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2ABB00))
+                    )
+                }
 
                 Text(
                     text = "Items (${products.size})",
@@ -66,7 +69,7 @@ fun FavouriteScreenContent(
                     modifier = Modifier.weight(1f)
                 )
 
-                if (allSelected) {
+                if (allSelected && products.isNotEmpty()) {
                     Text(
                         text = "DELETE ALL",
                         fontSize = 14.sp,
@@ -77,21 +80,26 @@ fun FavouriteScreenContent(
                 }
             }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(products, key = { it.id }) { product ->
-                    val isSelected = selectedProductIds.contains(product.id)
+            if(products.isEmpty()){
+                FavouriteEmptyState(onContinueShoppingClick = onContinueShoppingClick)
+            }else {
 
-                    FavouriteProductCard(
-                        product = product,
-                        isSelected = isSelected,
-                        onCheckoutClick = { onCheckoutClick(product) },
-                        onProductClick = { onProductClick(product.id) },
-                        onDeleteSwipe = { onDeleteSwipe(product) }
-                    )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(products, key = { it.id }) { product ->
+                        val isSelected = selectedProductIds.contains(product.id)
+
+                        FavouriteProductCard(
+                            product = product,
+                            isSelected = isSelected,
+                            onCheckoutClick = { onCheckoutClick(product) },
+                            onProductClick = { onProductClick(product.id) },
+                            onDeleteSwipe = { onDeleteSwipe(product) }
+                        )
+                    }
                 }
             }
         }
@@ -116,6 +124,7 @@ fun FavouriteScreenPreview() {
         onCheckoutClick = {},
         onDeleteAllClick = {},
         onProductClick = {},
-        onDeleteSwipe = {}
+        onDeleteSwipe = {},
+        onContinueShoppingClick = {}
     )
 }
