@@ -30,9 +30,21 @@ class FavouriteRepository(private val favouriteDao: FavouriteDao) {
             .delete().await()
     }
 
+    suspend fun clearAllFavourites(userId: String){
+        favouriteDao.clearAllFavourites(userId)
+
+        val snapshot = firestore.collection("users").document(userId)
+            .collection("favourites").get().await()
+
+        val batch = firestore.batch()
+        snapshot.documents.forEach { batch.delete(it.reference) }
+        batch.commit().await()
+    }
+
     suspend fun syncFavouritesFromCloud(userId: String) {
         try {
-            val snapshot = firestore.collection("users").document(userId).collection("favourites").get().await()
+            val snapshot = firestore.collection("users").document(userId)
+                .collection("favourites").get().await()
             snapshot.toObjects(FavouriteEntity::class.java).forEach { favouriteDao.addFavourite(it) }
         } catch (e: Exception) {
             e.printStackTrace()

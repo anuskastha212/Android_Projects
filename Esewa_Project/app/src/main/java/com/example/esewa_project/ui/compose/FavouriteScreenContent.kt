@@ -1,14 +1,16 @@
 package com.example.esewa_project.ui.compose
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -31,11 +33,17 @@ import java.util.Locale
 @Composable
 fun FavouriteScreenContent(
     products: List<ProductEntity>,
-    favouriteCount: Int,
     cartCount: Int,
+    selectedProductIds: Set<Int>,
+    onSelectAllClick: (Boolean) -> Unit,
     onBackClick: () -> Unit,
-    onCartClick: () -> Unit
+    onCartClick: () -> Unit,
+    onCheckoutClick: (ProductEntity) -> Unit,
+    onDeleteAllClick: () -> Unit,
+    onProductClick: (Int) -> Unit
 ) {
+    val allSelected = products.isNotEmpty() && selectedProductIds.size == products.size
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -44,7 +52,7 @@ fun FavouriteScreenContent(
                         text = "Favourites",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = Color(0xFF292A40)
                     )
                 },
                 navigationIcon = {
@@ -65,7 +73,11 @@ fun FavouriteScreenContent(
                                     contentColor = Color.White
                                 ) {
                                     Text(
-                                        text = String.format(Locale.getDefault(), "%02d", cartCount),
+                                        text = String.format(
+                                            Locale.getDefault(),
+                                            "%02d",
+                                            cartCount
+                                        ),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -109,26 +121,44 @@ fun FavouriteScreenContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
-                    checked = false,
-                    onCheckedChange = {  },
-                    colors = CheckboxDefaults.colors(uncheckedColor = Color.Gray)
+                    checked = allSelected,
+                    onCheckedChange = onSelectAllClick,
+                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2ABB00))
                 )
 
                 Text(
                     text = "Items (${products.size})",
                     fontSize = 14.sp,
                     color = Color(0xFF555770),
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
                 )
+
+                if (allSelected) {
+                    Text(
+                        text = "DELETE ALL",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF555770),
+                        modifier = Modifier.clickable { onDeleteAllClick() }
+                    )
+                }
             }
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(products) { product ->
-                    FavouriteItemRow(product = product)
+                    val isSelected = selectedProductIds.contains(product.id)
+
+                    FavouriteItemRow(
+                        product = product,
+                        isSelected = isSelected,
+                        onCheckoutClick = { onCheckoutClick(product) },
+                        onProductClick = { onProductClick(product.id) }
+                    )
                 }
             }
         }
@@ -136,66 +166,119 @@ fun FavouriteScreenContent(
 }
 
 @Composable
-fun FavouriteItemRow(product: ProductEntity) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(0.dp)
-    ) {
-        Row(
+fun FavouriteItemRow(
+    product: ProductEntity,
+    isSelected: Boolean,
+    onCheckoutClick: () -> Unit,
+    onProductClick: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Card(
             modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+                .clickable { onProductClick() },
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(0.dp)
         ) {
+            Row(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFFF1F1F1)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = product.thumbnail,
+                        contentDescription = null,
+                        modifier = Modifier.size(70.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp)
+                ) {
+                    Text(
+                        text = product.title,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF292A40),
+                        maxLines = 1
+                    )
+                    Text(
+                        text = product.categoryName.uppercase(),
+                        fontSize = 11.sp,
+                        color = Color(0xFFA8AABB),
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Rs. ${String.format(Locale.getDefault(), "%,.2f", product.price)}",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF292A40)
+                    )
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.option),
+                        contentDescription = "Options",
+                        tint = Color(0xFFA8AABB),
+                        modifier = Modifier.size(24.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    if (isSelected) {
+                        IconButton(
+                            onClick = onCheckoutClick,
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(Color(0xFF2ABB00), shape = RoundedCornerShape(10.dp))
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.checkout),
+                                contentDescription = "Checkout",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.size(44.dp))
+                    }
+                }
+            }
+        }
+
+        if (isSelected) {
             Box(
                 modifier = Modifier
-                    .size(90.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFF1F1F1)),
+                    .size(28.dp)
+                    .background(Color(0xFF2ABB00), shape = CircleShape)
+                    .border(2.dp, Color.White, CircleShape)
+                    .align(Alignment.TopStart),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = product.thumbnail,
-                    contentDescription = null,
-                    modifier = Modifier.size(70.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp)
-            ) {
-                Text(
-                    text = product.title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF292A40),
-                    maxLines = 1
-                )
-                Text(
-                    text = product.categoryName.uppercase(),
-                    fontSize = 11.sp,
-                    color = Color(0xFFA8AABB),
-                    letterSpacing = 1.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Rs. ${String.format(Locale.getDefault(), "%,.2f", product.price)}",
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2ABB00)
-                )
-            }
-
-            IconButton(onClick = {  }) {
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = "Options",
-                    tint = Color(0xFFA8AABB)
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
@@ -212,9 +295,13 @@ fun FavouriteScreenPreview() {
     )
     FavouriteScreenContent(
         products = mockProducts,
-        favouriteCount = 3,
-        cartCount = 3,
+        cartCount = 9,
+        selectedProductIds = emptySet(),
+        onSelectAllClick = {},
         onBackClick = {},
-        onCartClick = {}
+        onCartClick = {},
+        onCheckoutClick = {},
+        onDeleteAllClick = {},
+        onProductClick = {}
     )
 }

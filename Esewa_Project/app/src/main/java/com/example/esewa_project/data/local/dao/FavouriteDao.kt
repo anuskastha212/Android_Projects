@@ -17,6 +17,9 @@ interface FavouriteDao {
     @Query("DELETE FROM favourites WHERE userId = :uId AND productId = :pId")
     suspend fun removeFavourite(uId: String, pId: Int)
 
+    @Query("DELETE FROM favourites WHERE userId =:uId")
+    suspend fun clearAllFavourites(uId: String)
+
     @Query("SELECT productId FROM favourites WHERE userId = :userId")
     fun getFavouriteIds(userId: String): Flow<List<Int>>
 
