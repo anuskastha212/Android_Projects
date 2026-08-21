@@ -103,4 +103,7 @@
     <string name="checkout">CHECKOUT</string>
     <string name="my_cart">My Cart</string>
     <string name="items_count">Items (%1$d)</string>
+    <string name="empty_cart">Empty cart</string>
+    <string name="no_items_added_to_the_cart_yet">No items added to the cart yet</string>
+    <string name="continue_shopping">CONTINUE SHOPPING</string>
 </resources>

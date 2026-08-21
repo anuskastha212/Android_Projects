@@ -56,6 +56,12 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
             startActivity(Intent(requireContext(), RegisterActivity::class.java))
         }
 
+        binding.btnContinueShopping.setOnClickListener {
+            val mainActivity = requireActivity() as? MainActivity
+            val navShop = mainActivity?.findViewById<View>(R.id.navItemShop)
+            navShop?.performClick()
+        }
+
         setupAdapters()
         observeData()
         homeViewModel.fetchData()
@@ -136,6 +142,16 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                         val list = itemsMap.toList()
                         cartAdapter.submitList(list)
                         binding.itemCount.text = getString(R.string.items_count, list.size)
+
+                        if (list.isEmpty()) {
+                            binding.layoutEmptyCart.visibility = View.VISIBLE
+                            binding.rvCartItems.visibility = View.GONE
+                            binding.checkoutBar.visibility = View.GONE
+                        } else {
+                            binding.layoutEmptyCart.visibility = View.GONE
+                            binding.rvCartItems.visibility = View.VISIBLE
+                            binding.checkoutBar.visibility = View.VISIBLE
+                        }
                     }
                 }
                 launch {
