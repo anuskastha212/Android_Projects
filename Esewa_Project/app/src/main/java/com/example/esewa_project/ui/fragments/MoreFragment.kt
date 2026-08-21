@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.esewa_project.LoginActivity
 import com.example.esewa_project.MainActivity
+import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.R
 import com.example.esewa_project.RegisterActivity
 import com.example.esewa_project.databinding.FragmentMoreBinding
@@ -38,9 +39,7 @@ class MoreFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbarMore.setNavigationOnClickListener {
-            val mainActivity = requireActivity() as? MainActivity
-            val navHome = mainActivity?.findViewById<View>(R.id.navItemShop)
-            navHome?.performClick()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         val menu = binding.toolbarMore.menu
@@ -70,7 +69,6 @@ class MoreFragment : Fragment() {
                 "Logged out successfully",
                 Toast.LENGTH_SHORT
             ).show()
-            updateUI()
         }
 
         updateUI()

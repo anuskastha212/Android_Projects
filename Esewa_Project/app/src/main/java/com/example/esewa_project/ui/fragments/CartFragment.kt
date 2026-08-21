@@ -43,9 +43,7 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
         _binding = FragmentCartBinding.bind(view)
 
         binding.btnBack.setOnClickListener {
-            val mainActivity = requireActivity() as? MainActivity
-            val navHome = mainActivity?.findViewById<View>(R.id.navItemShop)
-            navHome?.performClick()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         binding.loginButton.setOnClickListener {
@@ -54,6 +52,12 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
 
         binding.registerButton.setOnClickListener {
             startActivity(Intent(requireContext(), RegisterActivity::class.java))
+        }
+
+        binding.btnContinueShopping.setOnClickListener {
+            val mainActivity = requireActivity() as? MainActivity
+            val navShop = mainActivity?.findViewById<View>(R.id.navItemShop)
+            navShop?.performClick()
         }
 
         setupAdapters()
@@ -136,6 +140,16 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                         val list = itemsMap.toList()
                         cartAdapter.submitList(list)
                         binding.itemCount.text = getString(R.string.items_count, list.size)
+
+                        if (list.isEmpty()) {
+                            binding.layoutEmptyCart.visibility = View.VISIBLE
+                            binding.rvCartItems.visibility = View.GONE
+                            binding.checkoutBar.visibility = View.GONE
+                        } else {
+                            binding.layoutEmptyCart.visibility = View.GONE
+                            binding.rvCartItems.visibility = View.VISIBLE
+                            binding.checkoutBar.visibility = View.VISIBLE
+                        }
                     }
                 }
                 launch {
@@ -147,13 +161,6 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                 launch {
                     cartViewModel.cartQuantities.collect { quantities ->
                         recommendedAdapter.currentQuantities = quantities
-                        recommendedAdapter.notifyDataSetChanged()
-                    }
-                }
-                launch {
-                    favouriteViewModel.favouriteIds.collect { ids ->
-                        recommendedAdapter.favouriteIds = ids
-                        recommendedAdapter.notifyDataSetChanged()
                     }
                 }
                 homeViewModel.products.observe(viewLifecycleOwner) { products ->

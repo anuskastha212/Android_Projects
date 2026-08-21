@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +51,7 @@ fun FavouriteTopBar(
                             contentColor = Color.White
                         ) {
                             Text(
-                                text = String.format(Locale.getDefault(), "%02d", cartCount),
+                                text = cartCount.toString(),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -79,6 +78,9 @@ fun FavouriteTopBar(
                         .padding(8.dp)
                 )
             }
-        }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = Color.White
+        )
     )
 }

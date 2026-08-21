@@ -125,7 +125,8 @@
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/layout_dots"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="20dp"
+                android:minHeight="0dp"
                 android:layout_gravity="center"
                 app:tabMinWidth="16dp"
                 app:tabGravity="center"
@@ -135,7 +136,9 @@
                 app:tabIndicatorHeight="0dp"
                 app:tabRippleColor="@android:color/transparent"
                 app:tabPaddingStart="8dp"
-                app:tabPaddingEnd="8dp" />
+                app:tabPaddingEnd="8dp"
+                app:tabPaddingTop="4dp"
+                app:tabPaddingBottom="0dp"/>
 
             <TextView
                 android:id="@+id/categories"

@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.data.local.entity.ProductEntity
+import com.example.esewa_project.ui.util.FavouriteSnackbar
 
 @Composable
 fun FavouriteScreenContent(
@@ -28,11 +29,22 @@ fun FavouriteScreenContent(
     onDeleteAllClick: () -> Unit,
     onProductClick: (Int) -> Unit,
     onDeleteSwipe: (ProductEntity) -> Unit,
-    onContinueShoppingClick: () -> Unit
+    onContinueShoppingClick: () -> Unit,
+    snackbarHostState: SnackbarHostState,
 ) {
     val allSelected = products.isNotEmpty() && selectedProductIds.size == products.size
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = 40.dp)
+            ) { data ->
+                FavouriteSnackbar(snackbarData = data)
+            }
+        },
         topBar = {
             FavouriteTopBar(
                 cartCount = cartCount,
@@ -50,10 +62,10 @@ fun FavouriteScreenContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (products.isNotEmpty()){
+                if (products.isNotEmpty()) {
                     Checkbox(
                         checked = allSelected,
                         onCheckedChange = onSelectAllClick,
@@ -80,13 +92,18 @@ fun FavouriteScreenContent(
                 }
             }
 
-            if(products.isEmpty()){
+            if (products.isEmpty()) {
                 FavouriteEmptyState(onContinueShoppingClick = onContinueShoppingClick)
-            }else {
+            } else {
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 0.dp,
+                        bottom = 8.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(products, key = { it.id }) { product ->
@@ -125,6 +142,7 @@ fun FavouriteScreenPreview() {
         onDeleteAllClick = {},
         onProductClick = {},
         onDeleteSwipe = {},
-        onContinueShoppingClick = {}
+        onContinueShoppingClick = {},
+        snackbarHostState = SnackbarHostState()
     )
 }

@@ -214,40 +214,32 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Terms & Conditions -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginTop="14dp"
+                        android:layout_marginBottom="0dp"
+                        android:orientation="horizontal">
 
                         <com.google.android.material.checkbox.MaterialCheckBox
                             android:id="@+id/termsCheckBox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_margin="0dp"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
+                            android:padding="0dp"
                             app:buttonTint="@color/green" />
 
                         <TextView
+                            android:id="@+id/tvTerms"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="0dp"
                             android:text="@string/i_agree_to_the_esewa_market"
                             android:textColor="#757575"
                             android:textSize="12sp"
-                            android:layout_marginStart="4dp" />
-
-                        <TextView
-                            android:id="@+id/termsAndConditions"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/terms_conditions"
-                            android:textColor="@color/green"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:clickable="true"
-                            android:focusable="true" />
+                            android:layout_gravity="center_vertical"/>
 
                     </LinearLayout>
 
@@ -255,7 +247,7 @@
                         android:id="@+id/submitRegisterButton"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:layout_marginTop="24dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/register_account"
                         android:textColor="@android:color/white"
                         app:backgroundTint="@color/green"
