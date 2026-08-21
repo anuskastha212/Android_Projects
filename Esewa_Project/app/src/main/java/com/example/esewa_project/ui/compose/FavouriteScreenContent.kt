@@ -62,10 +62,10 @@ fun FavouriteScreenContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (products.isNotEmpty()){
+                if (products.isNotEmpty()) {
                     Checkbox(
                         checked = allSelected,
                         onCheckedChange = onSelectAllClick,
@@ -92,13 +92,18 @@ fun FavouriteScreenContent(
                 }
             }
 
-            if(products.isEmpty()){
+            if (products.isEmpty()) {
                 FavouriteEmptyState(onContinueShoppingClick = onContinueShoppingClick)
-            }else {
+            } else {
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 0.dp,
+                        bottom = 8.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(products, key = { it.id }) { product ->

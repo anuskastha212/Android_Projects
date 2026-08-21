@@ -67,7 +67,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cartToolbar"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="88dp"
             android:background="@color/white"
             android:paddingTop="28dp"
             app:layout_constraintTop_toTopOf="parent"
@@ -157,8 +157,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:text="@string/items_0"
-                    android:textColor="#555770"
-                    android:textStyle="bold" />
+                    android:textSize="14sp"
+                    android:textColor="#555770" />
 
                 <!-- Empty Cart -->
                 <LinearLayout

@@ -32,7 +32,7 @@ class FavouriteFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 var selectedProductIds by remember { mutableStateOf(emptySet<Int>()) }
-                val products by favViewModel.favouriteProducts.collectAsState(initial = emptyList())
+                val products by favViewModel.favouriteProducts.collectAsState()
 
                 FavouriteScreen(
                     favouriteViewModel = favViewModel,
@@ -40,7 +40,7 @@ class FavouriteFragment : Fragment() {
                     selectedProductIds = selectedProductIds,
                     onSelectAllClick = { isChecked ->
                         selectedProductIds = if (isChecked) {
-                            products.map { it.id }.toSet()
+                            products?.map { it.id }?.toSet() ?: emptySet()
                         } else {
                             emptySet()
                         }

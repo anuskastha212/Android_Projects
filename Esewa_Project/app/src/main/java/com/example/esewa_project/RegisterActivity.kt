@@ -3,13 +3,21 @@ package com.example.esewa_project
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.esewa_project.ui.viewmodel.AuthViewModel
@@ -38,6 +46,34 @@ class RegisterActivity : AppCompatActivity() {
                 bottomInsets
             )
             insets
+        }
+
+        val fullText = getString(R.string.i_agree_to_the_esewa_market)
+        val term = "Terms & Conditions"
+        val spannable = SpannableString(fullText)
+
+        val start = fullText.indexOf(term)
+        val end = start + term.length
+
+        val clickableSpan = object : ClickableSpan(){
+            override fun onClick(view: View) {
+                Toast.makeText(
+                    this@RegisterActivity,
+                    "Terms & Conditions",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            override fun updateDrawState(ds: TextPaint) {
+                super.updateDrawState(ds)
+                ds.color = ContextCompat.getColor(this@RegisterActivity, R.color.green)
+            }
+        }
+        spannable.setSpan(clickableSpan, start,end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        binding.tvTerms.apply {
+            text = spannable
+            movementMethod = LinkMovementMethod.getInstance()
+            highlightColor = Color.TRANSPARENT
         }
 
         binding.submitRegisterButton.setOnClickListener {

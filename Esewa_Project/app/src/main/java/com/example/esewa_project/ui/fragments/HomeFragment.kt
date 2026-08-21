@@ -104,16 +104,9 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 cartViewModel.cartQuantities.collectLatest { quantities ->
                     featuredProductAdapter.currentQuantities = quantities
-                    featuredProductAdapter.notifyDataSetChanged()
-
                     hotDealsAdapter.currentQuantities = quantities
-                    hotDealsAdapter.notifyDataSetChanged()
-
                     popularBrandAdapter.currentQuantities = quantities
-                    popularBrandAdapter.notifyDataSetChanged()
-
                     recommendedAdapter.currentQuantities = quantities
-                    recommendedAdapter.notifyDataSetChanged()
                 }
             }
         }
@@ -122,16 +115,9 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 favouriteViewModel.favouriteIds.collectLatest { ids ->
                     featuredProductAdapter.favouriteIds = ids
-                    featuredProductAdapter.notifyDataSetChanged()
-
                     hotDealsAdapter.favouriteIds = ids
-                    hotDealsAdapter.notifyDataSetChanged()
-
                     popularBrandAdapter.favouriteIds = ids
-                    popularBrandAdapter.notifyDataSetChanged()
-
                     recommendedAdapter.favouriteIds = ids
-                    recommendedAdapter.notifyDataSetChanged()
                 }
             }
         }

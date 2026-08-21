@@ -43,9 +43,7 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
         _binding = FragmentCartBinding.bind(view)
 
         binding.btnBack.setOnClickListener {
-            val mainActivity = requireActivity() as? MainActivity
-            val navHome = mainActivity?.findViewById<View>(R.id.navItemShop)
-            navHome?.performClick()
+            requireActivity().onBackPressedDispatcher.onBackPressed()
         }
 
         binding.loginButton.setOnClickListener {
@@ -163,13 +161,6 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                 launch {
                     cartViewModel.cartQuantities.collect { quantities ->
                         recommendedAdapter.currentQuantities = quantities
-                        recommendedAdapter.notifyDataSetChanged()
-                    }
-                }
-                launch {
-                    favouriteViewModel.favouriteIds.collect { ids ->
-                        recommendedAdapter.favouriteIds = ids
-                        recommendedAdapter.notifyDataSetChanged()
                     }
                 }
                 homeViewModel.products.observe(viewLifecycleOwner) { products ->

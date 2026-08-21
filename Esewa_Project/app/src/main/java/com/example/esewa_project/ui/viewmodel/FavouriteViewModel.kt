@@ -10,6 +10,7 @@ import com.example.esewa_project.data.repository.UserSessionRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.example.esewa_project.data.local.entity.ProductEntity
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FavouriteViewModel(application: Application) : AndroidViewModel(application) {
@@ -33,10 +34,10 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
         else favRepo.getFavouriteIds(uid).map { it.toSet() }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
-    val favouriteProducts = userSession.flatMapLatest { uid ->
+    val favouriteProducts: StateFlow<List<ProductEntity>?> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(emptyList())
         else favRepo.getFavouriteProducts(uid)
-    }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun toggleFavourite(productId: Int) {
         val uid = userSession.value

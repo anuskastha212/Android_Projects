@@ -247,10 +247,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadFragment(fragment: Fragment) {
-
-        supportFragmentManager.beginTransaction()
-            .replace(binding.fragmentContainer.id, fragment)
-            .commit()
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(binding.fragmentContainer.id, fragment)
+        if (supportFragmentManager.fragments.isNotEmpty()) {
+            transaction.addToBackStack(null)
+        }
+        transaction.commit()
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {

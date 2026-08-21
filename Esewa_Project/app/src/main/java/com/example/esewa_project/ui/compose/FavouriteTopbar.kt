@@ -79,6 +79,9 @@ fun FavouriteTopBar(
                         .padding(8.dp)
                 )
             }
-        }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = Color.White
+        )
     )
 }

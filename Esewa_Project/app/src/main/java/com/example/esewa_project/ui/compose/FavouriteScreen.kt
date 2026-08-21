@@ -28,12 +28,13 @@ fun FavouriteScreen(
     onContinueShoppingClick: () -> Unit,
     onUndoDelete: (List<ProductEntity>) -> Unit,
 ) {
-    val products by favouriteViewModel.favouriteProducts.collectAsState(initial = emptyList())
+    val productsState by favouriteViewModel.favouriteProducts.collectAsState()
     val cartCount by cartViewModel.cartCount.collectAsState(initial = 0)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    val products = productsState ?: return
     FavouriteScreenContent(
         products = products,
         cartCount = cartCount,
