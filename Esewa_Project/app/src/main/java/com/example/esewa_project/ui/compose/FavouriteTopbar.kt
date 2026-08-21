@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
