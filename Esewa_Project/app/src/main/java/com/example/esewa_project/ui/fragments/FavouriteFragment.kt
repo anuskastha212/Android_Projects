@@ -75,11 +75,11 @@ class FavouriteFragment : Fragment() {
                     onDeleteSwipe = { product ->
                         favViewModel.removeFavourite(product.id)
                         selectedProductIds = selectedProductIds - product.id
-                        Toast.makeText(
-                            context,
-                            "${product.title} Removed",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    },
+                    onUndoDelete = { restoredProducts ->
+                        restoredProducts.forEach { product ->
+                            favViewModel.toggleFavourite(product.id)
+                        }
                     },
                     onContinueShoppingClick = {
                         val mainActivity = requireActivity() as? MainActivity

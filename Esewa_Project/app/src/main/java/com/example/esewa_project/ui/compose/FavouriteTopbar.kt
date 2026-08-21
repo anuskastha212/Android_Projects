@@ -52,7 +52,7 @@ fun FavouriteTopBar(
                             contentColor = Color.White
                         ) {
                             Text(
-                                text = String.format(Locale.getDefault(), "%02d", cartCount),
+                                text = cartCount.toString(),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
