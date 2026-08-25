@@ -91,7 +91,6 @@ class ProductDetailActivity : AppCompatActivity() {
             }
         }
     }
-
     private fun setupClickListeners(product: Product) {
         binding.btnAddToCart.setOnClickListener {
             cartViewModel.updateQuantity(product.id, 1)

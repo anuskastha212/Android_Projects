@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.model.UserProfile
@@ -25,6 +26,8 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
 
     private val _resetPassword = MutableLiveData<Result<Unit>?>()
     val resetPassword: LiveData<Result<Unit>?> = _resetPassword
+    val localUserData: LiveData<UserProfile> = userSessionRepository.userProfile.asLiveData()
+
 
     fun register(email: String, password: String, name: String, phone: String){
         viewModelScope.launch {
@@ -41,18 +44,8 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
                 val db = AppDatabase.getDatabase(getApplication())
                 val cartRepo = CartRepository(db.cartDao())
                 val favRepo = FavouriteRepository(db.favouriteDao())
-
                 cartRepo.syncCartFromCloud(uid)
                 favRepo.syncFavouritesFromCloud(uid)
-                val details = authRepository.getUserDetails()
-                details?.let {
-                    saveSessionLocally(
-                        email = it["email"] as? String ?: email,
-                        name = it["name"] as? String ?: "",
-                        phone = it["phone"] as? String ?: ""
-                    )
-                }
-
             }
 
         }
@@ -69,13 +62,21 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         userSessionRepository.saveSession(profile)
     }
 
-    fun isUserLoggedIn() = authRepository.isUserLoggedIn()
-
     fun fetchUserDetails() {
         viewModelScope.launch {
-            _userData.value = authRepository.getUserDetails()
+            val details = authRepository.getUserDetails()
+            _userData.value = details
+            details?.let {
+                saveSessionLocally(
+                    email = it["email"] as? String ?: "",
+                    name = it["name"] as? String ?: "",
+                    phone = it["phone"] as? String ?: ""
+                )
+            }
         }
     }
+
+    fun isUserLoggedIn() = authRepository.isUserLoggedIn()
 
     fun sendResetEmail(email: String){
         viewModelScope.launch{

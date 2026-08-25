@@ -24,8 +24,12 @@ class AllProductAdapter(
     class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
 
     var currentQuantities: Map<Int, Int> = emptyMap()
-    var favouriteIds: Set<Int> = emptySet()
 
+    var favouriteIds: Set<Int> = emptySet()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
     private val diffCallback = object : DiffUtil.ItemCallback<Product>(){
         override fun areItemsTheSame(oldItem: Product, newItem: Product): Boolean {
             return oldItem.id == newItem.id
