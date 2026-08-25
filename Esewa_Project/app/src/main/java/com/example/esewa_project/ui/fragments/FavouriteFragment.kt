@@ -1,10 +1,10 @@
 package com.example.esewa_project.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import com.example.esewa_project.CheckoutActivity
 import com.example.esewa_project.MainActivity
 import com.example.esewa_project.R
 import com.example.esewa_project.ui.compose.FavouriteScreen
@@ -54,12 +55,9 @@ class FavouriteFragment : Fragment() {
                         mainActivity?.findViewById<View>(R.id.navItemCart)?.performClick()
                     },
                     onCheckoutClick = { product ->
-                        cartViewModel.updateQuantity(product.id, 1)
-                        Toast.makeText(
-                            context,
-                            "Added",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        val intent = Intent(requireContext(), CheckoutActivity::class.java)
+                        intent.putExtra("product_id", product.id)
+                        startActivity(intent)
                     },
                     onDeleteAllClick = {
                         favViewModel.clearAllFavourites()

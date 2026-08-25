@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.esewa_project.CheckoutActivity
 import com.example.esewa_project.LoginActivity
 import com.example.esewa_project.MainActivity
 import com.example.esewa_project.ProductDetailActivity
@@ -58,6 +59,11 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
             val mainActivity = requireActivity() as? MainActivity
             val navShop = mainActivity?.findViewById<View>(R.id.navItemShop)
             navShop?.performClick()
+        }
+
+        binding.btnCheckout.setOnClickListener {
+            val intent = Intent(requireContext(), CheckoutActivity::class.java)
+            startActivity(intent)
         }
 
         setupAdapters()
@@ -133,6 +139,11 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                                 cartBadge.visibility = View.GONE
                             }
                         }
+                    }
+                }
+                launch {
+                    favouriteViewModel.favouriteIds.collect { ids ->
+                        recommendedAdapter.favouriteIds = ids
                     }
                 }
                 launch {

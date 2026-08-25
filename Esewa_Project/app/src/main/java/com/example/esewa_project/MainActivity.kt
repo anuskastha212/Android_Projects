@@ -36,6 +36,11 @@ class MainActivity : AppCompatActivity() {
     private val favouriteViewModel: FavouriteViewModel by viewModels()
     private var selectedTab = 1
 
+    private val tagHome = "home"
+    private val tagCart = "cart"
+    private val tagFav = "favourite"
+    private val tagMore = "more"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -44,12 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(
-                systemBars.left,
-                0,
-                systemBars.right,
-                systemBars.bottom
-            )
+            view.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
             insets
         }
 
@@ -82,236 +82,125 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (savedInstanceState == null) {
-            loadFragment(HomeFragment())
-            onSelect(
-                binding.bottomNav.navItemShop,
-                binding.bottomNav.textShop,
-                binding.bottomNav.iconShop
-            )
-
-            onDeselect(
-                binding.bottomNav.navItemCart,
-                binding.bottomNav.textCart,
-                binding.bottomNav.iconCart
-            )
-
-            onDeselect(
-                binding.bottomNav.navItemFavourite,
-                binding.bottomNav.textFavourite,
-                binding.bottomNav.iconFavourite
-            )
-
-            onDeselect(
-                binding.bottomNav.navItemMore,
-                binding.bottomNav.textMore,
-                binding.bottomNav.iconMore
-            )
+        supportFragmentManager.addOnBackStackChangedListener {
+            syncBottomNavSelection()
         }
 
+        if (savedInstanceState == null) {
+            loadFragment(HomeFragment(), tagHome)
+            updateBottomNavUI(1)
+        }
+        setupBottomNavigation()
+    }
+
+    private fun setupBottomNavigation() {
         binding.bottomNav.navItemShop.setOnClickListener {
-
             if (selectedTab != 1) {
-
-                loadFragment(HomeFragment())
-
-                onSelect(
-                    binding.bottomNav.navItemShop,
-                    binding.bottomNav.textShop,
-                    binding.bottomNav.iconShop
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemCart,
-                    binding.bottomNav.textCart,
-                    binding.bottomNav.iconCart
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemFavourite,
-                    binding.bottomNav.textFavourite,
-                    binding.bottomNav.iconFavourite
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemMore,
-                    binding.bottomNav.textMore,
-                    binding.bottomNav.iconMore
-                )
-
-                selectedTab = 1
+                loadFragment(HomeFragment(), tagHome)
+                updateBottomNavUI(1)
             }
         }
 
         binding.bottomNav.navItemCart.setOnClickListener {
-
             if (selectedTab != 2) {
-
-                loadFragment(CartFragment())
-
-                onSelect(
-                    binding.bottomNav.navItemCart,
-                    binding.bottomNav.textCart,
-                    binding.bottomNav.iconCart
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemShop,
-                    binding.bottomNav.textShop,
-                    binding.bottomNav.iconShop
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemFavourite,
-                    binding.bottomNav.textFavourite,
-                    binding.bottomNav.iconFavourite
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemMore,
-                    binding.bottomNav.textMore,
-                    binding.bottomNav.iconMore
-                )
-
-                selectedTab = 2
+                loadFragment(CartFragment(), tagCart)
+                updateBottomNavUI(2)
             }
         }
 
         binding.bottomNav.navItemFavourite.setOnClickListener {
-
             if (selectedTab != 3) {
-
-                loadFragment(FavouriteFragment())
-
-                onSelect(
-                    binding.bottomNav.navItemFavourite,
-                    binding.bottomNav.textFavourite,
-                    binding.bottomNav.iconFavourite
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemShop,
-                    binding.bottomNav.textShop,
-                    binding.bottomNav.iconShop
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemCart,
-                    binding.bottomNav.textCart,
-                    binding.bottomNav.iconCart
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemMore,
-                    binding.bottomNav.textMore,
-                    binding.bottomNav.iconMore
-                )
-
-                selectedTab = 3
+                loadFragment(FavouriteFragment(), tagFav)
+                updateBottomNavUI(3)
             }
         }
 
         binding.bottomNav.navItemMore.setOnClickListener {
-
             if (selectedTab != 4) {
-
-                loadFragment(MoreFragment())
-
-                onSelect(
-                    binding.bottomNav.navItemMore,
-                    binding.bottomNav.textMore,
-                    binding.bottomNav.iconMore
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemShop,
-                    binding.bottomNav.textShop,
-                    binding.bottomNav.iconShop
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemCart,
-                    binding.bottomNav.textCart,
-                    binding.bottomNav.iconCart
-                )
-
-                onDeselect(
-                    binding.bottomNav.navItemFavourite,
-                    binding.bottomNav.textFavourite,
-                    binding.bottomNav.iconFavourite
-                )
-
-                selectedTab = 4
+                loadFragment(MoreFragment(), tagMore)
+                updateBottomNavUI(4)
             }
         }
     }
 
-    private fun loadFragment(fragment: Fragment) {
+    private fun loadFragment(fragment: Fragment, tag: String) {
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.replace(binding.fragmentContainer.id, fragment)
-        if (supportFragmentManager.fragments.isNotEmpty()) {
-            transaction.addToBackStack(null)
+
+        val currentFragment = supportFragmentManager.fragments.find { it.isVisible }
+        if (currentFragment != null) {
+            transaction.hide(currentFragment)
         }
+
+        var targetFragment = supportFragmentManager.findFragmentByTag(tag)
+        if (targetFragment == null) {
+            targetFragment = fragment
+            transaction.add(binding.fragmentContainer.id, targetFragment, tag)
+        } else {
+            transaction.show(targetFragment)
+        }
+
+        if (tag != tagHome && currentFragment?.tag != tag) {
+            transaction.addToBackStack(tag)
+        }
+
         transaction.commit()
     }
 
+    private fun updateBottomNavUI(tabIndex: Int) {
+        selectedTab = tabIndex
+        val nav = binding.bottomNav
+
+        onDeselect(nav.navItemShop, nav.textShop, nav.iconShop)
+        onDeselect(nav.navItemCart, nav.textCart, nav.iconCart)
+        onDeselect(nav.navItemFavourite, nav.textFavourite, nav.iconFavourite)
+        onDeselect(nav.navItemMore, nav.textMore, nav.iconMore)
+
+        when (tabIndex) {
+            1 -> onSelect(nav.navItemShop, nav.textShop, nav.iconShop)
+            2 -> onSelect(nav.navItemCart, nav.textCart, nav.iconCart)
+            3 -> onSelect(nav.navItemFavourite, nav.textFavourite, nav.iconFavourite)
+            4 -> onSelect(nav.navItemMore, nav.textMore, nav.iconMore)
+        }
+    }
+
+    private fun syncBottomNavSelection() {
+        val currentFragment = supportFragmentManager.fragments.find { it.isVisible }
+        when (currentFragment) {
+            is HomeFragment -> updateBottomNavUI(1)
+            is CartFragment -> updateBottomNavUI(2)
+            is FavouriteFragment -> updateBottomNavUI(3)
+            is MoreFragment -> updateBottomNavUI(4)
+        }
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action == MotionEvent.ACTION_DOWN){
-            val v=currentFocus
-            if(v is EditText){
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
                 val outRect = Rect()
                 v.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())){
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
                     v.clearFocus()
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.windowToken,0)
+                    imm.hideSoftInputFromWindow(v.windowToken, 0)
                 }
             }
         }
         return super.dispatchTouchEvent(ev)
     }
 
-    private fun onSelect(
-        layout: LinearLayout,
-        text: TextView,
-        icon: ImageView
-    ) {
-
+    private fun onSelect(layout: LinearLayout, text: TextView, icon: ImageView) {
         text.visibility = View.VISIBLE
-
-        icon.imageTintList =
-            ColorStateList.valueOf(
-                ContextCompat.getColor(this, R.color.green)
-            )
-
+        icon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green))
         layout.setBackgroundResource(R.drawable.bg_bottom_nav)
-
-        layout.animate()
-            .scaleX(1.1f)
-            .scaleY(1.1f)
-            .setDuration(100)
-            .withEndAction {
-
-                layout.animate()
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(100)
-
-            }
+        layout.animate().scaleX(1.1f).scaleY(1.1f).setDuration(100).withEndAction {
+            layout.animate().scaleX(1f).scaleY(1f).setDuration(100)
+        }
     }
 
-    private fun onDeselect(
-        layout: LinearLayout,
-        text: TextView,
-        icon: ImageView
-    ) {
+    private fun onDeselect(layout: LinearLayout, text: TextView, icon: ImageView) {
         text.visibility = View.GONE
-
-        icon.imageTintList =
-            ColorStateList.valueOf(
-                ContextCompat.getColor(this, R.color.black)
-            )
-
+        icon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.black))
         layout.setBackgroundResource(android.R.color.transparent)
     }
 }

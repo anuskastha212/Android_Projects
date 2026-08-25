@@ -19,7 +19,7 @@ fun CheckoutTopBar(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = "Favourites",
+                text = "Checkout",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF292A40)

@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.model.UserProfile
@@ -21,13 +20,8 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
     private val _authResult = MutableLiveData<Result<Unit>?>()
     val authResult: LiveData<Result<Unit>?> = _authResult
 
-    private val _userData = MutableLiveData<Map<String, Any>?>()
-    val userData: LiveData<Map<String, Any>?> = _userData
-
     private val _resetPassword = MutableLiveData<Result<Unit>?>()
     val resetPassword: LiveData<Result<Unit>?> = _resetPassword
-    val localUserData: LiveData<UserProfile> = userSessionRepository.userProfile.asLiveData()
-
 
     fun register(email: String, password: String, name: String, phone: String){
         viewModelScope.launch {
@@ -41,13 +35,20 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
             _authResult.value = result
             if (result.isSuccess) {
                 val uid =  authRepository.getCurrentUserUid() ?: ""
+                val details = authRepository.getUserDetails()
+                details?.let {
+                    saveSessionLocally(
+                        email = it["email"] as? String ?: email,
+                        name = it["name"] as? String ?: "",
+                        phone = it["phone"] as? String ?: ""
+                    )
+                }
                 val db = AppDatabase.getDatabase(getApplication())
                 val cartRepo = CartRepository(db.cartDao())
                 val favRepo = FavouriteRepository(db.favouriteDao())
                 cartRepo.syncCartFromCloud(uid)
                 favRepo.syncFavouritesFromCloud(uid)
             }
-
         }
     }
 
@@ -61,23 +62,7 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         )
         userSessionRepository.saveSession(profile)
     }
-
-    fun fetchUserDetails() {
-        viewModelScope.launch {
-            val details = authRepository.getUserDetails()
-            _userData.value = details
-            details?.let {
-                saveSessionLocally(
-                    email = it["email"] as? String ?: "",
-                    name = it["name"] as? String ?: "",
-                    phone = it["phone"] as? String ?: ""
-                )
-            }
-        }
-    }
-
-    fun isUserLoggedIn() = authRepository.isUserLoggedIn()
-
+    
     fun sendResetEmail(email: String){
         viewModelScope.launch{
             _resetPassword.value = authRepository.sendPasswordResetEmail(email)
@@ -93,7 +78,6 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             userSessionRepository.clearSession()
         }
-        _userData.value = null
     }
 
     fun resetResult(){
