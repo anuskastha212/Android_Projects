@@ -17,7 +17,6 @@ import com.example.esewa_project.ui.viewmodel.AuthViewModel
 import com.example.esewa_project.ui.viewmodel.UserSessionViewModel
 
 class MoreFragment : Fragment() {
-
     private var _binding: FragmentMoreBinding? = null
     private val binding get() = _binding!!
     private val authViewModel: AuthViewModel by viewModels()
@@ -52,10 +51,12 @@ class MoreFragment : Fragment() {
                 binding.layoutGuest.visibility = View.GONE
                 binding.layoutLoggedIn.visibility = View.VISIBLE
                 binding.logoutButton.visibility = View.VISIBLE
+                binding.toolbarMore.visibility = View.VISIBLE
             } else {
                 binding.layoutGuest.visibility = View.VISIBLE
                 binding.layoutLoggedIn.visibility = View.GONE
                 binding.logoutButton.visibility = View.GONE
+                binding.toolbarMore.visibility = View.GONE
             }
         }
 
