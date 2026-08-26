@@ -37,6 +37,9 @@ fun CheckoutScreen(
             CommonTopBar(
                 title = "Checkout",
                 onBackClick = onBackClick)
+        },
+        bottomBar = {
+            CheckoutBottomBar(items = items)
         }
     ) { paddingValues ->
         Box(

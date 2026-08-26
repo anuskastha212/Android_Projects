@@ -77,21 +77,12 @@ fun CheckoutProductCard(item: CartItem) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // The Green Price
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = "Rs. ",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2ABB00)
-                    )
-                    Text(
-                        text = String.format(Locale.getDefault(), "%,.2f", item.price),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2ABB00)
-                    )
-                }
+                Text(
+                    text = String.format(Locale.getDefault(), "Rs. %,.2f", item.price),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2ABB00)
+                )
             }
         }
     }
