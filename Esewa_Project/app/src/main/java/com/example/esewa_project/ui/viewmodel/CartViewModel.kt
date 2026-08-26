@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.local.entity.CartEntity
 import com.example.esewa_project.data.local.entity.ProductEntity
+import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -34,19 +35,30 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         else cartRepo.getCartCount(uid).map { it ?: 0 }
     }
 
-    val cartItems: Flow<Map<CartEntity, ProductEntity>> = userSession.flatMapLatest { uid ->
-        if (uid.isEmpty()) flowOf(emptyMap())
-        else cartRepo.getCartWithProducts(uid)
-    }
-
-    val totalAmount: Flow<Double> = cartItems.map { itemsMap ->
-        itemsMap.entries.sumOf { (cart, product) ->
-            product.price * cart.quantity
+    val cartItems: Flow<List<CartItem>> = userSession.flatMapLatest { uid ->
+        if (uid.isEmpty()) flowOf(emptyList())
+        else cartRepo.getCartWithProducts(uid).map { itemsMap ->
+            itemsMap.map { (cart, product) ->
+                CartItem(
+                    productId = product.id,
+                    title = product.title,
+                    price = product.price,
+                    quantity = cart.quantity,
+                    thumbnail = product.thumbnail,
+                    categoryName = product.categoryName
+                )
+            }
         }
     }
 
-    val cartQuantities: StateFlow<Map<Int, Int>> = cartItems.map { itemsMap ->
-        itemsMap.keys.associate { it.productId to it.quantity }
+    val totalAmount: Flow<Double> = cartItems.map { items ->
+        items.sumOf { item ->
+            item.price * item.quantity
+        }
+    }
+
+    val cartQuantities: StateFlow<Map<Int, Int>> = cartItems.map { items ->
+        items.associate { it.productId to it.quantity }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
@@ -57,7 +69,9 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         val currentUid = userSession.value
         if (currentUid.isEmpty()) {
             Log.d("tag", "currentUid is null")
-            viewModelScope.launch { _navigateToLogin.emit(Unit) }
+            viewModelScope.launch {
+                _navigateToLogin.emit(Unit)
+            }
             return
         }
         viewModelScope.launch {

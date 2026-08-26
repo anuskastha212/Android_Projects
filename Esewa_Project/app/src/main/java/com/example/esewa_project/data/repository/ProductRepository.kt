@@ -6,10 +6,12 @@ import com.example.esewa_project.data.local.entity.ProductEntity
 
 class ProductRepository(private val productDao: ProductDao) {
     private val productApi = RetrofitInstance.api
-
     suspend fun getAllProducts() = productApi.getAllProducts()
     suspend fun getProductById(id: Int) = productApi.getProductById(id)
 
+    suspend fun getLocalProductById(id: Int): ProductEntity? {
+        return productDao.getProductById(id)
+    }
     suspend fun insertProducts(products: List<ProductEntity>) {
         productDao.insertProducts(products)
     }

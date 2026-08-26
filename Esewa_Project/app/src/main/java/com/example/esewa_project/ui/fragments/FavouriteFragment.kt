@@ -63,6 +63,12 @@ class FavouriteFragment : Fragment() {
                         favViewModel.clearAllFavourites()
                         selectedProductIds = emptySet()
                     },
+//                    onDeleteSelectedClick = {
+//                        selectedProductIds.forEach { id ->
+//                            favViewModel.removeFavourite(id)
+//                        }
+//                        selectedProductIds = emptySet()
+//                    },
                     onProductClick = { productId ->
                         selectedProductIds = if (selectedProductIds.contains(productId)) {
                             selectedProductIds - productId
