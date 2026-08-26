@@ -1,12 +1,8 @@
 package com.example.esewa_project.data.repository
 
-import com.example.esewa_project.data.local.dao.CartDao
 import com.example.esewa_project.data.local.dao.FavouriteDao
-import com.example.esewa_project.data.local.entity.CartEntity
 import com.example.esewa_project.data.local.entity.FavouriteEntity
-import com.example.esewa_project.data.local.entity.ProductEntity
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 
 class FavouriteRepository(private val favouriteDao: FavouriteDao) {

@@ -9,7 +9,6 @@ import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.model.Product
 import com.example.esewa_project.data.model.ProductCategory
 import com.example.esewa_project.data.repository.BannerRepository
-import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.CategoryRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.local.entity.ProductEntity
@@ -19,7 +18,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val productRepo = ProductRepository(AppDatabase.getDatabase(application).productDao())
     private val categoryRepo = CategoryRepository()
     private val bannerRepo = BannerRepository()
-    private val cartRepo = CartRepository(AppDatabase.getDatabase(application).cartDao())
     private val _products = MutableLiveData<List<Product>>()
     val products: LiveData<List<Product>> = _products
     private val _popularCategories = MutableLiveData<List<ProductCategory>>()
@@ -33,7 +31,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val apiProducts = productRepo.getAllProducts()
                 _products.value = apiProducts
 
-                productRepo.cacheProducts(apiProducts.map {
+                productRepo.insertProducts(apiProducts.map {
                     ProductEntity(it.id, it.title, it.price, it.thumbnail, it.category.name)
                 })
 

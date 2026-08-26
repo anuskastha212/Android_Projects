@@ -118,7 +118,9 @@ class ProductDetailActivity : AppCompatActivity() {
 
             val adapter = ProductDetailAdapter(product.images)
             productImageDet.adapter = adapter
-            TabLayoutMediator(indicatorProductImage, productImageDet) { _, _ -> }.attach()
+            TabLayoutMediator(indicatorProductImage, productImageDet) { _, _ ->
+
+            }.attach()
 
             rvProductSize.layoutManager = LinearLayoutManager(
                 this@ProductDetailActivity,

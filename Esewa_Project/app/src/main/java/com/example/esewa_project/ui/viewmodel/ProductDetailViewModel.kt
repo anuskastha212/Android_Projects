@@ -27,7 +27,7 @@ class ProductDetailViewModel (application: Application) : AndroidViewModel(appli
             try {
                 val result = productRepo.getProductById(id)
                 _product.value = result
-                productRepo.cacheProducts(listOf(
+                productRepo.insertProducts(listOf(
                     com.example.esewa_project.data.local.entity.ProductEntity(
                         result.id, result.title, result.price, result.thumbnail, result.category.name
                     )

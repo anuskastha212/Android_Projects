@@ -15,7 +15,10 @@ fun CheckoutScreen(
 ) {
     Scaffold(
         topBar = {
-            CheckoutTopBar(onBackClick = onBackClick)
+            CommonTopBar(
+                title = "Checkout",
+                onBackClick = onBackClick
+            )
         }
     ) { paddingValues ->
         Box(

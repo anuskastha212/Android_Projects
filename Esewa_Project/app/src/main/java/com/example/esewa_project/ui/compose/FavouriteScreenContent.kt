@@ -46,10 +46,15 @@ fun FavouriteScreenContent(
             }
         },
         topBar = {
-            FavouriteTopBar(
-                cartCount = cartCount,
+            CommonTopBar(
+                title = "Favourites",
                 onBackClick = onBackClick,
-                onCartClick = onCartClick
+                actions = {
+                    CartBadgeAction(
+                        cartCount = cartCount,
+                        onCartClick = onCartClick
+                    )
+                }
             )
         }
     ) { paddingValues ->
