@@ -193,14 +193,28 @@ class MainActivity : AppCompatActivity() {
         text.visibility = View.VISIBLE
         icon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.green))
         layout.setBackgroundResource(R.drawable.bg_bottom_nav)
-        layout.animate().scaleX(1.1f).scaleY(1.1f).setDuration(100).withEndAction {
-            layout.animate().scaleX(1f).scaleY(1f).setDuration(100)
-        }
+        layout.animate()
+            .scaleX(1.1f)
+            .scaleY(1.1f)
+            .setDuration(100)
+            .withEndAction {
+                layout.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(100)
+            }
     }
 
-    private fun onDeselect(layout: LinearLayout, text: TextView, icon: ImageView) {
+    private fun onDeselect(
+        layout: LinearLayout,
+        text: TextView,
+        icon: ImageView
+    ){
         text.visibility = View.GONE
-        icon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.black))
+        icon.imageTintList =
+            ColorStateList.valueOf(
+                ContextCompat.getColor(this, R.color.black)
+            )
         layout.setBackgroundResource(android.R.color.transparent)
     }
 }

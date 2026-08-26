@@ -50,7 +50,12 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun toggleFavourite(productId: Int) {
         val uid = userSession.value
-        if (uid.isEmpty()) { viewModelScope.launch { _navigateToLogin.emit(Unit) }; return }
+        if (uid.isEmpty()) {
+            viewModelScope.launch {
+                _navigateToLogin.emit(Unit)
+            }
+            return
+        }
         viewModelScope.launch {
             if (favouriteIds.value.contains(productId)) {
                 favRepo.removeFavourite(uid, productId)

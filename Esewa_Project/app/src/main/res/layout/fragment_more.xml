@@ -6,17 +6,6 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarMore"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@android:color/white"
-        app:navigationIcon="@drawable/back"
-        app:title="More"
-        app:titleCentered="true"
-        android:elevation="0dp"
-        android:paddingTop="28dp"/>
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -49,12 +38,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:visibility="visible">
+                        android:visibility="visible"
+                        android:paddingTop="46dp"
+                        android:paddingBottom="46dp">
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Hello, Welcome to eBazar"
+                            android:text="@string/hello_welcome_to_ebazar"
                             android:textSize="18sp"
                             android:gravity="center"
                             android:layout_marginBottom="12dp"/>
@@ -94,6 +85,17 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:visibility="gone">
+
+                        <com.google.android.material.appbar.MaterialToolbar
+                            android:id="@+id/toolbarMore"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp"
+                            android:background="@android:color/white"
+                            app:navigationIcon="@drawable/back"
+                            app:title="More"
+                            app:titleCentered="true"
+                            android:elevation="0dp"
+                            android:paddingTop="28dp"/>
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"

@@ -129,7 +129,7 @@ class RegisterActivity : AppCompatActivity() {
                 if (it.isSuccess) {
                     Toast.makeText(
                         this,
-                        "Succussful Registration",
+                        "Successful Registration",
                         Toast.LENGTH_LONG).show()
                     val intent = Intent (this, LoginActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP

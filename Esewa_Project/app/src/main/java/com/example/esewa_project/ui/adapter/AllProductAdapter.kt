@@ -24,7 +24,10 @@ class AllProductAdapter(
     class ProductViewHolder(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
 
     var currentQuantities: Map<Int, Int> = emptyMap()
-
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
     var favouriteIds: Set<Int> = emptySet()
         set(value) {
             field = value

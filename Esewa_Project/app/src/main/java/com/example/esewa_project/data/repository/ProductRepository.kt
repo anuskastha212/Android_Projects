@@ -10,7 +10,7 @@ class ProductRepository(private val productDao: ProductDao) {
     suspend fun getAllProducts() = productApi.getAllProducts()
     suspend fun getProductById(id: Int) = productApi.getProductById(id)
 
-    suspend fun cacheProducts(products: List<ProductEntity>) {
+    suspend fun insertProducts(products: List<ProductEntity>) {
         productDao.insertProducts(products)
     }
 }
