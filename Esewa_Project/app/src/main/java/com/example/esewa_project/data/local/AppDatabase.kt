@@ -1,7 +1,6 @@
 package com.example.esewa_project.data.local
 
 import android.content.Context
-import android.icu.text.RelativeDateTimeFormatter
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -23,11 +22,9 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun cartDao(): CartDao
     abstract fun productDao(): ProductDao
     abstract fun favouriteDao(): FavouriteDao
-
     companion object{
         @Volatile
         private var INSTANCE: AppDatabase?=null
-
         fun getDatabase(context: Context): AppDatabase{
             return INSTANCE?: synchronized(this){
                 val instance = Room.databaseBuilder(

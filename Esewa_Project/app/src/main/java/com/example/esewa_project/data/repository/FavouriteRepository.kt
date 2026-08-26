@@ -24,7 +24,7 @@ class FavouriteRepository(private val favouriteDao: FavouriteDao) {
     }
 
     suspend fun removeFavourite(userId: String, productId: Int) {
-        favouriteDao.removeFavourite(userId, productId) // Local
+        favouriteDao.removeFavourite(userId, productId)
         firestore.collection("users").document(userId)
             .collection("favourites").document(productId.toString())
             .delete().await()

@@ -6,25 +6,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat.enableEdgeToEdge
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.esewa_project.LoginActivity
-import com.example.esewa_project.MainActivity
-import com.example.esewa_project.ProductDetailActivity
 import com.example.esewa_project.R
 import com.example.esewa_project.RegisterActivity
 import com.example.esewa_project.databinding.FragmentMoreBinding
 import com.example.esewa_project.ui.viewmodel.AuthViewModel
+import com.example.esewa_project.ui.viewmodel.UserSessionViewModel
 
 class MoreFragment : Fragment() {
 
     private var _binding: FragmentMoreBinding? = null
     private val binding get() = _binding!!
     private val authViewModel: AuthViewModel by viewModels()
+    private val userSessionViewModel: UserSessionViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,10 +44,18 @@ class MoreFragment : Fragment() {
         menu.findItem(R.id.action_notifications)?.isVisible = false
         menu.findItem(R.id.action_options)?.isVisible = false
 
-        authViewModel.userData.observe(viewLifecycleOwner) { data ->
-            if (data != null) {
-                binding.userName.text = data["name"]?.toString() ?: "User"
-                binding.userPhone.text = data["phone"]?.toString() ?: "No Phone"
+        userSessionViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
+            if (profile.uid.isNotEmpty()) {
+                binding.userName.text = profile.name
+                binding.userPhone.text = profile.phone
+
+                binding.layoutGuest.visibility = View.GONE
+                binding.layoutLoggedIn.visibility = View.VISIBLE
+                binding.logoutButton.visibility = View.VISIBLE
+            } else {
+                binding.layoutGuest.visibility = View.VISIBLE
+                binding.layoutLoggedIn.visibility = View.GONE
+                binding.logoutButton.visibility = View.GONE
             }
         }
 
@@ -69,28 +74,6 @@ class MoreFragment : Fragment() {
                 "Logged out successfully",
                 Toast.LENGTH_SHORT
             ).show()
-        }
-
-        updateUI()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        updateUI()
-    }
-
-    private fun updateUI() {
-        val isLoggedIn = authViewModel.isUserLoggedIn()
-
-        if (isLoggedIn) {
-            binding.layoutGuest.visibility = View.GONE
-            binding.layoutLoggedIn.visibility = View.VISIBLE
-            binding.logoutButton.visibility = View.VISIBLE
-            authViewModel.fetchUserDetails()
-        } else {
-            binding.layoutGuest.visibility = View.VISIBLE
-            binding.layoutLoggedIn.visibility = View.GONE
-            binding.logoutButton.visibility = View.GONE
         }
     }
 

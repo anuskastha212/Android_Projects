@@ -22,7 +22,10 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
 
     val userSession: StateFlow<String> = sessionRepo.currentUserId
         .map { it ?: "" }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, sessionRepo.getUid() ?: "")
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            sessionRepo.getUid() ?: "")
 
     val favouriteCount: Flow<Int> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(0)
@@ -32,19 +35,28 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
     val favouriteIds: StateFlow<Set<Int>> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(emptySet())
         else favRepo.getFavouriteIds(uid).map { it.toSet() }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        emptySet())
 
     val favouriteProducts: StateFlow<List<ProductEntity>?> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(emptyList())
         else favRepo.getFavouriteProducts(uid)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        null)
 
     fun toggleFavourite(productId: Int) {
         val uid = userSession.value
         if (uid.isEmpty()) { viewModelScope.launch { _navigateToLogin.emit(Unit) }; return }
         viewModelScope.launch {
-            if (favouriteIds.value.contains(productId)) favRepo.removeFavourite(uid, productId)
-            else favRepo.addFavourite(FavouriteEntity(uid, productId, System.currentTimeMillis()))
+            if (favouriteIds.value.contains(productId)) {
+                favRepo.removeFavourite(uid, productId)
+            } else {
+                favRepo.addFavourite(FavouriteEntity(uid, productId, System.currentTimeMillis()))
+            }
         }
     }
 

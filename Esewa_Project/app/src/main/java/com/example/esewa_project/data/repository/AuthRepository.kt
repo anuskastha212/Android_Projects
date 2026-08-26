@@ -59,5 +59,4 @@ class AuthRepository {
     }
 
     fun logout() = auth.signOut()
-    fun isUserLoggedIn() = auth.currentUser != null
 }

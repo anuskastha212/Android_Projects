@@ -20,9 +20,6 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
     private val _authResult = MutableLiveData<Result<Unit>?>()
     val authResult: LiveData<Result<Unit>?> = _authResult
 
-    private val _userData = MutableLiveData<Map<String, Any>?>()
-    val userData: LiveData<Map<String, Any>?> = _userData
-
     private val _resetPassword = MutableLiveData<Result<Unit>?>()
     val resetPassword: LiveData<Result<Unit>?> = _resetPassword
 
@@ -38,12 +35,6 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
             _authResult.value = result
             if (result.isSuccess) {
                 val uid =  authRepository.getCurrentUserUid() ?: ""
-                val db = AppDatabase.getDatabase(getApplication())
-                val cartRepo = CartRepository(db.cartDao())
-                val favRepo = FavouriteRepository(db.favouriteDao())
-
-                cartRepo.syncCartFromCloud(uid)
-                favRepo.syncFavouritesFromCloud(uid)
                 val details = authRepository.getUserDetails()
                 details?.let {
                     saveSessionLocally(
@@ -52,9 +43,12 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
                         phone = it["phone"] as? String ?: ""
                     )
                 }
-
+                val db = AppDatabase.getDatabase(getApplication())
+                val cartRepo = CartRepository(db.cartDao())
+                val favRepo = FavouriteRepository(db.favouriteDao())
+                cartRepo.syncCartFromCloud(uid)
+                favRepo.syncFavouritesFromCloud(uid)
             }
-
         }
     }
 
@@ -68,15 +62,7 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         )
         userSessionRepository.saveSession(profile)
     }
-
-    fun isUserLoggedIn() = authRepository.isUserLoggedIn()
-
-    fun fetchUserDetails() {
-        viewModelScope.launch {
-            _userData.value = authRepository.getUserDetails()
-        }
-    }
-
+    
     fun sendResetEmail(email: String){
         viewModelScope.launch{
             _resetPassword.value = authRepository.sendPasswordResetEmail(email)
@@ -92,7 +78,6 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             userSessionRepository.clearSession()
         }
-        _userData.value = null
     }
 
     fun resetResult(){
