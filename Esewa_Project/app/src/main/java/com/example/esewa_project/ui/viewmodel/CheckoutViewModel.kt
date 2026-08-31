@@ -25,7 +25,7 @@ class CheckoutViewModel(
     val promoDiscount: StateFlow<Double> = _promoDiscount.asStateFlow()
 
     fun applyPromoCode(code: String): Boolean {
-        return if (code == "eBazar-33") {
+        return if (code.trim().equals("eBazar-33", ignoreCase = true)) {
             _promoDiscount.value = 100.0
             true
         } else {

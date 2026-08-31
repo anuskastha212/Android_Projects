@@ -1,5 +1,6 @@
 package com.example.esewa_project.ui.compose
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,7 @@ fun CheckoutScreen(
     checkoutViewModel: CheckoutViewModel,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
     var showPromoSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -42,7 +45,8 @@ fun CheckoutScreen(
         topBar = {
             CommonTopBar(
                 title = "Checkout",
-                onBackClick = onBackClick)
+                onBackClick = onBackClick
+            )
         },
         bottomBar = {
             CheckoutBottomBar(items = items, discount = discount)
@@ -89,9 +93,20 @@ fun CheckoutScreen(
                 codeValue = promoCodeInput,
                 onCodeChange = { promoCodeInput = it },
                 onApply = {
-                    val success = checkoutViewModel?.applyPromoCode(promoCodeInput) ?: false
+                    val success = checkoutViewModel.applyPromoCode(promoCodeInput.trim())
                     if (success) {
                         showPromoSheet = false
+                        Toast.makeText(
+                            context,
+                            "Promo Code Applied!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Invalid Promo Code",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             )
@@ -141,7 +156,10 @@ fun PaymentOptionsCard() {
                     isSelected = selectedMethod == "COD",
                     onClick = { selectedMethod = "COD" }
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F5))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = Color(0xFFF1F1F5)
+                )
                 PaymentOptionRow(
                     iconRes = R.drawable.esewa_logo,
                     label = "Pay with eSewa",
@@ -232,7 +250,12 @@ fun PromoBottomSheetContent(
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Apply", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(
+                text = "Apply",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
         }
     }
 }
