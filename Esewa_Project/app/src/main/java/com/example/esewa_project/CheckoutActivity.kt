@@ -37,8 +37,10 @@ class CheckoutActivity : ComponentActivity() {
 
         val factory = CheckoutViewModelFactory(productRepo, cartRepo, sessionRepo)
         checkoutViewModel = ViewModelProvider(this, factory)[CheckoutViewModel::class.java]
-        val productId = intent.getIntExtra("product_id", -1)
 
+        checkoutViewModel.loadSavedAddress()
+
+        val productId = intent.getIntExtra("product_id", -1)
         if (productId != -1) {
             checkoutViewModel.loadSingleProduct(productId)
         } else {

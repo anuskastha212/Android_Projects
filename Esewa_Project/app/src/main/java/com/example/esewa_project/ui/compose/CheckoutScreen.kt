@@ -33,7 +33,7 @@ fun CheckoutScreen(
     onBackClick: () -> Unit,
     onProceedClick: () -> Unit
 ) {
-    var deliveryAddress by remember { mutableStateOf<String?>(null) }
+    val deliveryAddress by checkoutViewModel.deliveryAddress.collectAsState()
     var showNoAddressSheet by remember { mutableStateOf(false) }
     var showMapPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -46,7 +46,8 @@ fun CheckoutScreen(
     if (showMapPicker) {
         MapLocation(
             onLocationConfirmed = { lat, lng ->
-                deliveryAddress = "Selected Address ($lat, $lng)"
+                val newAddress = "Selected Location ($lat, $lng)"
+                checkoutViewModel.saveDeliveryAddress(newAddress)
                 showMapPicker = false
             },
             onClose = {
