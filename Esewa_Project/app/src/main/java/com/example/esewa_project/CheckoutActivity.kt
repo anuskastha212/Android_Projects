@@ -4,20 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModelProvider
 import com.example.esewa_project.data.local.AppDatabase
 import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
 import com.example.esewa_project.ui.compose.CheckoutScreen
+import com.example.esewa_project.ui.compose.ConfirmationScreen
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 
@@ -46,16 +44,24 @@ class CheckoutActivity : ComponentActivity() {
 
         setContent {
             val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
+            val discount by checkoutViewModel.promoDiscount.collectAsState()
+            var isConfirmationScreen by remember { mutableStateOf(false) }
 
             if (checkoutItems.isNotEmpty()) {
-                CheckoutScreen(
-                    items = checkoutItems,
-                    checkoutViewModel = checkoutViewModel,
-                    onBackClick = { finish() },
-                )
-            }else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF2ABB00))
+                if (isConfirmationScreen) {
+                    ConfirmationScreen(
+                        items = checkoutItems,
+                        discount = discount,
+                        onBackClick = { isConfirmationScreen = false },
+                        onConfirmClick = { }
+                    )
+                } else {
+                    CheckoutScreen(
+                        items = checkoutItems,
+                        checkoutViewModel = checkoutViewModel,
+                        onBackClick = { finish() },
+                        onProceedClick = { isConfirmationScreen = true }
+                    )
                 }
             }
         }

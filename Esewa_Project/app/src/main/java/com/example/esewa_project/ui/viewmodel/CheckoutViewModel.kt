@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-
 class CheckoutViewModel(
     private val productRepo: ProductRepository,
     private val cartRepo: CartRepository,

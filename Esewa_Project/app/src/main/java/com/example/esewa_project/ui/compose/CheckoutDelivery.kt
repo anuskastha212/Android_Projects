@@ -52,7 +52,6 @@ fun CheckoutDelivery() {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Text Column
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Delivery Address",

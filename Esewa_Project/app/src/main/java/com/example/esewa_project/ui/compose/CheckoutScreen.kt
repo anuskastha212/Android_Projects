@@ -32,7 +32,8 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 fun CheckoutScreen(
     items: List<CartItem>,
     checkoutViewModel: CheckoutViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onProceedClick: () -> Unit
 ) {
     val context = LocalContext.current
     var showPromoSheet by remember { mutableStateOf(false) }
@@ -49,7 +50,11 @@ fun CheckoutScreen(
             )
         },
         bottomBar = {
-            CheckoutBottomBar(items = items, discount = discount)
+            CheckoutBottomBar(
+                items = items,
+                discount = discount,
+                onProceedClick = onProceedClick
+            )
         }
     ) { paddingValues ->
         Box(
