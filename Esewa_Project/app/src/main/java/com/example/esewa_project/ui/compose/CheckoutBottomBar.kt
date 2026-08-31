@@ -24,13 +24,16 @@ import com.example.esewa_project.data.model.CartItem
 import java.util.Locale
 
 @Composable
-fun CheckoutBottomBar(items: List<CartItem>) {
+fun CheckoutBottomBar(
+    items: List<CartItem>,
+    discount: Double = 0.0
+     ) {
     var isExpanded by remember { mutableStateOf(false) }
 
     val subTotal = items.sumOf { it.price * it.quantity }
     val tax = 1500.0
     val shipping = 50.0
-    val grandTotal = subTotal + tax + shipping
+    val grandTotal = (subTotal + tax + shipping) - discount
     val totalItems = items.sumOf { it.quantity }
 
     Box(
@@ -53,6 +56,10 @@ fun CheckoutBottomBar(items: List<CartItem>) {
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     PriceRow("Sub Total ($totalItems Items)", subTotal)
                     Spacer(modifier = Modifier.height(8.dp))
+                    if (discount > 0) {
+                        PriceRow("Promo Discount", -discount)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                     PriceRow("Tax", tax)
                     Spacer(modifier = Modifier.height(8.dp))
                     PriceRow("Shipping Charge", shipping)

@@ -50,6 +50,7 @@ class CheckoutActivity : ComponentActivity() {
             if (checkoutItems.isNotEmpty()) {
                 CheckoutScreen(
                     items = checkoutItems,
+                    checkoutViewModel = checkoutViewModel,
                     onBackClick = { finish() },
                 )
             }else {
