@@ -1,5 +1,6 @@
 package com.example.esewa_project.ui.compose
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,12 +12,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,51 +30,83 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 fun CheckoutScreen(
     items: List<CartItem>,
     checkoutViewModel: CheckoutViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onProceedClick: () -> Unit
 ) {
+    val deliveryAddress by checkoutViewModel.deliveryAddress.collectAsState()
+    var showNoAddressSheet by remember { mutableStateOf(false) }
+    var showMapPicker by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     var showPromoSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val discount by checkoutViewModel.promoDiscount.collectAsState()
     var promoCodeInput by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            CommonTopBar(
-                title = "Checkout",
-                onBackClick = onBackClick)
-        },
-        bottomBar = {
-            CheckoutBottomBar(items = items, discount = discount)
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF8F9FA))
-                .padding(paddingValues)
-        ) {
-            Column(
+    if (showMapPicker) {
+        MapLocation(
+            onLocationConfirmed = { lat, lng ->
+                val newAddress = "Selected Location ($lat, $lng)"
+                checkoutViewModel.saveDeliveryAddress(newAddress)
+                showMapPicker = false
+            },
+            onClose = {
+                showMapPicker = false
+            }
+        )
+    } else {
+        Scaffold(
+            topBar = {
+                CommonTopBar(
+                    title = "Checkout",
+                    onBackClick = onBackClick
+                )
+            },
+            bottomBar = {
+                CheckoutBottomBar(
+                    items = items,
+                    discount = discount,
+                    onProceedClick = onProceedClick
+                )
+            }
+        ) { paddingValues ->
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
-                    .padding(bottom = 80.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .fillMaxSize()
+                    .background(Color(0xFFF8F9FA))
+                    .padding(paddingValues)
             ) {
-                CheckoutDelivery()
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = "Order Summary",
-                        fontSize = 14.sp,
-                        color = Color(0xFF555770),
-                    )
-                    items.forEach { item ->
-                        CheckoutProductCard(item = item)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 24.dp)
+                        .padding(bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        CheckoutDelivery(
+                            currentAddress = deliveryAddress,
+                            onEditClick = {
+                                if (deliveryAddress.isNullOrEmpty()) {
+                                    showNoAddressSheet = true
+                                } else {
+                                    showMapPicker = true
+                                }
+                            }
+                        )
+                        Text(
+                            text = "Order Summary",
+                            fontSize = 14.sp,
+                            color = Color(0xFF555770),
+                        )
+                        items.forEach { item ->
+                            CheckoutProductCard(item = item)
+                        }
                     }
+                    PromoCodeButton(onClick = { showPromoSheet = true })
+                    PaymentOptionsCard()
                 }
-                PromoCodeButton(onClick = { showPromoSheet = true })
-                PaymentOptionsCard()
             }
         }
     }
@@ -89,10 +121,39 @@ fun CheckoutScreen(
                 codeValue = promoCodeInput,
                 onCodeChange = { promoCodeInput = it },
                 onApply = {
-                    val success = checkoutViewModel?.applyPromoCode(promoCodeInput) ?: false
+                    val success = checkoutViewModel.applyPromoCode(promoCodeInput.trim())
                     if (success) {
                         showPromoSheet = false
+                        Toast.makeText(
+                            context,
+                            "Promo Code Applied!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Invalid Promo Code",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+                }
+            )
+        }
+    }
+
+    if (showNoAddressSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showNoAddressSheet = false },
+            sheetState = sheetState,
+            containerColor = Color.White
+        ) {
+            NoAddressBottomSheetContent(
+                onSetAddress = {
+                    showNoAddressSheet = false
+                    showMapPicker = true
+                },
+                onCancel = {
+                    showNoAddressSheet = false
                 }
             )
         }
@@ -141,7 +202,10 @@ fun PaymentOptionsCard() {
                     isSelected = selectedMethod == "COD",
                     onClick = { selectedMethod = "COD" }
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F5))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = Color(0xFFF1F1F5)
+                )
                 PaymentOptionRow(
                     iconRes = R.drawable.esewa_logo,
                     label = "Pay with eSewa",
@@ -232,7 +296,12 @@ fun PromoBottomSheetContent(
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Apply", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(
+                text = "Apply",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
         }
     }
 }

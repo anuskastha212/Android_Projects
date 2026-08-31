@@ -33,7 +33,6 @@ fun CheckoutProductCard(item: CartItem) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Grey Box for Image
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -49,11 +48,13 @@ fun CheckoutProductCard(item: CartItem) {
                 )
             }
 
-            // Text Details
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp)
+                    .padding(
+                        start = 16.dp,
+                        bottom = 8.dp
+                    )
             ) {
                 Text(
                     text = item.title,

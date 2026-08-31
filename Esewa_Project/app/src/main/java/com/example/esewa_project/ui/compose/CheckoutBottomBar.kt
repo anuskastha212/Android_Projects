@@ -7,9 +7,12 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -26,8 +29,9 @@ import java.util.Locale
 @Composable
 fun CheckoutBottomBar(
     items: List<CartItem>,
-    discount: Double = 0.0
-     ) {
+    discount: Double = 0.0,
+    onProceedClick: () -> Unit
+) {
     var isExpanded by remember { mutableStateOf(false) }
 
     val subTotal = items.sumOf { it.price * it.quantity }
@@ -63,7 +67,22 @@ fun CheckoutBottomBar(
                     PriceRow("Tax", tax)
                     Spacer(modifier = Modifier.height(8.dp))
                     PriceRow("Shipping Charge", shipping)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = onProceedClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text(
+                            text = "PROCEED",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 
