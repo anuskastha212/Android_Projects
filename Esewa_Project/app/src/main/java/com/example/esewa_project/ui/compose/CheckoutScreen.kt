@@ -1,5 +1,7 @@
 package com.example.esewa_project.ui.compose
 
+import android.content.Context
+import android.location.Geocoder
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -24,6 +26,10 @@ import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +43,8 @@ fun CheckoutScreen(
     var showNoAddressSheet by remember { mutableStateOf(false) }
     var showMapPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val coroutineScope = rememberCoroutineScope()
     var showPromoSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -46,9 +54,11 @@ fun CheckoutScreen(
     if (showMapPicker) {
         MapLocation(
             onLocationConfirmed = { lat, lng ->
-                val newAddress = "Selected Location ($lat, $lng)"
-                checkoutViewModel.saveDeliveryAddress(newAddress)
-                showMapPicker = false
+                coroutineScope.launch {
+                    val realAddress = getReadableAddress(context, lat, lng)
+                    checkoutViewModel.saveDeliveryAddress(realAddress)
+                    showMapPicker = false
+                }
             },
             onClose = {
                 showMapPicker = false
@@ -181,6 +191,53 @@ fun PromoCodeButton(onClick: () -> Unit) {
     }
 }
 
+
+@Composable
+fun PromoBottomSheetContent(
+    codeValue: String,
+    onCodeChange: (String) -> Unit,
+    onApply: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .padding(bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Enter Promo Code",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF292A40)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = codeValue,
+            onValueChange = onCodeChange,
+            placeholder = { Text("Enter code here...") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onApply,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text(
+                text = "Apply",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
 @Composable
 fun PaymentOptionsCard() {
     var selectedMethod by remember { mutableStateOf("COD") }
@@ -260,48 +317,18 @@ fun PaymentOptionRow(
     }
 }
 
-@Composable
-fun PromoBottomSheetContent(
-    codeValue: String,
-    onCodeChange: (String) -> Unit,
-    onApply: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-            .padding(bottom = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "Enter Promo Code",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF292A40)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(
-            value = codeValue,
-            onValueChange = onCodeChange,
-            placeholder = { Text("Enter code here...") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = onApply,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text(
-                text = "Apply",
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
+suspend fun getReadableAddress(context: Context, lat: Double, lng: Double): String {
+    return withContext(Dispatchers.IO) { try { val geocoder = Geocoder(context, Locale.getDefault())
+        val addresses = geocoder.getFromLocation(lat, lng, 1)
+        if (!addresses.isNullOrEmpty()) {
+            val address = addresses[0]
+            address.getAddressLine(0) ?: "${address.subLocality ?: ""}, ${address.locality ?: ""}".trim(',', ' ')
+        } else {
+            "Location ($lat, $lng)"
         }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        "Location ($lat, $lng)"
+    }
     }
 }
