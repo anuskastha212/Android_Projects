@@ -51,7 +51,10 @@ fun CheckoutProductCard(item: CartItem) {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp)
+                    .padding(
+                        start = 16.dp,
+                        bottom = 8.dp
+                    )
             ) {
                 Text(
                     text = item.title,

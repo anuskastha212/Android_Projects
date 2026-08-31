@@ -12,8 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +33,9 @@ fun CheckoutScreen(
     onBackClick: () -> Unit,
     onProceedClick: () -> Unit
 ) {
+    var deliveryAddress by remember { mutableStateOf<String?>(null) }
+    var showNoAddressSheet by remember { mutableStateOf(false) }
+    var showMapPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var showPromoSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -42,48 +43,69 @@ fun CheckoutScreen(
     val discount by checkoutViewModel.promoDiscount.collectAsState()
     var promoCodeInput by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            CommonTopBar(
-                title = "Checkout",
-                onBackClick = onBackClick
-            )
-        },
-        bottomBar = {
-            CheckoutBottomBar(
-                items = items,
-                discount = discount,
-                onProceedClick = onProceedClick
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF8F9FA))
-                .padding(paddingValues)
-        ) {
-            Column(
+    if (showMapPicker) {
+        MapLocation(
+            onLocationConfirmed = { lat, lng ->
+                deliveryAddress = "Selected Address ($lat, $lng)"
+                showMapPicker = false
+            },
+            onClose = {
+                showMapPicker = false
+            }
+        )
+    } else {
+        Scaffold(
+            topBar = {
+                CommonTopBar(
+                    title = "Checkout",
+                    onBackClick = onBackClick
+                )
+            },
+            bottomBar = {
+                CheckoutBottomBar(
+                    items = items,
+                    discount = discount,
+                    onProceedClick = onProceedClick
+                )
+            }
+        ) { paddingValues ->
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
-                    .padding(bottom = 80.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                    .fillMaxSize()
+                    .background(Color(0xFFF8F9FA))
+                    .padding(paddingValues)
             ) {
-                CheckoutDelivery()
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = "Order Summary",
-                        fontSize = 14.sp,
-                        color = Color(0xFF555770),
-                    )
-                    items.forEach { item ->
-                        CheckoutProductCard(item = item)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 24.dp)
+                        .padding(bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        CheckoutDelivery(
+                            currentAddress = deliveryAddress,
+                            onEditClick = {
+                                if (deliveryAddress.isNullOrEmpty()) {
+                                    showNoAddressSheet = true
+                                } else {
+                                    showMapPicker = true
+                                }
+                            }
+                        )
+                        Text(
+                            text = "Order Summary",
+                            fontSize = 14.sp,
+                            color = Color(0xFF555770),
+                        )
+                        items.forEach { item ->
+                            CheckoutProductCard(item = item)
+                        }
                     }
+                    PromoCodeButton(onClick = { showPromoSheet = true })
+                    PaymentOptionsCard()
                 }
-                PromoCodeButton(onClick = { showPromoSheet = true })
-                PaymentOptionsCard()
             }
         }
     }
@@ -113,6 +135,24 @@ fun CheckoutScreen(
                             Toast.LENGTH_SHORT
                         ).show()
                     }
+                }
+            )
+        }
+    }
+
+    if (showNoAddressSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showNoAddressSheet = false },
+            sheetState = sheetState,
+            containerColor = Color.White
+        ) {
+            NoAddressBottomSheetContent(
+                onSetAddress = {
+                    showNoAddressSheet = false
+                    showMapPicker = true
+                },
+                onCancel = {
+                    showNoAddressSheet = false
                 }
             )
         }
