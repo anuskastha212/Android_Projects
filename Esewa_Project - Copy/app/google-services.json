@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "774125926852",
+    "project_id": "esewa-project",
+    "storage_bucket": "esewa-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774125926852:android:f44532288fcd2ef1c84c91",
+        "android_client_info": {
+          "package_name": "com.example.esewa_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDM55zLJ0Hwj9zr-pVru_pmASbJ03KaX4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

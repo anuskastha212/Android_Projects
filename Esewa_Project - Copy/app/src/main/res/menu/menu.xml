@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_notifications"
+        android:icon="@drawable/notification_bell"
+        android:title="@string/notifications"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_options"
+        android:icon="@drawable/option"
+        android:title="@string/option"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/action_cart"
+        android:icon="@drawable/nav_cart"
+        android:title="@string/cart"
+        app:showAsAction="always"/>
+</menu>

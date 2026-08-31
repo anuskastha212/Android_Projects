@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/more"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarMore"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@android:color/white"
+        app:navigationIcon="@drawable/back"
+        app:title="More"
+        app:titleCentered="true"
+        android:elevation="0dp"
+        android:paddingTop="28dp"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:layout_marginTop="20dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Guest User -->
+                    <LinearLayout
+                        android:id="@+id/layoutGuest"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:paddingTop="46dp"
+                        android:paddingBottom="46dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/hello_welcome_to_ebazar"
+                            android:textSize="18sp"
+                            android:gravity="center"
+                            android:layout_marginBottom="12dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="24dp">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/loginButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="8dp"
+                                android:text="@string/login"
+                                android:textSize="18sp"
+                                app:backgroundTint="@color/green"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/registerButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/sign_up"
+                                android:textSize="18sp"
+                                app:backgroundTint="@color/green"/>
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Logged In User -->
+                    <LinearLayout
+                        android:id="@+id/layoutLoggedIn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="24dp">
+
+                            <ImageView
+                                android:id="@+id/imgProfile"
+                                android:layout_width="50dp"
+                                android:layout_height="50dp"
+                                android:src="@drawable/profile_image"
+                                android:contentDescription="@string/user_profile_image"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:layout_marginStart="12dp"
+                                app:layout_constraintStart_toEndOf="@id/imgProfile"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent">
+
+                                <TextView
+                                    android:id="@+id/userName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/mairea_doe"
+                                    android:textStyle="bold"
+                                    android:textSize="16sp"/>
+
+                                <TextView
+                                    android:id="@+id/userPhone"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/_997_9841235678"
+                                    android:textColor="#757575"
+                                    android:textSize="12sp"/>
+
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/btnViewProfile"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/view_profile"
+                                android:textColor="@color/green"
+                                android:clickable="true"
+                                android:textStyle="bold"
+                                android:textSize="12sp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <!-- My Profile -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/my_profile"
+                            android:textStyle="bold"
+                            android:textColor="#28293D"
+                            android:layout_marginBottom="12dp"/>
+
+                        <TextView
+                            android:id="@+id/myProducts"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/my_products"
+                            app:drawableStartCompat="@drawable/my_products"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/shippingAddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/shipping_address"
+                            app:drawableStartCompat="@drawable/shipping_address"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:layout_marginBottom="16dp"
+                            android:clickable="true"/>
+
+                        <!-- My Order -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/my_order"
+                            android:textStyle="bold"
+                            android:textColor="#28293D"
+                            android:layout_marginBottom="12dp"/>
+
+                        <TextView
+                            android:id="@+id/myOrder"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/my_order"
+                            app:drawableStartCompat="@drawable/my_products"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/myReturn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/my_return"
+                            app:drawableStartCompat="@drawable/my_return"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/myCancellation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/my_cancellation"
+                            app:drawableStartCompat="@drawable/my_cancellation"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"
+                            android:layout_marginBottom="16dp" />
+
+                        <!-- Reward & Promotions -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/reward_promotions"
+                            android:textStyle="bold"
+                            android:textColor="#28293D"
+                            android:layout_marginBottom="12dp"/>
+
+                        <TextView
+                            android:id="@+id/rewardPoints"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/reward_points"
+                            app:drawableStartCompat="@drawable/reward_points"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/applyPromocode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/apply_promocode"
+                            app:drawableStartCompat="@drawable/apply_promocode"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/dailyBuyBonus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/daily_buy_bonus"
+                            app:drawableStartCompat="@drawable/daily_buy_bonus"
+                            android:drawablePadding="16dp"
+                            android:gravity="center_vertical"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"
+                            android:layout_marginBottom="16dp" />
+                    </LinearLayout>
+
+                    <!-- Common -->
+                    <LinearLayout
+                        android:id="@+id/layoutCommon"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#EEEEEE"
+                            android:layout_marginBottom="16dp"/>
+
+                        <!-- Help Section -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/help"
+                            android:textStyle="bold"
+                            android:textColor="#28293D"
+                            android:layout_marginBottom="12dp"/>
+
+                        <TextView
+                            android:id="@+id/aboutUs"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/about_us"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/customerSupport"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/customer_support"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/faqs"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/faqs"
+                            android:paddingVertical="8dp"
+                            android:layout_marginBottom="16dp"
+                            android:clickable="true"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#EEEEEE"
+                            android:layout_marginBottom="16dp"/>
+
+                        <!-- Legal Terms Section -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/legal_terms"
+                            android:textStyle="bold"
+                            android:textColor="#28293D"
+                            android:layout_marginBottom="12dp"/>
+
+                        <TextView
+                            android:id="@+id/termsConditions"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/terms_conditions"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/privacyPolicies"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/privacy_policies"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+
+                        <TextView
+                            android:id="@+id/allLegalPolicies"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/all_legal_policies"
+                            android:paddingVertical="8dp"
+                            android:clickable="true"/>
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/logoutButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/logout"
+                        android:textSize="18sp"
+                        android:visibility="gone"
+                        app:backgroundTint="@color/green"/>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="VERSION 1.0.0"
+                android:gravity="center"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                android:textColor="#9E9E9E"
+                android:textSize="12sp"
+                android:letterSpacing="0.1"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -21,6 +21,19 @@ class CheckoutViewModel(
     private val _checkoutItems = MutableStateFlow<List<CartItem>>(emptyList())
     val checkoutItems: StateFlow<List<CartItem>> = _checkoutItems.asStateFlow()
 
+    private val _promoDiscount = MutableStateFlow(0.0)
+    val promoDiscount: StateFlow<Double> = _promoDiscount.asStateFlow()
+
+    fun applyPromoCode(code: String): Boolean {
+        return if (code == "eBazar-33") {
+            _promoDiscount.value = 100.0
+            true
+        } else {
+            _promoDiscount.value = 0.0
+            false
+        }
+    }
+
     fun loadCartItems() {
         viewModelScope.launch {
             val userId = sessionRepo.getUid() ?: ""

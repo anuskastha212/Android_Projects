@@ -1,0 +1,88 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <group>
+
+        <!-- Canopy -->
+        <path
+            android:pathData="M50,90 C50,55 80,35 115,35 C130,35 140,45 140,58 L140,90 Z"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"/>
+
+        <!-- Canopy Handle -->
+        <path
+            android:pathData="M110,35 L118,22"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"
+            android:strokeLineCap="round"/>
+
+        <!-- Stroller Body -->
+        <path
+            android:pathData="M45,90 L150,90 L138,130 C136,138 129,143 121,143 L70,143 C62,143 55,138 53,130 Z"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"/>
+
+        <!-- Push Handle -->
+        <path
+            android:pathData="M150,90 C160,78 168,68 160,55"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"
+            android:strokeLineCap="round"/>
+
+        <!-- Wheel Supports -->
+        <path
+            android:pathData="M85,143 L80,165"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"
+            android:strokeLineCap="round"/>
+
+        <path
+            android:pathData="M108,143 L118,165"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"
+            android:strokeLineCap="round"/>
+
+        <!-- Left Wheel -->
+        <path
+            android:pathData="M76,160
+                              A12,12 0 1,1 75.99,160"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"/>
+
+        <!-- Right Wheel -->
+        <path
+            android:pathData="M124,160
+                              A12,12 0 1,1 123.99,160"
+            android:fillColor="#00000000"
+            android:strokeColor="#22C55E"
+            android:strokeWidth="7"/>
+
+        <!-- Left Hub -->
+        <path
+            android:pathData="M76,170
+                              A2,2 0 1,1 75.99,170"
+            android:fillColor="#22C55E"/>
+
+        <!-- Right Hub -->
+        <path
+            android:pathData="M124,170
+                              A2,2 0 1,1 123.99,170"
+            android:fillColor="#22C55E"/>
+
+    </group>
+
+</vector>
