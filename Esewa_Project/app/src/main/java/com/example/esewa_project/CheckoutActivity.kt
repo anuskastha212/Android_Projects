@@ -23,7 +23,6 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 
 class CheckoutActivity : ComponentActivity() {
-
     private lateinit var checkoutViewModel: CheckoutViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {

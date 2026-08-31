@@ -72,13 +72,12 @@ fun CheckoutBottomBar(
                         onClick = onProceedClick,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
+                            .height(40.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Text(
                             text = "PROCEED",
-                            fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
                             color = Color.White
                         )

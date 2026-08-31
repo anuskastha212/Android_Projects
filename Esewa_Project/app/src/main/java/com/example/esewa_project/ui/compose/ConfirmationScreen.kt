@@ -54,7 +54,6 @@ fun ConfirmationScreen(
             ) {
                 Text(
                     "CONFIRM",
-                    fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
             }
@@ -148,7 +147,10 @@ fun ConfirmationScreen(
 
 @Composable
 fun ConfirmationRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(
             label,
             fontSize = 14.sp,
