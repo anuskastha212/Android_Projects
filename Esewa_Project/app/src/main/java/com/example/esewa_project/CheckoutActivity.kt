@@ -21,6 +21,9 @@ import com.example.esewa_project.ui.compose.CheckoutScreen
 import com.example.esewa_project.ui.compose.ConfirmationScreen
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
+import com.google.android.libraries.places.api.Places
+import android.content.pm.PackageManager
+
 
 class CheckoutActivity : ComponentActivity() {
     private lateinit var checkoutViewModel: CheckoutViewModel
@@ -28,6 +31,20 @@ class CheckoutActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if (!Places.isInitialized()) {
+            try {
+                val applicationInfo =
+                    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+                val apiKey = applicationInfo.metaData.getString("com.google.android.geo.API_KEY")
+
+                if (apiKey != null) {
+                    Places.initialize(applicationContext, apiKey)
+                }
+            } catch (e: PackageManager.NameNotFoundException) {
+                e.printStackTrace()
+            }
+        }
 
         val database = AppDatabase.getDatabase(this)
         val productRepo = ProductRepository(database.productDao())
