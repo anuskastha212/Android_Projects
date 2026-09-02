@@ -32,7 +32,10 @@ fun ShippingAddressScreen(
 ) {
     Scaffold(
         topBar = {
-            CommonTopBar(title = "Shipping Address", onBackClick = onBackClick)
+            CommonTopBar(
+                title = "Shipping Address",
+                onBackClick = onBackClick
+            )
         },
         floatingActionButton = {
             if (addresses.isNotEmpty()) {
@@ -40,8 +43,18 @@ fun ShippingAddressScreen(
                     onClick = onAddAddressClick,
                     containerColor = Color(0xFF2ABB00),
                     contentColor = Color.White,
-                    icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
-                    text = { Text("ADD ADDRESS", fontWeight = FontWeight.Bold) }
+                    icon = {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Add"
+                        )
+                    },
+                    text = {
+                        Text(
+                            "ADD ADDRESS",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 )
             }
         }
@@ -126,7 +139,10 @@ fun EmptyAddressState(onAddClick: () -> Unit) {
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.height(48.dp)
                 ) {
-                    Text("ADD ADDRESS NOW", fontWeight = FontWeight.Bold)
+                    Text(
+                        "ADD ADDRESS NOW",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

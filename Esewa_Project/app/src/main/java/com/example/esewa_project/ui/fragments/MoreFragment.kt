@@ -9,9 +9,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import com.example.esewa_project.CheckoutActivity
 import com.example.esewa_project.LoginActivity
 import com.example.esewa_project.R
 import com.example.esewa_project.RegisterActivity
+import com.example.esewa_project.ShippingAddressActivity
 import com.example.esewa_project.databinding.FragmentMoreBinding
 import com.example.esewa_project.ui.viewmodel.AuthViewModel
 import com.example.esewa_project.ui.viewmodel.UserSessionViewModel
@@ -36,6 +38,11 @@ class MoreFragment : Fragment() {
 
         binding.toolbarMore.setNavigationOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+
+        binding.shippingAddress.setOnClickListener {
+            val intent = Intent(requireContext(), ShippingAddressActivity::class.java)
+            startActivity(intent)
         }
 
         val menu = binding.toolbarMore.menu
