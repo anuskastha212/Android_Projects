@@ -26,7 +26,6 @@ import com.example.esewa_project.databinding.ActivityRegisterBinding
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
     private val viewModel: AuthViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -54,7 +53,7 @@ class RegisterActivity : AppCompatActivity() {
         val start = fullText.indexOf(term)
         val end = start + term.length
 
-        val clickableSpan = object : ClickableSpan(){
+        val clickableSpan = object : ClickableSpan() {
             override fun onClick(view: View) {
                 Toast.makeText(
                     this@RegisterActivity,
@@ -68,7 +67,7 @@ class RegisterActivity : AppCompatActivity() {
                 ds.color = ContextCompat.getColor(this@RegisterActivity, R.color.green)
             }
         }
-        spannable.setSpan(clickableSpan, start,end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannable.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         binding.tvTerms.apply {
             text = spannable
             movementMethod = LinkMovementMethod.getInstance()
@@ -86,40 +85,51 @@ class RegisterActivity : AppCompatActivity() {
             binding.registerEmail.error = null
             binding.registerPassword.error = null
 
+            var isValid = true
+
             if (!binding.termsCheckBox.isChecked) {
                 Toast.makeText(
                     this,
                     "Please agree to the Terms & Conditions",
                     Toast.LENGTH_SHORT
                 ).show()
-                return@setOnClickListener
+                isValid = false
             }
 
             if (name.isEmpty()) {
                 binding.registerFullName.error = "Full name is required"
-                return@setOnClickListener
-            }
-            if (phone.isEmpty()) {
-                binding.registerPhone.error = "Phone number is required"
-                return@setOnClickListener
-            }
-            if (email.isEmpty()) {
-                binding.registerEmail.error = "Email address is required"
-                return@setOnClickListener
-            }
-            if (password.isEmpty()) {
-                binding.registerPassword.error = "Password is required"
-                return@setOnClickListener
+                isValid = false
+            } else if (name.length < 3 || !name.matches(Regex("^[a-zA-Z\\s]+$"))) {
+                binding.registerFullName.error = "Enter a valid full name"
+                isValid = false
             }
 
-            if (password.length < 6) {
-                Toast.makeText(
-                    this,
-                    "Password must be at least 6 characters",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
+            if (phone.isEmpty()) {
+                binding.registerPhone.error = "Phone number is required"
+                isValid = false
+            } else if (!phone.matches(Regex("^[0-9]{10}$"))) {
+                binding.registerPhone.error = "Enter a valid 10-digit phone number"
+                isValid = false
             }
+
+            if (email.isEmpty()) {
+                binding.registerEmail.error = "Email address is required"
+                isValid = false
+            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                binding.registerEmail.error = "Enter a valid email address"
+                isValid = false
+            }
+
+            if (password.isEmpty()) {
+                binding.registerPassword.error = "Password is required"
+                isValid = false
+            } else if (password.length < 6) {
+                binding.registerPassword.error = "Password must be at least 6 characters"
+                isValid = false
+            }
+
+            if (!isValid) return@setOnClickListener
+
             viewModel.register(email, password, name, phone)
         }
 
@@ -129,8 +139,9 @@ class RegisterActivity : AppCompatActivity() {
                     Toast.makeText(
                         this,
                         "Successful Registration",
-                        Toast.LENGTH_LONG).show()
-                    val intent = Intent (this, LoginActivity::class.java)
+                        Toast.LENGTH_LONG
+                    ).show()
+                    val intent = Intent(this, LoginActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     startActivity(intent)
                     finish()
@@ -138,7 +149,8 @@ class RegisterActivity : AppCompatActivity() {
                     Toast.makeText(
                         this,
                         it.exceptionOrNull()?.message ?: "Registration Failed",
-                        Toast.LENGTH_LONG).show()
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
                 viewModel.resetResult()
             }
@@ -150,15 +162,15 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action == MotionEvent.ACTION_DOWN){
-            val v=currentFocus
-            if(v is EditText){
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
                 val outRect = Rect()
                 v.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())){
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
                     v.clearFocus()
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.windowToken,0)
+                    imm.hideSoftInputFromWindow(v.windowToken, 0)
                 }
             }
         }
