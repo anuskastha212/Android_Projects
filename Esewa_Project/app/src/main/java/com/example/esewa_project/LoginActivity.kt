@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.esewa_project.databinding.ActivityLoginBinding
+import com.example.esewa_project.ui.util.disableEmojis
 import com.example.esewa_project.ui.viewmodel.AuthViewModel
 
 class LoginActivity : AppCompatActivity() {
@@ -26,14 +27,19 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.loginFooter){ view, insets ->
-            val navigationBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+        binding.inputLoginEmail.disableEmojis()
+        binding.inputLoginPassword.disableEmojis()
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.loginFooter) { view, insets ->
+            val navigationBarHeight =
+                insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
 
             view.setPadding(
                 view.paddingLeft,
                 view.paddingTop,
                 view.paddingRight,
-                navigationBarHeight )
+                navigationBarHeight
+            )
             insets
         }
 
@@ -44,32 +50,47 @@ class LoginActivity : AppCompatActivity() {
             binding.loginEmailPhone.error = null
             binding.loginPassword.error = null
 
+            var isValid = true
+
             if (email.isEmpty()) {
                 binding.loginEmailPhone.error = "Email address is required"
-                return@setOnClickListener
+                isValid = false
+            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                binding.loginEmailPhone.error = "Enter a valid email address"
+                isValid = false
             }
+
             if (password.isEmpty()) {
                 binding.loginPassword.error = "Password is required"
-                return@setOnClickListener
+                isValid = false
             }
+
+            if (!isValid) return@setOnClickListener
 
             viewModel.login(email, password)
         }
 
         binding.forgotPassword.setOnClickListener {
             val email = binding.inputLoginEmail.text.toString().trim()
-            if (email.isEmpty() || !email.contains("@")) {
-                binding.loginEmailPhone.error = "Enter valid email to reset password"
+
+            binding.loginEmailPhone.error = null
+
+            if (email.isEmpty()) {
+                binding.loginEmailPhone.error = "Enter email to reset password"
                 Toast.makeText(
                     this,
                     "Please enter your email in the box above",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                binding.loginEmailPhone.error = "Enter a valid email address"
             } else {
                 viewModel.sendResetEmail(email)
                 Toast.makeText(
                     this,
                     "Sending reset link...",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -78,9 +99,9 @@ class LoginActivity : AppCompatActivity() {
             finish()
         }
 
-        viewModel.authResult.observe(this){result ->
-            result?.let{
-                if(it.isSuccess){
+        viewModel.authResult.observe(this) { result ->
+            result?.let {
+                if (it.isSuccess) {
                     Toast.makeText(
                         this,
                         "Login Successful",
@@ -98,20 +119,30 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.resetPassword.observe(this){result ->
-            result?.let{
-                if(it.isSuccess){
+        viewModel.resetPassword.observe(this) { result ->
+            result?.let {
+                if (it.isSuccess) {
                     Toast.makeText(
                         this,
                         "Success! Check your inbox",
                         Toast.LENGTH_SHORT
                     ).show()
-                    finish()
                 } else {
-                    Toast.makeText(
-                        this,
-                        it.exceptionOrNull()?.message ?: "Password Reset Failed",
-                        Toast.LENGTH_LONG).show()
+                    val exceptionMsg = it.exceptionOrNull()?.message ?: ""
+
+                    if (exceptionMsg.contains("There is no user record") ||
+                        exceptionMsg.contains("not found") ||
+                        exceptionMsg.contains("invalid") ||
+                        exceptionMsg.contains("formatted")
+                    ) {
+                        binding.loginEmailPhone.error = "This email is not registered"
+                    } else {
+                        Toast.makeText(
+                            this,
+                            exceptionMsg.ifEmpty { "Password Reset Failed" },
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
                 viewModel.resetPasswordResult()
             }
@@ -119,15 +150,15 @@ class LoginActivity : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action == MotionEvent.ACTION_DOWN){
-            val v=currentFocus
-            if(v is EditText){
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
                 val outRect = Rect()
                 v.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())){
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
                     v.clearFocus()
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.windowToken,0)
+                    imm.hideSoftInputFromWindow(v.windowToken, 0)
                 }
             }
         }
