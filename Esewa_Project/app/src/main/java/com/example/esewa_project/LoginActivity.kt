@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.esewa_project.databinding.ActivityLoginBinding
+import com.example.esewa_project.ui.util.disableEmojis
 import com.example.esewa_project.ui.viewmodel.AuthViewModel
 
 class LoginActivity : AppCompatActivity() {
@@ -25,6 +26,9 @@ class LoginActivity : AppCompatActivity() {
 
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.inputLoginEmail.disableEmojis()
+        binding.inputLoginPassword.disableEmojis()
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.loginFooter) { view, insets ->
             val navigationBarHeight =

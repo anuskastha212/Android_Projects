@@ -22,6 +22,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.esewa_project.ui.viewmodel.AuthViewModel
 import com.example.esewa_project.databinding.ActivityRegisterBinding
+import com.example.esewa_project.ui.util.disableEmojis
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegisterBinding
@@ -32,6 +33,11 @@ class RegisterActivity : AppCompatActivity() {
 
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.inputRegisterFullName.disableEmojis()
+        binding.inputRegisterEmail.disableEmojis()
+        binding.inputRegisterPhone.disableEmojis()
+        binding.inputRegisterPassword.disableEmojis()
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.registerFooter) { view, insets ->
             val bottomInsets = insets.getInsets(

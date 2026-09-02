@@ -3,6 +3,7 @@ package com.example.esewa_project.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.model.CartItem
+import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
@@ -25,6 +26,8 @@ class CheckoutViewModel(
     val promoDiscount: StateFlow<Double> = _promoDiscount.asStateFlow()
     private val _deliveryAddress = MutableStateFlow<String?>(null)
     val deliveryAddress: StateFlow<String?> = _deliveryAddress.asStateFlow()
+    private val _savedAddresses = MutableStateFlow<List<ShippingAddress>>(emptyList())
+    val savedAddresses: StateFlow<List<ShippingAddress>> = _savedAddresses.asStateFlow()
 
     fun applyPromoCode(code: String): Boolean {
         return if (code.trim().equals("eBazar-33", ignoreCase = true)) {
@@ -34,6 +37,26 @@ class CheckoutViewModel(
             _promoDiscount.value = 0.0
             false
         }
+    }
+
+    fun addNewAddress(address: ShippingAddress) {
+        val currentList = _savedAddresses.value.toMutableList()
+        if (address.isDefaultShipping || currentList.isEmpty()) {
+            currentList.forEachIndexed { index, a ->
+                currentList[index] = a.copy(isSelected = false)
+            }
+            saveDeliveryAddress(address.addressLocation)
+        }
+        currentList.add(address.copy(isSelected = address.isDefaultShipping || currentList.isEmpty()))
+        _savedAddresses.value = currentList
+    }
+
+    fun selectAddress(address: ShippingAddress) {
+        val updatedList = _savedAddresses.value.map {
+            it.copy(isSelected = it.id == address.id)
+        }
+        _savedAddresses.value = updatedList
+        saveDeliveryAddress(address.addressLocation)
     }
 
     fun loadSavedAddress() {
