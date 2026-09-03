@@ -24,7 +24,6 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 import com.google.android.libraries.places.api.Places
 import android.content.pm.PackageManager
 
-
 class CheckoutActivity : ComponentActivity() {
     private lateinit var checkoutViewModel: CheckoutViewModel
 
