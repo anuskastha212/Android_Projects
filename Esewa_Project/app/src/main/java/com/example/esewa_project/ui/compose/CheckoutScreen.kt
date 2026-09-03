@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import java.util.UUID
 
 enum class CheckoutRoute {
     CHECKOUT,
@@ -56,6 +57,8 @@ fun CheckoutScreen(
 
     var currentRoute by remember { mutableStateOf(CheckoutRoute.CHECKOUT) }
 
+    // HOISTED FORM VARIABLES
+    var editingAddressId by remember { mutableStateOf<String?>(null) } // ADDED THIS
     var formAddressLocation by remember { mutableStateOf("") }
     var formFullName by remember { mutableStateOf("") }
     var formMobile by remember { mutableStateOf("") }
@@ -100,6 +103,7 @@ fun CheckoutScreen(
                 onOpenMapPick = { currentRoute = CheckoutRoute.MAP_PICKER },
                 onSave = {
                     val newAddress = ShippingAddress(
+                        id = editingAddressId ?: UUID.randomUUID().toString(), // UPDATED THIS
                         fullName = formFullName,
                         mobileNumber = formMobile,
                         addressLocation = formAddressLocation,
@@ -109,18 +113,22 @@ fun CheckoutScreen(
                     )
                     checkoutViewModel.addNewAddress(newAddress)
 
+                    // Clear form
                     formFullName = ""
                     formMobile = ""
                     formAddressLocation = ""
                     formLabel = "Home"
+                    editingAddressId = null // CLEAR ID
 
                     currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
                 },
                 onClose = {
+                    // Clear form
                     formFullName = ""
                     formMobile = ""
                     formAddressLocation = ""
                     formLabel = "Home"
+                    editingAddressId = null // CLEAR ID
 
                     currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
                 }
@@ -130,19 +138,36 @@ fun CheckoutScreen(
         CheckoutRoute.SHIPPING_ADDRESS_LIST -> {
             ShippingAddressScreen(
                 addresses = savedAddresses,
-                onBackClick = {
-                    currentRoute = CheckoutRoute.CHECKOUT
-                },
+                onBackClick = { currentRoute = CheckoutRoute.CHECKOUT },
                 onAddAddressClick = {
+                    editingAddressId = null
+                    formFullName = ""
+                    formMobile = ""
+                    formAddressLocation = ""
+                    formLabel = "Home"
+                    formIsDefaultShipping = true
                     currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
                 },
                 onAddressSelected = { address ->
                     checkoutViewModel.selectAddress(address)
                     currentRoute = CheckoutRoute.CHECKOUT
+                },
+                onEdit = { address ->
+                    editingAddressId = address.id
+                    formFullName = address.fullName
+                    formMobile = address.mobileNumber
+                    formAddressLocation = address.addressLocation
+                    formLabel = address.label
+                    formIsDefaultShipping = address.isDefaultShipping
+                    formIsDefaultBilling = address.isDefaultBilling
+
+                    currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
+                },
+                onDelete = { address ->
+                    checkoutViewModel.deleteAddress(address.id)
                 }
             )
         }
-
         CheckoutRoute.CHECKOUT -> {
             Scaffold(
                 topBar = {

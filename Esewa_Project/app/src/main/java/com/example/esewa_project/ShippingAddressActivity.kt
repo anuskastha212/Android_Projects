@@ -19,6 +19,7 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import com.example.esewa_project.data.model.ShippingAddress
+import java.util.UUID
 
 enum class AddressRoute {
     LIST,
@@ -57,6 +58,7 @@ class ShippingAddressActivity : ComponentActivity() {
             var formLabel by remember { mutableStateOf("Home") }
             var formIsDefaultShipping by remember { mutableStateOf(true) }
             var formIsDefaultBilling by remember { mutableStateOf(false) }
+            var editingAddressId by remember { mutableStateOf<String?>(null) }
 
             when (currentRoute) {
                 AddressRoute.LIST -> {
@@ -64,11 +66,31 @@ class ShippingAddressActivity : ComponentActivity() {
                         addresses = savedAddresses,
                         onBackClick = { finish() },
                         onAddAddressClick = {
+                            editingAddressId = null
+                            formFullName = ""
+                            formMobile = ""
+                            formAddressLocation = ""
+                            formLabel = "Home"
+                            formIsDefaultShipping = true
+                            formIsDefaultBilling = false
                             currentRoute = AddressRoute.ADD_NEW
                         },
                         onAddressSelected = { address ->
                             checkoutViewModel.selectAddress(address)
                             finish()
+                        },
+                        onEdit = { address ->
+                            editingAddressId = address.id
+                            formFullName = address.fullName
+                            formMobile = address.mobileNumber
+                            formAddressLocation = address.addressLocation
+                            formLabel = address.label
+                            formIsDefaultShipping = address.isDefaultShipping
+                            formIsDefaultBilling = address.isDefaultBilling
+                            currentRoute = AddressRoute.ADD_NEW
+                        },
+                        onDelete = { address ->
+                            checkoutViewModel.deleteAddress(address.id)
                         }
                     )
                 }
@@ -89,6 +111,7 @@ class ShippingAddressActivity : ComponentActivity() {
                         onOpenMapPick = { currentRoute = AddressRoute.MAP_PICKER },
                         onSave = {
                             val newAddress = ShippingAddress(
+                                id = editingAddressId ?: UUID.randomUUID().toString(),
                                 fullName = formFullName,
                                 mobileNumber = formMobile,
                                 addressLocation = formAddressLocation,
@@ -102,6 +125,7 @@ class ShippingAddressActivity : ComponentActivity() {
                             formMobile = ""
                             formAddressLocation = ""
                             formLabel = "Home"
+                            editingAddressId = null
 
                             currentRoute = AddressRoute.LIST
                         },
@@ -110,6 +134,7 @@ class ShippingAddressActivity : ComponentActivity() {
                             formMobile = ""
                             formAddressLocation = ""
                             formLabel = "Home"
+                            editingAddressId = null
                             currentRoute = AddressRoute.LIST
                         }
                     )
