@@ -25,11 +25,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.CartItem
+import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import java.util.UUID
 
 enum class CheckoutRoute {
     CHECKOUT,
@@ -54,7 +56,15 @@ fun CheckoutScreen(
     val discount by checkoutViewModel.promoDiscount.collectAsState()
 
     var currentRoute by remember { mutableStateOf(CheckoutRoute.CHECKOUT) }
-    var pickedAddressForForm by remember { mutableStateOf("") }
+
+    // HOISTED FORM VARIABLES
+    var editingAddressId by remember { mutableStateOf<String?>(null) } // ADDED THIS
+    var formAddressLocation by remember { mutableStateOf("") }
+    var formFullName by remember { mutableStateOf("") }
+    var formMobile by remember { mutableStateOf("") }
+    var formLabel by remember { mutableStateOf("Home") }
+    var formIsDefaultShipping by remember { mutableStateOf(true) }
+    var formIsDefaultBilling by remember { mutableStateOf(false) }
 
     var showNoAddressSheet by remember { mutableStateOf(false) }
     var showPromoSheet by remember { mutableStateOf(false) }
@@ -67,7 +77,7 @@ fun CheckoutScreen(
                 onLocationConfirmed = { lat, lng ->
                     coroutineScope.launch {
                         val realAddress = getReadableAddress(context, lat, lng)
-                        pickedAddressForForm = realAddress
+                        formAddressLocation = realAddress
                         currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
                     }
                 },
@@ -79,32 +89,85 @@ fun CheckoutScreen(
 
         CheckoutRoute.ADD_NEW_ADDRESS -> {
             ShippingAddressForm(
-                pickedAddressLocation = pickedAddressForForm,
+                fullName = formFullName,
+                onFullNameChange = { formFullName = it },
+                mobileNumber = formMobile,
+                onMobileChange = { formMobile = it },
+                pickedAddressLocation = formAddressLocation,
+                selectedLabel = formLabel,
+                onLabelChange = { formLabel = it },
+                isDefaultShipping = formIsDefaultShipping,
+                onDefaultShippingChange = { formIsDefaultShipping = it },
+                isDefaultBilling = formIsDefaultBilling,
+                onDefaultBillingChange = { formIsDefaultBilling = it },
                 onOpenMapPick = { currentRoute = CheckoutRoute.MAP_PICKER },
-                onSave = { newAddress ->
+                onSave = {
+                    val newAddress = ShippingAddress(
+                        id = editingAddressId ?: UUID.randomUUID().toString(), // UPDATED THIS
+                        fullName = formFullName,
+                        mobileNumber = formMobile,
+                        addressLocation = formAddressLocation,
+                        label = formLabel,
+                        isDefaultShipping = formIsDefaultShipping,
+                        isDefaultBilling = formIsDefaultBilling
+                    )
                     checkoutViewModel.addNewAddress(newAddress)
+
+                    // Clear form
+                    formFullName = ""
+                    formMobile = ""
+                    formAddressLocation = ""
+                    formLabel = "Home"
+                    editingAddressId = null // CLEAR ID
+
                     currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
                 },
-                onClose = { currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST }
+                onClose = {
+                    // Clear form
+                    formFullName = ""
+                    formMobile = ""
+                    formAddressLocation = ""
+                    formLabel = "Home"
+                    editingAddressId = null // CLEAR ID
+
+                    currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
+                }
             )
         }
 
         CheckoutRoute.SHIPPING_ADDRESS_LIST -> {
             ShippingAddressScreen(
                 addresses = savedAddresses,
-                onBackClick = {
-                    currentRoute = CheckoutRoute.CHECKOUT
-                },
+                onBackClick = { currentRoute = CheckoutRoute.CHECKOUT },
                 onAddAddressClick = {
+                    editingAddressId = null
+                    formFullName = ""
+                    formMobile = ""
+                    formAddressLocation = ""
+                    formLabel = "Home"
+                    formIsDefaultShipping = true
                     currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
                 },
                 onAddressSelected = { address ->
                     checkoutViewModel.selectAddress(address)
                     currentRoute = CheckoutRoute.CHECKOUT
+                },
+                onEdit = { address ->
+                    editingAddressId = address.id
+                    formFullName = address.fullName
+                    formMobile = address.mobileNumber
+                    formAddressLocation = address.addressLocation
+                    formLabel = address.label
+                    formIsDefaultShipping = address.isDefaultShipping
+                    formIsDefaultBilling = address.isDefaultBilling
+
+                    currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
+                },
+                onDelete = { address ->
+                    checkoutViewModel.deleteAddress(address.id)
                 }
             )
         }
-
         CheckoutRoute.CHECKOUT -> {
             Scaffold(
                 topBar = {
@@ -233,7 +296,6 @@ fun PromoCodeButton(onClick: () -> Unit) {
     }
 }
 
-
 @Composable
 fun PromoBottomSheetContent(
     codeValue: String,
@@ -359,6 +421,7 @@ fun PaymentOptionRow(
     }
 }
 
+@Suppress("DEPRECATION")
 suspend fun getReadableAddress(context: Context, lat: Double, lng: Double): String {
     return withContext(Dispatchers.IO) {
         try {

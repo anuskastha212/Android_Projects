@@ -48,7 +48,6 @@ class CheckoutViewModel(
                     .get()
                     .addOnSuccessListener { snapshot ->
                         val addresses = snapshot.toObjects(ShippingAddress::class.java)
-
                         if (addresses.isNotEmpty()) {
                             val defaultAddress =
                                 addresses.find { it.isDefaultShipping } ?: addresses.first()
@@ -57,8 +56,6 @@ class CheckoutViewModel(
                             }
                             _savedAddresses.value = syncedAddresses
                             _deliveryAddress.value = defaultAddress.addressLocation
-                        } else {
-                            loadLegacyAddress(uid)
                         }
                     }
             } catch (e: Exception) {
@@ -67,37 +64,28 @@ class CheckoutViewModel(
         }
     }
 
-    private fun loadLegacyAddress(uid: String) {
-        firestore.collection("users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener { doc ->
-                if (doc.exists()) {
-                    _deliveryAddress.value = doc.getString("address")
-                }
-            }
-    } // <-- This closing bracket was missing!
-
     fun addNewAddress(address: ShippingAddress) {
         val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
             try {
                 firestore.collection("users").document(uid)
                     .collection("addresses").document(address.id)
-                    .set(address)
+                    .set(address, SetOptions.merge())
                     .addOnSuccessListener {
-
                         val currentList = _savedAddresses.value.toMutableList()
-
-                        if (address.isDefaultShipping || currentList.isEmpty()) {
-                            currentList.forEachIndexed { index, a ->
-                                currentList[index] = a.copy(isSelected = false)
+                        val existingIndex = currentList.indexOfFirst { it.id == address.id }
+                        if (existingIndex != -1) {
+                            currentList[existingIndex] = address
+                        } else {
+                            currentList.add(address)
+                        }
+                        if (address.isDefaultShipping || currentList.size == 1) {
+                            currentList.forEachIndexed { index, item ->
+                                currentList[index] = item.copy(isSelected = (item.id == address.id))
                             }
                             _deliveryAddress.value = address.addressLocation
                             saveDeliveryAddress(address.addressLocation)
                         }
-
-                        currentList.add(address.copy(isSelected = address.isDefaultShipping || currentList.isEmpty()))
                         _savedAddresses.value = currentList
                     }
             } catch (e: Exception) {
@@ -111,9 +99,7 @@ class CheckoutViewModel(
             it.copy(isSelected = it.id == address.id)
         }
         _savedAddresses.value = updatedList
-
         _deliveryAddress.value = address.addressLocation
-
         saveDeliveryAddress(address.addressLocation)
     }
 
@@ -121,10 +107,36 @@ class CheckoutViewModel(
         val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
             try {
-                // Fixed the variable name here to addressLocation
                 val addressMap = mapOf("address" to addressLocation)
                 firestore.collection("users").document(uid)
                     .set(addressMap, SetOptions.merge())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteAddress(addressId: String) {
+        val uid = sessionRepo.getUid() ?: return
+        viewModelScope.launch {
+            try {
+                firestore.collection("users").document(uid)
+                    .collection("addresses").document(addressId)
+                    .delete()
+                    .addOnSuccessListener {
+                        val currentList = _savedAddresses.value.toMutableList()
+                        val removedAddress = currentList.find { it.id == addressId }
+                        currentList.removeAll { it.id == addressId }
+                        _savedAddresses.value = currentList
+                        if (removedAddress?.isSelected == true) {
+                            if (currentList.isNotEmpty()) {
+                                selectAddress(currentList.first())
+                            } else {
+                                _deliveryAddress.value = null
+                                saveDeliveryAddress("")
+                            }
+                        }
+                    }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
