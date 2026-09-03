@@ -48,7 +48,6 @@ class CheckoutViewModel(
                     .get()
                     .addOnSuccessListener { snapshot ->
                         val addresses = snapshot.toObjects(ShippingAddress::class.java)
-
                         if (addresses.isNotEmpty()) {
                             val defaultAddress =
                                 addresses.find { it.isDefaultShipping } ?: addresses.first()
@@ -57,25 +56,12 @@ class CheckoutViewModel(
                             }
                             _savedAddresses.value = syncedAddresses
                             _deliveryAddress.value = defaultAddress.addressLocation
-                        } else {
-                            loadLegacyAddress(uid)
                         }
                     }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-    }
-
-    private fun loadLegacyAddress(uid: String) {
-        firestore.collection("users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener { doc ->
-                if (doc.exists()) {
-                    _deliveryAddress.value = doc.getString("address")
-                }
-            }
     }
 
     fun addNewAddress(address: ShippingAddress) {
@@ -100,7 +86,6 @@ class CheckoutViewModel(
                             _deliveryAddress.value = address.addressLocation
                             saveDeliveryAddress(address.addressLocation)
                         }
-
                         _savedAddresses.value = currentList
                     }
             } catch (e: Exception) {
@@ -114,9 +99,7 @@ class CheckoutViewModel(
             it.copy(isSelected = it.id == address.id)
         }
         _savedAddresses.value = updatedList
-
         _deliveryAddress.value = address.addressLocation
-
         saveDeliveryAddress(address.addressLocation)
     }
 

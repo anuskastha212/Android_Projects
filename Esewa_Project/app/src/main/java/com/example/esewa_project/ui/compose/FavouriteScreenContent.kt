@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.data.local.entity.ProductEntity
 import com.example.esewa_project.ui.util.FavouriteSnackbar
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.navigationBars
 
 @Composable
 fun FavouriteScreenContent(
@@ -35,6 +38,8 @@ fun FavouriteScreenContent(
     val allSelected = products.isNotEmpty() && selectedProductIds.size == products.size
 
     Scaffold(
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.navigationBars),
+        containerColor = Color(0xFFF8F9FA),
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
