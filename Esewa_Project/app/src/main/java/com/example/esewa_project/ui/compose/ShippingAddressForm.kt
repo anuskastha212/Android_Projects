@@ -57,7 +57,12 @@ fun ShippingAddressForm(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 46.dp
+                    )
             ) {
                 Button(
                     onClick = {

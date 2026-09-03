@@ -39,35 +39,26 @@ class CheckoutViewModel(
         }
     }
 
-    fun addNewAddress(address: ShippingAddress) {
-        val currentList = _savedAddresses.value.toMutableList()
-        if (address.isDefaultShipping || currentList.isEmpty()) {
-            currentList.forEachIndexed { index, a ->
-                currentList[index] = a.copy(isSelected = false)
-            }
-            saveDeliveryAddress(address.addressLocation)
-        }
-        currentList.add(address.copy(isSelected = address.isDefaultShipping || currentList.isEmpty()))
-        _savedAddresses.value = currentList
-    }
-
-    fun selectAddress(address: ShippingAddress) {
-        val updatedList = _savedAddresses.value.map {
-            it.copy(isSelected = it.id == address.id)
-        }
-        _savedAddresses.value = updatedList
-        saveDeliveryAddress(address.addressLocation)
-    }
-
     fun loadSavedAddress() {
         val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
             try {
-                firestore.collection("users").document(uid).get()
-                    .addOnSuccessListener { document ->
-                        if (document.exists()) {
-                            val savedAddr = document.getString("address")
-                            _deliveryAddress.value = savedAddr
+                firestore.collection("users").document(uid)
+                    .collection("addresses")
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val addresses = snapshot.toObjects(ShippingAddress::class.java)
+
+                        if (addresses.isNotEmpty()) {
+                            val defaultAddress =
+                                addresses.find { it.isDefaultShipping } ?: addresses.first()
+                            val syncedAddresses = addresses.map {
+                                it.copy(isSelected = it.id == defaultAddress.id)
+                            }
+                            _savedAddresses.value = syncedAddresses
+                            _deliveryAddress.value = defaultAddress.addressLocation
+                        } else {
+                            loadLegacyAddress(uid)
                         }
                     }
             } catch (e: Exception) {
@@ -76,16 +67,64 @@ class CheckoutViewModel(
         }
     }
 
-    fun saveDeliveryAddress(address: String) {
+    private fun loadLegacyAddress(uid: String) {
+        firestore.collection("users")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (doc.exists()) {
+                    _deliveryAddress.value = doc.getString("address")
+                }
+            }
+    } // <-- This closing bracket was missing!
+
+    fun addNewAddress(address: ShippingAddress) {
         val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
             try {
-                val addressMap = mapOf("address" to address)
+                firestore.collection("users").document(uid)
+                    .collection("addresses").document(address.id)
+                    .set(address)
+                    .addOnSuccessListener {
+
+                        val currentList = _savedAddresses.value.toMutableList()
+
+                        if (address.isDefaultShipping || currentList.isEmpty()) {
+                            currentList.forEachIndexed { index, a ->
+                                currentList[index] = a.copy(isSelected = false)
+                            }
+                            _deliveryAddress.value = address.addressLocation
+                            saveDeliveryAddress(address.addressLocation)
+                        }
+
+                        currentList.add(address.copy(isSelected = address.isDefaultShipping || currentList.isEmpty()))
+                        _savedAddresses.value = currentList
+                    }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun selectAddress(address: ShippingAddress) {
+        val updatedList = _savedAddresses.value.map {
+            it.copy(isSelected = it.id == address.id)
+        }
+        _savedAddresses.value = updatedList
+
+        _deliveryAddress.value = address.addressLocation
+
+        saveDeliveryAddress(address.addressLocation)
+    }
+
+    fun saveDeliveryAddress(addressLocation: String) {
+        val uid = sessionRepo.getUid() ?: return
+        viewModelScope.launch {
+            try {
+                // Fixed the variable name here to addressLocation
+                val addressMap = mapOf("address" to addressLocation)
                 firestore.collection("users").document(uid)
                     .set(addressMap, SetOptions.merge())
-                    .addOnSuccessListener {
-                        _deliveryAddress.value = address
-                    }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
