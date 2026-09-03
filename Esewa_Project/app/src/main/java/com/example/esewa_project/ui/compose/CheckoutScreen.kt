@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.CartItem
+import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,7 +55,13 @@ fun CheckoutScreen(
     val discount by checkoutViewModel.promoDiscount.collectAsState()
 
     var currentRoute by remember { mutableStateOf(CheckoutRoute.CHECKOUT) }
-    var pickedAddressForForm by remember { mutableStateOf("") }
+
+    var formAddressLocation by remember { mutableStateOf("") }
+    var formFullName by remember { mutableStateOf("") }
+    var formMobile by remember { mutableStateOf("") }
+    var formLabel by remember { mutableStateOf("Home") }
+    var formIsDefaultShipping by remember { mutableStateOf(true) }
+    var formIsDefaultBilling by remember { mutableStateOf(false) }
 
     var showNoAddressSheet by remember { mutableStateOf(false) }
     var showPromoSheet by remember { mutableStateOf(false) }
@@ -67,7 +74,7 @@ fun CheckoutScreen(
                 onLocationConfirmed = { lat, lng ->
                     coroutineScope.launch {
                         val realAddress = getReadableAddress(context, lat, lng)
-                        pickedAddressForForm = realAddress
+                        formAddressLocation = realAddress
                         currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
                     }
                 },
@@ -79,13 +86,44 @@ fun CheckoutScreen(
 
         CheckoutRoute.ADD_NEW_ADDRESS -> {
             ShippingAddressForm(
-                pickedAddressLocation = pickedAddressForForm,
+                fullName = formFullName,
+                onFullNameChange = { formFullName = it },
+                mobileNumber = formMobile,
+                onMobileChange = { formMobile = it },
+                pickedAddressLocation = formAddressLocation,
+                selectedLabel = formLabel,
+                onLabelChange = { formLabel = it },
+                isDefaultShipping = formIsDefaultShipping,
+                onDefaultShippingChange = { formIsDefaultShipping = it },
+                isDefaultBilling = formIsDefaultBilling,
+                onDefaultBillingChange = { formIsDefaultBilling = it },
                 onOpenMapPick = { currentRoute = CheckoutRoute.MAP_PICKER },
-                onSave = { newAddress ->
+                onSave = {
+                    val newAddress = ShippingAddress(
+                        fullName = formFullName,
+                        mobileNumber = formMobile,
+                        addressLocation = formAddressLocation,
+                        label = formLabel,
+                        isDefaultShipping = formIsDefaultShipping,
+                        isDefaultBilling = formIsDefaultBilling
+                    )
                     checkoutViewModel.addNewAddress(newAddress)
+
+                    formFullName = ""
+                    formMobile = ""
+                    formAddressLocation = ""
+                    formLabel = "Home"
+
                     currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
                 },
-                onClose = { currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST }
+                onClose = {
+                    formFullName = ""
+                    formMobile = ""
+                    formAddressLocation = ""
+                    formLabel = "Home"
+
+                    currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
+                }
             )
         }
 
@@ -233,7 +271,6 @@ fun PromoCodeButton(onClick: () -> Unit) {
     }
 }
 
-
 @Composable
 fun PromoBottomSheetContent(
     codeValue: String,
@@ -359,6 +396,7 @@ fun PaymentOptionRow(
     }
 }
 
+@Suppress("DEPRECATION")
 suspend fun getReadableAddress(context: Context, lat: Double, lng: Double): String {
     return withContext(Dispatchers.IO) {
         try {

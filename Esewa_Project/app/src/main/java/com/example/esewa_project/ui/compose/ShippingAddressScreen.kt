@@ -89,7 +89,12 @@ fun EmptyAddressState(onAddClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(
+                top = 8.dp,
+                start = 4.dp,
+                end = 4.dp,
+                bottom = 0.dp
+            ),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

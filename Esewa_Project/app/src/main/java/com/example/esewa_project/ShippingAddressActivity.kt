@@ -18,6 +18,7 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
+import com.example.esewa_project.data.model.ShippingAddress
 
 enum class AddressRoute {
     LIST,
@@ -50,7 +51,12 @@ class ShippingAddressActivity : ComponentActivity() {
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
 
             var currentRoute by remember { mutableStateOf(AddressRoute.LIST) }
-            var pickedAddressForForm by remember { mutableStateOf("") }
+            var formAddressLocation by remember { mutableStateOf("") }
+            var formFullName by remember { mutableStateOf("") }
+            var formMobile by remember { mutableStateOf("") }
+            var formLabel by remember { mutableStateOf("Home") }
+            var formIsDefaultShipping by remember { mutableStateOf(true) }
+            var formIsDefaultBilling by remember { mutableStateOf(false) }
 
             when (currentRoute) {
                 AddressRoute.LIST -> {
@@ -69,15 +75,41 @@ class ShippingAddressActivity : ComponentActivity() {
 
                 AddressRoute.ADD_NEW -> {
                     ShippingAddressForm(
-                        pickedAddressLocation = pickedAddressForForm,
-                        onOpenMapPick = {
-                            currentRoute = AddressRoute.MAP_PICKER
-                        },
-                        onSave = { newAddress ->
+                        fullName = formFullName,
+                        onFullNameChange = { formFullName = it },
+                        mobileNumber = formMobile,
+                        onMobileChange = { formMobile = it },
+                        pickedAddressLocation = formAddressLocation,
+                        selectedLabel = formLabel,
+                        onLabelChange = { formLabel = it },
+                        isDefaultShipping = formIsDefaultShipping,
+                        onDefaultShippingChange = { formIsDefaultShipping = it },
+                        isDefaultBilling = formIsDefaultBilling,
+                        onDefaultBillingChange = { formIsDefaultBilling = it },
+                        onOpenMapPick = { currentRoute = AddressRoute.MAP_PICKER },
+                        onSave = {
+                            val newAddress = ShippingAddress(
+                                fullName = formFullName,
+                                mobileNumber = formMobile,
+                                addressLocation = formAddressLocation,
+                                label = formLabel,
+                                isDefaultShipping = formIsDefaultShipping,
+                                isDefaultBilling = formIsDefaultBilling
+                            )
                             checkoutViewModel.addNewAddress(newAddress)
+
+                            formFullName = ""
+                            formMobile = ""
+                            formAddressLocation = ""
+                            formLabel = "Home"
+
                             currentRoute = AddressRoute.LIST
                         },
                         onClose = {
+                            formFullName = ""
+                            formMobile = ""
+                            formAddressLocation = ""
+                            formLabel = "Home"
                             currentRoute = AddressRoute.LIST
                         }
                     )
@@ -87,7 +119,7 @@ class ShippingAddressActivity : ComponentActivity() {
                     MapLocation(
                         onLocationConfirmed = { lat, lng ->
                             coroutineScope.launch {
-                                pickedAddressForForm = getReadableAddress(context, lat, lng)
+                                formAddressLocation = getReadableAddress(context, lat, lng)
                                 currentRoute = AddressRoute.ADD_NEW
                             }
                         },
