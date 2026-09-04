@@ -91,6 +91,9 @@ class ShippingAddressActivity : ComponentActivity() {
                         },
                         onDelete = { address ->
                             checkoutViewModel.deleteAddress(address.id)
+                        },
+                        onUndoDelete = { address ->
+                            checkoutViewModel.addNewAddress(address)
                         }
                     )
                 }

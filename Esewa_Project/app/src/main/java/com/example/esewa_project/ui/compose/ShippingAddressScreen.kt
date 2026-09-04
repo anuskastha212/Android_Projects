@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.ShippingAddress
+import com.example.esewa_project.ui.util.SnackBar
+import kotlinx.coroutines.launch
 
 @Composable
 fun ShippingAddressScreen(
@@ -28,13 +30,24 @@ fun ShippingAddressScreen(
     onAddAddressClick: () -> Unit,
     onAddressSelected: (ShippingAddress) -> Unit,
     onEdit: (ShippingAddress) -> Unit,
-    onDelete: (ShippingAddress) -> Unit
+    onDelete: (ShippingAddress) -> Unit,
+    onUndoDelete: (ShippingAddress) -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             CommonTopBar(
                 title = "Shipping Address",
                 onBackClick = onBackClick
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { snackBarData ->
+                    SnackBar(snackBarData = snackBarData)
+                }
             )
         },
         floatingActionButton = {
@@ -77,7 +90,27 @@ fun ShippingAddressScreen(
                             address = address,
                             onClick = { onAddressSelected(address) },
                             onEdit = { onEdit(address) },
-                            onDelete = { onDelete(address) }
+                            onDelete = {
+                                onDelete(address)
+
+                                coroutineScope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "Address has been deleted",
+                                        actionLabel = "UNDO",
+                                        duration = SnackbarDuration.Short
+                                    )
+
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        onUndoDelete(address)
+
+                                        snackbarHostState.showSnackbar(
+                                            message = "Address has been added successfully",
+                                            actionLabel = "OK",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                }
+                            }
                         )
                     }
                 }

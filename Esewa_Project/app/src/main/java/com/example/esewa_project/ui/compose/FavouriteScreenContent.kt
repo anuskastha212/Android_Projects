@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.data.local.entity.ProductEntity
-import com.example.esewa_project.ui.util.FavouriteSnackbar
+import com.example.esewa_project.ui.util.SnackBar
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.navigationBars
@@ -47,7 +47,7 @@ fun FavouriteScreenContent(
                     .fillMaxWidth()
                     .offset(y = 40.dp)
             ) { data ->
-                FavouriteSnackbar(snackbarData = data)
+                SnackBar(snackBarData = data)
             }
         },
         topBar = {
