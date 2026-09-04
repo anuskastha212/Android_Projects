@@ -10,12 +10,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun FavouriteSnackbar(
-    snackbarData: SnackbarData,
+fun SnackBar(
+    snackBarData: SnackbarData,
     modifier: Modifier = Modifier
 ) {
     Snackbar(
-        snackbarData = snackbarData,
+        snackbarData = snackBarData,
         containerColor = Color.Black,
         contentColor = Color.White,
         actionColor = Color(0xFF2ABB00),
