@@ -25,20 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.CartItem
-import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
-import java.util.UUID
-
-enum class CheckoutRoute {
-    CHECKOUT,
-    SHIPPING_ADDRESS_LIST,
-    ADD_NEW_ADDRESS,
-    MAP_PICKER
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,234 +36,119 @@ fun CheckoutScreen(
     items: List<CartItem>,
     checkoutViewModel: CheckoutViewModel,
     onBackClick: () -> Unit,
-    onProceedClick: () -> Unit
+    onProceedClick: () -> Unit,
+    onEditAddressClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
     val deliveryAddress by checkoutViewModel.deliveryAddress.collectAsState()
-    val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
     val discount by checkoutViewModel.promoDiscount.collectAsState()
-
-    var currentRoute by remember { mutableStateOf(CheckoutRoute.CHECKOUT) }
-
-    // HOISTED FORM VARIABLES
-    var editingAddressId by remember { mutableStateOf<String?>(null) } // ADDED THIS
-    var formAddressLocation by remember { mutableStateOf("") }
-    var formFullName by remember { mutableStateOf("") }
-    var formMobile by remember { mutableStateOf("") }
-    var formLabel by remember { mutableStateOf("Home") }
-    var formIsDefaultShipping by remember { mutableStateOf(true) }
-    var formIsDefaultBilling by remember { mutableStateOf(false) }
 
     var showNoAddressSheet by remember { mutableStateOf(false) }
     var showPromoSheet by remember { mutableStateOf(false) }
     var promoCodeInput by remember { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    when (currentRoute) {
-        CheckoutRoute.MAP_PICKER -> {
-            MapLocation(
-                onLocationConfirmed = { lat, lng ->
-                    coroutineScope.launch {
-                        val realAddress = getReadableAddress(context, lat, lng)
-                        formAddressLocation = realAddress
-                        currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
-                    }
-                },
-                onClose = {
-                    currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
-                }
+
+    Scaffold(
+        topBar = {
+            CommonTopBar(
+                title = "Checkout",
+                onBackClick = onBackClick
+            )
+        },
+        bottomBar = {
+            CheckoutBottomBar(
+                items = items,
+                discount = discount,
+                onProceedClick = onProceedClick
             )
         }
-
-        CheckoutRoute.ADD_NEW_ADDRESS -> {
-            ShippingAddressForm(
-                fullName = formFullName,
-                onFullNameChange = { formFullName = it },
-                mobileNumber = formMobile,
-                onMobileChange = { formMobile = it },
-                pickedAddressLocation = formAddressLocation,
-                selectedLabel = formLabel,
-                onLabelChange = { formLabel = it },
-                isDefaultShipping = formIsDefaultShipping,
-                onDefaultShippingChange = { formIsDefaultShipping = it },
-                isDefaultBilling = formIsDefaultBilling,
-                onDefaultBillingChange = { formIsDefaultBilling = it },
-                onOpenMapPick = { currentRoute = CheckoutRoute.MAP_PICKER },
-                onSave = {
-                    val newAddress = ShippingAddress(
-                        id = editingAddressId ?: UUID.randomUUID().toString(), // UPDATED THIS
-                        fullName = formFullName,
-                        mobileNumber = formMobile,
-                        addressLocation = formAddressLocation,
-                        label = formLabel,
-                        isDefaultShipping = formIsDefaultShipping,
-                        isDefaultBilling = formIsDefaultBilling
-                    )
-                    checkoutViewModel.addNewAddress(newAddress)
-
-                    // Clear form
-                    formFullName = ""
-                    formMobile = ""
-                    formAddressLocation = ""
-                    formLabel = "Home"
-                    editingAddressId = null // CLEAR ID
-
-                    currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
-                },
-                onClose = {
-                    // Clear form
-                    formFullName = ""
-                    formMobile = ""
-                    formAddressLocation = ""
-                    formLabel = "Home"
-                    editingAddressId = null // CLEAR ID
-
-                    currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
-                }
-            )
-        }
-
-        CheckoutRoute.SHIPPING_ADDRESS_LIST -> {
-            ShippingAddressScreen(
-                addresses = savedAddresses,
-                onBackClick = { currentRoute = CheckoutRoute.CHECKOUT },
-                onAddAddressClick = {
-                    editingAddressId = null
-                    formFullName = ""
-                    formMobile = ""
-                    formAddressLocation = ""
-                    formLabel = "Home"
-                    formIsDefaultShipping = true
-                    currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
-                },
-                onAddressSelected = { address ->
-                    checkoutViewModel.selectAddress(address)
-                    currentRoute = CheckoutRoute.CHECKOUT
-                },
-                onEdit = { address ->
-                    editingAddressId = address.id
-                    formFullName = address.fullName
-                    formMobile = address.mobileNumber
-                    formAddressLocation = address.addressLocation
-                    formLabel = address.label
-                    formIsDefaultShipping = address.isDefaultShipping
-                    formIsDefaultBilling = address.isDefaultBilling
-
-                    currentRoute = CheckoutRoute.ADD_NEW_ADDRESS
-                },
-                onDelete = { address ->
-                    checkoutViewModel.deleteAddress(address.id)
-                },
-                onUndoDelete = { address ->
-                    checkoutViewModel.addNewAddress(address)
-                }
-            )
-        }
-        CheckoutRoute.CHECKOUT -> {
-            Scaffold(
-                topBar = {
-                    CommonTopBar(
-                        title = "Checkout",
-                        onBackClick = onBackClick
-                    )
-                },
-                bottomBar = {
-                    CheckoutBottomBar(
-                        items = items,
-                        discount = discount,
-                        onProceedClick = onProceedClick
-                    )
-                }
-            ) { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFFF8F9FA))
-                        .padding(paddingValues)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp, vertical = 24.dp)
-                            .padding(bottom = 80.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            CheckoutDelivery(
-                                currentAddress = deliveryAddress,
-                                onEditClick = {
-                                    if (deliveryAddress.isNullOrEmpty()) {
-                                        showNoAddressSheet = true
-                                    } else {
-                                        currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
-                                    }
-                                }
-                            )
-                            Text(
-                                text = "Order Summary",
-                                fontSize = 14.sp,
-                                color = Color(0xFF555770),
-                            )
-                            items.forEach { item ->
-                                CheckoutProductCard(item = item)
-                            }
-                        }
-                        PromoCodeButton(onClick = { showPromoSheet = true })
-                        PaymentOptionsCard()
-                    }
-                }
-            }
-
-            if (showPromoSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showPromoSheet = false },
-                    sheetState = sheetState,
-                    containerColor = Color.White
-                ) {
-                    PromoBottomSheetContent(
-                        codeValue = promoCodeInput,
-                        onCodeChange = { promoCodeInput = it },
-                        onApply = {
-                            val success = checkoutViewModel.applyPromoCode(promoCodeInput.trim())
-                            if (success) {
-                                showPromoSheet = false
-                                Toast.makeText(
-                                    context,
-                                    "Promo Code Applied!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF8F9FA))
+                .padding(paddingValues)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 24.dp)
+                    .padding(bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CheckoutDelivery(
+                        currentAddress = deliveryAddress,
+                        onEditClick = {
+                            if (deliveryAddress.isNullOrEmpty()) {
+                                showNoAddressSheet = true
                             } else {
-                                Toast.makeText(
-                                    context,
-                                    "Invalid Promo Code",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                onEditAddressClick()
                             }
                         }
                     )
-                }
-            }
-
-            if (showNoAddressSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showNoAddressSheet = false },
-                    sheetState = sheetState,
-                    containerColor = Color.White
-                ) {
-                    NoAddressBottomSheetContent(
-                        onSetAddress = {
-                            showNoAddressSheet = false
-                            currentRoute = CheckoutRoute.SHIPPING_ADDRESS_LIST
-                        },
-                        onCancel = {
-                            showNoAddressSheet = false
-                        }
+                    Text(
+                        text = "Order Summary",
+                        fontSize = 14.sp,
+                        color = Color(0xFF555770),
                     )
+                    items.forEach { item ->
+                        CheckoutProductCard(item = item)
+                    }
                 }
+                PromoCodeButton(onClick = { showPromoSheet = true })
+                PaymentOptionsCard()
             }
+        }
+    }
+
+    if (showPromoSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showPromoSheet = false },
+            sheetState = sheetState,
+            containerColor = Color.White
+        ) {
+            PromoBottomSheetContent(
+                codeValue = promoCodeInput,
+                onCodeChange = { promoCodeInput = it },
+                onApply = {
+                    val success = checkoutViewModel.applyPromoCode(promoCodeInput.trim())
+                    if (success) {
+                        showPromoSheet = false
+                        Toast.makeText(
+                            context,
+                            "Promo Code Applied!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Invalid Promo Code",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            )
+        }
+    }
+
+    if (showNoAddressSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showNoAddressSheet = false },
+            sheetState = sheetState,
+            containerColor = Color.White
+        ) {
+            NoAddressBottomSheetContent(
+                onSetAddress = {
+                    showNoAddressSheet = false
+                    onEditAddressClick()
+                },
+                onCancel = {
+                    showNoAddressSheet = false
+                }
+            )
         }
     }
 }
