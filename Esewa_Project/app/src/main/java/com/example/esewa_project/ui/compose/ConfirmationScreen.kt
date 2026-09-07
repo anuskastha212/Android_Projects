@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -21,6 +23,7 @@ import java.util.Locale
 @Composable
 fun ConfirmationScreen(
     items: List<CartItem>,
+    deliveryAddress: String,
     discount: Double = 0.0,
     onBackClick: () -> Unit,
     onConfirmClick: () -> Unit
@@ -109,7 +112,7 @@ fun ConfirmationScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         HorizontalDivider(color = Color(0xFFF1F1F5))
 
-                        ConfirmationRow("Delivery Address", "Pulchowk")
+                        ConfirmationRow("Delivery Address", deliveryAddress)
                         ConfirmationRow("Payment Option", "Cash on Delivery")
                         if (discount > 0) {
                             ConfirmationRow(
@@ -148,19 +151,28 @@ fun ConfirmationScreen(
 @Composable
 fun ConfirmationRow(label: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
     ) {
         Text(
-            label,
+            text = label,
             fontSize = 14.sp,
-            color = Color(0xFF555770)
+            color = Color(0xFF555770),
+            modifier = Modifier.widthIn(max = 120.dp)
         )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
         Text(
             value,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF292A40)
+            color = Color(0xFF292A40),
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f)
         )
     }
 }
