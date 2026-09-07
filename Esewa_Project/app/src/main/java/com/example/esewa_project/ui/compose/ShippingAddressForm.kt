@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,14 +19,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
+import com.example.esewa_project.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShippingAddressForm(
+    isEditing: Boolean,
     fullName: String,
     onFullNameChange: (String) -> Unit,
     mobileNumber: String,
@@ -39,9 +44,13 @@ fun ShippingAddressForm(
     onDefaultBillingChange: (Boolean) -> Unit,
     onOpenMapPick: () -> Unit,
     onSave: () -> Unit,
+    onDelete: () -> Unit, // <--- ADDED THIS
     onClose: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+    var showDeleteConfirmSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     Scaffold(
         modifier = Modifier
             .pointerInput(Unit) {
@@ -53,7 +62,7 @@ fun ShippingAddressForm(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Add your new address",
+                        text = if (isEditing) "Edit Your Address" else "Add your new address",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF292A40)
@@ -147,13 +156,6 @@ fun ShippingAddressForm(
                 TextField(
                     value = fullName,
                     onValueChange = onFullNameChange,
-                    placeholder = {
-                        Text(
-                            "Enter Full Name",
-                            color = Color(0xFFA8AABB),
-                            fontSize = 14.sp
-                        )
-                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
@@ -182,13 +184,6 @@ fun ShippingAddressForm(
                 TextField(
                     value = mobileNumber,
                     onValueChange = onMobileChange,
-                    placeholder = {
-                        Text(
-                            "Enter mobile No.",
-                            color = Color(0xFFA8AABB),
-                            fontSize = 14.sp
-                        )
-                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
@@ -206,7 +201,7 @@ fun ShippingAddressForm(
                 )
             }
 
-            // Address Field with Location Icon
+            // Address Field
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     "Address",
@@ -217,13 +212,6 @@ fun ShippingAddressForm(
                 TextField(
                     value = pickedAddressLocation,
                     onValueChange = { },
-                    placeholder = {
-                        Text(
-                            "Enter Address",
-                            color = Color(0xFFA8AABB),
-                            fontSize = 14.sp
-                        )
-                    },
                     readOnly = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -339,6 +327,100 @@ fun ShippingAddressForm(
                             uncheckedBorderColor = Color.Transparent
                         )
                     )
+                }
+            }
+
+            // RED DELETE BUTTON (Only shows if editing)
+            if (isEditing) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = Color(0xFFF1F1F5),
+                    thickness = 1.dp
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDeleteConfirmSheet = true }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.delete),
+                        contentDescription = "Delete",
+                        tint = Color(0xFFC0392B)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "DELETE ADDRESS",
+                        color = Color(0xFFC0392B),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+    }
+
+    // BOTTOM SHEET FOR DELETE CONFIRMATION
+    if (showDeleteConfirmSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showDeleteConfirmSheet = false },
+            sheetState = sheetState,
+            containerColor = Color.White,
+            dragHandle = { BottomSheetDefaults.DragHandle() }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Delete Address",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF292A40)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Are you sure you want to delete\naddress ?",
+                    fontSize = 14.sp,
+                    color = Color(0xFF717282),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = { showDeleteConfirmSheet = false },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555770)), // Dark Gray Cancel Button
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("CANCEL", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+
+                    Button(
+                        onClick = {
+                            showDeleteConfirmSheet = false
+                            onDelete()
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)), // Green Delete Button
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("DELETE", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
                 }
             }
         }

@@ -4,7 +4,6 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -32,7 +31,6 @@ enum class AddressRoute {
 }
 
 class ShippingAddressActivity : ComponentActivity() {
-
     private lateinit var checkoutViewModel: CheckoutViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +51,11 @@ class ShippingAddressActivity : ComponentActivity() {
             val context = LocalContext.current
             val coroutineScope = rememberCoroutineScope()
 
+            var pendingSnackbarMessage by remember { mutableStateOf<String?>(null) }
+            var deletedAddressForUndo by remember { mutableStateOf<ShippingAddress?>(null) }
+
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
+            val isAddressLoading by checkoutViewModel.isAddressLoading.collectAsState()
 
             var currentRoute by remember { mutableStateOf(AddressRoute.LIST) }
             var formAddressLocation by remember { mutableStateOf("") }
@@ -68,6 +70,11 @@ class ShippingAddressActivity : ComponentActivity() {
                 AddressRoute.LIST -> {
                     ShippingAddressScreen(
                         addresses = savedAddresses,
+                        isLoading = isAddressLoading,
+                        pendingSnackbarMessage = pendingSnackbarMessage,
+                        onSnackbarMessageShown = { pendingSnackbarMessage = null },
+                        deletedAddressForUndo = deletedAddressForUndo,
+                        onUndoSnackbarShown = { deletedAddressForUndo = null },
                         onBackClick = { finish() },
                         onAddAddressClick = {
                             editingAddressId = null
@@ -104,6 +111,7 @@ class ShippingAddressActivity : ComponentActivity() {
 
                 AddressRoute.ADD_NEW -> {
                     ShippingAddressForm(
+                        isEditing = editingAddressId != null,
                         fullName = formFullName,
                         onFullNameChange = { formFullName = it },
                         mobileNumber = formMobile,
@@ -117,6 +125,7 @@ class ShippingAddressActivity : ComponentActivity() {
                         onDefaultBillingChange = { formIsDefaultBilling = it },
                         onOpenMapPick = { currentRoute = AddressRoute.MAP_PICKER },
                         onSave = {
+                            val isEditing = editingAddressId != null
                             val newAddress = ShippingAddress(
                                 id = editingAddressId ?: UUID.randomUUID().toString(),
                                 fullName = formFullName,
@@ -127,6 +136,35 @@ class ShippingAddressActivity : ComponentActivity() {
                                 isDefaultBilling = formIsDefaultBilling
                             )
                             checkoutViewModel.addNewAddress(newAddress)
+
+                            pendingSnackbarMessage = if (isEditing) {
+                                "Address has been edited successfully"
+                            } else {
+                                "Address has been added successfully"
+                            }
+
+                            formFullName = ""
+                            formMobile = ""
+                            formAddressLocation = ""
+                            formLabel = "Home"
+                            editingAddressId = null
+
+                            currentRoute = AddressRoute.LIST
+                        },
+                        onDelete = {
+                            editingAddressId?.let { id ->
+                                val addressToUndo = ShippingAddress(
+                                    id = id,
+                                    fullName = formFullName,
+                                    mobileNumber = formMobile,
+                                    addressLocation = formAddressLocation,
+                                    label = formLabel,
+                                    isDefaultShipping = formIsDefaultShipping,
+                                    isDefaultBilling = formIsDefaultBilling
+                                )
+                                checkoutViewModel.deleteAddress(id)
+                                deletedAddressForUndo = addressToUndo
+                            }
 
                             formFullName = ""
                             formMobile = ""

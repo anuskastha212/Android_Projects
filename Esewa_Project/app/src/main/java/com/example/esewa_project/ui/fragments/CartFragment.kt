@@ -88,19 +88,21 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
     private fun setupAdapters() {
         cartAdapter = CartAdapter(
             onIncrementClick = { id ->
-                cartViewModel.updateQuantity(id, 1) },
+                cartViewModel.updateQuantity(id, 1)
+            },
             onDecrementClick = { id ->
-                cartViewModel.updateQuantity(id, -1) },
-            onProductClick = {productId ->
+                cartViewModel.updateQuantity(id, -1)
+            },
+            onProductClick = { productId ->
                 val intent = Intent(requireContext(), ProductDetailActivity::class.java)
-                intent.putExtra("product_id",productId)
+                intent.putExtra("product_id", productId)
                 startActivity(intent)
             }
         )
         binding.rvCartItems.apply {
             adapter = cartAdapter
             layoutManager = LinearLayoutManager(requireContext())
-            itemAnimator= null
+            itemAnimator = null
         }
 
         recommendedAdapter = AllProductAdapter(
@@ -122,7 +124,8 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
         binding.rvRecommended.apply {
             adapter = recommendedAdapter
             layoutManager = GridLayoutManager(requireContext(), 2)
-        }    }
+        }
+    }
 
     private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -145,7 +148,20 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                     }
                 }
                 launch {
+                    cartViewModel.isLoading.collectLatest { isLoading ->
+                        if (isLoading) {
+                            binding.progressBar.visibility = View.VISIBLE
+                            binding.cartScrollView.visibility = View.INVISIBLE
+                            binding.checkoutBar.visibility = View.GONE
+                        } else {
+                            binding.progressBar.visibility = View.GONE
+                            binding.cartScrollView.visibility = View.VISIBLE
+                        }
+                    }
+                }
+                launch {
                     cartViewModel.cartItems.collectLatest { list ->
+                        val isLoading = cartViewModel.isLoading.value
                         cartAdapter.submitList(list)
                         binding.itemCount.text = getString(R.string.items_count, list.size)
 
@@ -165,12 +181,12 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                         binding.tvCheckoutTotal.text = getString(R.string.product_price, total)
                     }
                 }
-
                 launch {
                     cartViewModel.cartQuantities.collectLatest { quantities ->
                         recommendedAdapter.currentQuantities = quantities
                     }
                 }
+
                 homeViewModel.products.observe(viewLifecycleOwner) { products ->
                     recommendedAdapter.products = products.drop(18).take(30)
                 }

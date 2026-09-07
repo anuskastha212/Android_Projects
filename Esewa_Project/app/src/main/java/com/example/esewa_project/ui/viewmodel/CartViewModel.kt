@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class CartViewModel(application: Application) : AndroidViewModel(application) {
     private val cartRepo = CartRepository(AppDatabase.getDatabase(application).cartDao())
@@ -21,6 +22,9 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _navigateToLogin = MutableSharedFlow<Unit>()
     val navigateToLogin = _navigateToLogin.asSharedFlow()
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val userSession: StateFlow<String> = userSessionRepo.currentUserId
         .map { it ?: "" }
@@ -36,17 +40,23 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     val cartItems: Flow<List<CartItem>> = userSession.flatMapLatest { uid ->
-        if (uid.isEmpty()) flowOf(emptyList())
-        else cartRepo.getCartWithProducts(uid).map { itemsMap ->
-            itemsMap.map { (cart, product) ->
-                CartItem(
-                    productId = product.id,
-                    title = product.title,
-                    price = product.price,
-                    quantity = cart.quantity,
-                    thumbnail = product.thumbnail,
-                    categoryName = product.categoryName
-                )
+        if (uid.isEmpty()) {
+            _isLoading.value = false
+            flowOf(emptyList())
+        } else {
+            cartRepo.getCartWithProducts(uid)
+                .onEach { _isLoading.value = false }
+                .map { itemsMap ->
+                itemsMap.map { (cart, product) ->
+                    CartItem(
+                        productId = product.id,
+                        title = product.title,
+                        price = product.price,
+                        quantity = cart.quantity,
+                        thumbnail = product.thumbnail,
+                        categoryName = product.categoryName
+                    )
+                }
             }
         }
     }
