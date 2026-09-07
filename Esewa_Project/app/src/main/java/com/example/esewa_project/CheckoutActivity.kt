@@ -89,6 +89,7 @@ class CheckoutActivity : ComponentActivity() {
             val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
             val discount by checkoutViewModel.promoDiscount.collectAsState()
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
+            val isAddressLoading by checkoutViewModel.isAddressLoading.collectAsState()
 
             var currentRoute by remember { mutableStateOf(CheckoutFlowRoute.CHECKOUT) }
 
@@ -135,6 +136,7 @@ class CheckoutActivity : ComponentActivity() {
                     CheckoutFlowRoute.SHIPPING_ADDRESS_LIST -> {
                         ShippingAddressScreen(
                             addresses = savedAddresses,
+                            isLoading = isAddressLoading,
                             pendingSnackbarMessage = pendingSnackbarMessage,
                             onSnackbarMessageShown = { pendingSnackbarMessage = null },
                             deletedAddressForUndo = deletedAddressForUndo,

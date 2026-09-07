@@ -20,14 +20,21 @@ class CheckoutViewModel(
     private val sessionRepo: UserSessionRepository
 ) : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
+
     private val _checkoutItems = MutableStateFlow<List<CartItem>>(emptyList())
     val checkoutItems: StateFlow<List<CartItem>> = _checkoutItems.asStateFlow()
+
     private val _promoDiscount = MutableStateFlow(0.0)
     val promoDiscount: StateFlow<Double> = _promoDiscount.asStateFlow()
+
     private val _deliveryAddress = MutableStateFlow<String?>(null)
     val deliveryAddress: StateFlow<String?> = _deliveryAddress.asStateFlow()
+
     private val _savedAddresses = MutableStateFlow<List<ShippingAddress>>(emptyList())
     val savedAddresses: StateFlow<List<ShippingAddress>> = _savedAddresses.asStateFlow()
+
+    private val _isAddressLoading = MutableStateFlow(true)
+    val isAddressLoading: StateFlow<Boolean> = _isAddressLoading.asStateFlow()
 
     fun applyPromoCode(code: String): Boolean {
         return if (code.trim().equals("eBazar-33", ignoreCase = true)) {
@@ -40,7 +47,10 @@ class CheckoutViewModel(
     }
 
     fun loadSavedAddress() {
-        val uid = sessionRepo.getUid() ?: return
+        val uid = sessionRepo.getUid() ?: run {
+            _isAddressLoading.value = false
+            return
+        }
         viewModelScope.launch {
             try {
                 firestore.collection("users").document(uid)
@@ -48,15 +58,18 @@ class CheckoutViewModel(
                     .get()
                     .addOnSuccessListener { snapshot ->
                         val addresses = snapshot.toObjects(ShippingAddress::class.java)
-                        if (addresses.isNotEmpty()) {
-                            val defaultAddress =
-                                addresses.find { it.isDefaultShipping } ?: addresses.first()
-                            val syncedAddresses = addresses.map {
-                                it.copy(isSelected = it.id == defaultAddress.id)
-                            }
-                            _savedAddresses.value = syncedAddresses
-                            _deliveryAddress.value = defaultAddress.addressLocation
+                        val defaultAddress =
+                            addresses.find { it.isDefaultShipping } ?: addresses.first()
+                        val syncedAddresses = addresses.map {
+                            it.copy(isSelected = it.id == defaultAddress.id)
                         }
+                        _savedAddresses.value = syncedAddresses
+                        _deliveryAddress.value = defaultAddress.addressLocation
+                        _isAddressLoading.value = false
+                    }
+                    .addOnFailureListener {
+                        _isAddressLoading.value = false // Stop loading even on error
+
                     }
             } catch (e: Exception) {
                 e.printStackTrace()

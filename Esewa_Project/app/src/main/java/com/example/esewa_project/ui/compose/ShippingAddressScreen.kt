@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ShippingAddressScreen(
     addresses: List<ShippingAddress>,
+    isLoading: Boolean,
     pendingSnackbarMessage: String? = null,
     onSnackbarMessageShown: () -> Unit = {},
     deletedAddressForUndo: ShippingAddress? = null,
@@ -113,7 +114,12 @@ fun ShippingAddressScreen(
                 .background(Color(0xFFF8F9FA))
                 .padding(paddingValues)
         ) {
-            if (addresses.isEmpty()) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color(0xFF2ABB00)
+                )
+            } else if (addresses.isEmpty()) {
                 EmptyAddressState(onAddAddressClick)
             } else {
                 LazyColumn(
