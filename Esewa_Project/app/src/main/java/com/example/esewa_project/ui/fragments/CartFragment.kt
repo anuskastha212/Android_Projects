@@ -190,7 +190,6 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                 homeViewModel.products.observe(viewLifecycleOwner) { products ->
                     recommendedAdapter.products = products.drop(18).take(30)
                 }
-
             }
         }
     }
