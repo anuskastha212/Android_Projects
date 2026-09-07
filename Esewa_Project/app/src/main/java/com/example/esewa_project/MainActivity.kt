@@ -20,6 +20,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.activity.viewModels
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.esewa_project.databinding.ActivityMainBinding
 import com.example.esewa_project.ui.fragments.CartFragment
 import com.example.esewa_project.ui.fragments.FavouriteFragment
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private val tagMore = "more"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
