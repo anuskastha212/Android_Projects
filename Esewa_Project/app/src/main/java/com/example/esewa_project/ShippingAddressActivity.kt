@@ -4,7 +4,6 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -52,6 +51,7 @@ class ShippingAddressActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val coroutineScope = rememberCoroutineScope()
+            var pendingSnackbarMessage by remember { mutableStateOf<String?>(null) }
 
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
 
@@ -68,6 +68,8 @@ class ShippingAddressActivity : ComponentActivity() {
                 AddressRoute.LIST -> {
                     ShippingAddressScreen(
                         addresses = savedAddresses,
+                        pendingSnackbarMessage = pendingSnackbarMessage,
+                        onSnackbarMessageShown = { pendingSnackbarMessage = null },
                         onBackClick = { finish() },
                         onAddAddressClick = {
                             editingAddressId = null
@@ -117,6 +119,7 @@ class ShippingAddressActivity : ComponentActivity() {
                         onDefaultBillingChange = { formIsDefaultBilling = it },
                         onOpenMapPick = { currentRoute = AddressRoute.MAP_PICKER },
                         onSave = {
+                            val isEditing = editingAddressId != null
                             val newAddress = ShippingAddress(
                                 id = editingAddressId ?: UUID.randomUUID().toString(),
                                 fullName = formFullName,
@@ -127,6 +130,12 @@ class ShippingAddressActivity : ComponentActivity() {
                                 isDefaultBilling = formIsDefaultBilling
                             )
                             checkoutViewModel.addNewAddress(newAddress)
+
+                            pendingSnackbarMessage = if (isEditing) {
+                                "Address has been edited successfully"
+                            } else {
+                                "Address has been added successfully"
+                            }
 
                             formFullName = ""
                             formMobile = ""

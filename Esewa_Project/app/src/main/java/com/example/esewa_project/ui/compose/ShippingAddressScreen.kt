@@ -26,6 +26,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ShippingAddressScreen(
     addresses: List<ShippingAddress>,
+    pendingSnackbarMessage: String? = null,
+    onSnackbarMessageShown: () -> Unit = {},
     onBackClick: () -> Unit,
     onAddAddressClick: () -> Unit,
     onAddressSelected: (ShippingAddress) -> Unit,
@@ -35,6 +37,17 @@ fun ShippingAddressScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(pendingSnackbarMessage) {
+        pendingSnackbarMessage?.let { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = "OK",
+                duration = SnackbarDuration.Short
+            )
+            onSnackbarMessageShown()
+        }
+    }
     Scaffold(
         topBar = {
             CommonTopBar(
