@@ -90,6 +90,7 @@ class CheckoutActivity : ComponentActivity() {
             val discount by checkoutViewModel.promoDiscount.collectAsState()
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
             val isAddressLoading by checkoutViewModel.isAddressLoading.collectAsState()
+            val deliveryAddress by checkoutViewModel.deliveryAddress.collectAsState()
 
             var currentRoute by remember { mutableStateOf(CheckoutFlowRoute.CHECKOUT) }
 
@@ -120,6 +121,7 @@ class CheckoutActivity : ComponentActivity() {
                     CheckoutFlowRoute.CONFIRMATION -> {
                         ConfirmationScreen(
                             items = checkoutItems,
+                            deliveryAddress = deliveryAddress ?: "Address Not Set",
                             discount = discount,
                             onBackClick = { currentRoute = CheckoutFlowRoute.CHECKOUT },
                             onConfirmClick = {
