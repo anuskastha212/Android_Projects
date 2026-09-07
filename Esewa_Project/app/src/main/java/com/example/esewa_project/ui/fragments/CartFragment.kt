@@ -24,6 +24,8 @@ import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
 
 class CartFragment : Fragment(R.layout.fragment_cart) {
 
@@ -91,7 +93,12 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                 cartViewModel.updateQuantity(id, 1)
             },
             onDecrementClick = { id ->
-                cartViewModel.updateQuantity(id, -1)
+                val currentQty = cartViewModel.cartQuantities.value[id] ?: 0
+                if (currentQty <= 1) {
+                    showDeleteConfirmationBottomSheet(id)
+                } else {
+                    cartViewModel.updateQuantity(id, -1)
+                }
             },
             onProductClick = { productId ->
                 val intent = Intent(requireContext(), ProductDetailActivity::class.java)
@@ -125,6 +132,28 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
             adapter = recommendedAdapter
             layoutManager = GridLayoutManager(requireContext(), 2)
         }
+    }
+
+    private fun showDeleteConfirmationBottomSheet(productId: Int) {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.delete_cart_item, null)
+        bottomSheetDialog.setContentView(view)
+
+        bottomSheetDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val btnCancel = view.findViewById<MaterialButton>(R.id.btnCancel)
+        val btnDelete = view.findViewById<MaterialButton>(R.id.btnDelete)
+
+        btnCancel.setOnClickListener {
+            bottomSheetDialog.dismiss()
+        }
+
+        btnDelete.setOnClickListener {
+            cartViewModel.updateQuantity(productId, -1)
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog.show()
     }
 
     private fun observeData() {
@@ -165,14 +194,16 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                         cartAdapter.submitList(list)
                         binding.itemCount.text = getString(R.string.items_count, list.size)
 
-                        if (list.isEmpty()) {
-                            binding.layoutEmptyCart.visibility = View.VISIBLE
-                            binding.rvCartItems.visibility = View.GONE
-                            binding.checkoutBar.visibility = View.GONE
-                        } else {
-                            binding.layoutEmptyCart.visibility = View.GONE
-                            binding.rvCartItems.visibility = View.VISIBLE
-                            binding.checkoutBar.visibility = View.VISIBLE
+                        if (!isLoading) {
+                            if (list.isEmpty()) {
+                                binding.layoutEmptyCart.visibility = View.VISIBLE
+                                binding.rvCartItems.visibility = View.GONE
+                                binding.checkoutBar.visibility = View.GONE
+                            } else {
+                                binding.layoutEmptyCart.visibility = View.GONE
+                                binding.rvCartItems.visibility = View.VISIBLE
+                                binding.checkoutBar.visibility = View.VISIBLE
+                            }
                         }
                     }
                 }
@@ -190,7 +221,6 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
                 homeViewModel.products.observe(viewLifecycleOwner) { products ->
                     recommendedAdapter.products = products.drop(18).take(30)
                 }
-
             }
         }
     }
