@@ -28,6 +28,8 @@ fun ShippingAddressScreen(
     addresses: List<ShippingAddress>,
     pendingSnackbarMessage: String? = null,
     onSnackbarMessageShown: () -> Unit = {},
+    deletedAddressForUndo: ShippingAddress? = null,
+    onUndoSnackbarShown: () -> Unit = {},
     onBackClick: () -> Unit,
     onAddAddressClick: () -> Unit,
     onAddressSelected: (ShippingAddress) -> Unit,
@@ -46,6 +48,26 @@ fun ShippingAddressScreen(
                 duration = SnackbarDuration.Short
             )
             onSnackbarMessageShown()
+        }
+    }
+    LaunchedEffect(deletedAddressForUndo) {
+        deletedAddressForUndo?.let { address ->
+            val result = snackbarHostState.showSnackbar(
+                message = "Address has been deleted",
+                actionLabel = "UNDO",
+                duration = SnackbarDuration.Short
+            )
+
+            if (result == SnackbarResult.ActionPerformed) {
+                onUndoDelete(address)
+
+                snackbarHostState.showSnackbar(
+                    message = "Address has been added successfully",
+                    actionLabel = "OK",
+                    duration = SnackbarDuration.Short
+                )
+            }
+            onUndoSnackbarShown()
         }
     }
     Scaffold(
@@ -103,6 +125,7 @@ fun ShippingAddressScreen(
                             address = address,
                             onClick = { onAddressSelected(address) },
                             onEdit = { onEdit(address) },
+
                             onDelete = {
                                 onDelete(address)
 

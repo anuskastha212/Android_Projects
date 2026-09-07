@@ -99,7 +99,8 @@ class CheckoutActivity : ComponentActivity() {
             var formLabel by remember { mutableStateOf("Home") }
             var formIsDefaultShipping by remember { mutableStateOf(true) }
             var formIsDefaultBilling by remember { mutableStateOf(false) }
-
+            var pendingSnackbarMessage by remember { mutableStateOf<String?>(null) }
+            var deletedAddressForUndo by remember { mutableStateOf<ShippingAddress?>(null) }
 
             if (checkoutItems.isNotEmpty()) {
                 when (currentRoute) {
@@ -134,6 +135,10 @@ class CheckoutActivity : ComponentActivity() {
                     CheckoutFlowRoute.SHIPPING_ADDRESS_LIST -> {
                         ShippingAddressScreen(
                             addresses = savedAddresses,
+                            pendingSnackbarMessage = pendingSnackbarMessage,
+                            onSnackbarMessageShown = { pendingSnackbarMessage = null },
+                            deletedAddressForUndo = deletedAddressForUndo,
+                            onUndoSnackbarShown = { deletedAddressForUndo = null },
                             onBackClick = { currentRoute = CheckoutFlowRoute.CHECKOUT },
                             onAddAddressClick = {
                                 editingAddressId = null
@@ -170,6 +175,7 @@ class CheckoutActivity : ComponentActivity() {
 
                     CheckoutFlowRoute.ADD_NEW_ADDRESS -> {
                         ShippingAddressForm(
+                            isEditing = editingAddressId != null,
                             fullName = formFullName,
                             onFullNameChange = { formFullName = it },
                             mobileNumber = formMobile,
@@ -183,6 +189,7 @@ class CheckoutActivity : ComponentActivity() {
                             onDefaultBillingChange = { formIsDefaultBilling = it },
                             onOpenMapPick = { currentRoute = CheckoutFlowRoute.MAP_PICKER },
                             onSave = {
+                                val isEditing = editingAddressId != null
                                 val newAddress = ShippingAddress(
                                     id = editingAddressId ?: UUID.randomUUID().toString(),
                                     fullName = formFullName,
@@ -193,6 +200,35 @@ class CheckoutActivity : ComponentActivity() {
                                     isDefaultBilling = formIsDefaultBilling
                                 )
                                 checkoutViewModel.addNewAddress(newAddress)
+
+                                pendingSnackbarMessage = if (isEditing) {
+                                    "Address has been edited successfully"
+                                } else {
+                                    "Address has been added successfully"
+                                }
+
+                                formFullName = ""
+                                formMobile = ""
+                                formAddressLocation = ""
+                                formLabel = "Home"
+                                editingAddressId = null
+
+                                currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
+                            },
+                            onDelete = {
+                                editingAddressId?.let { id ->
+                                    val addressToUndo = ShippingAddress(
+                                        id = id,
+                                        fullName = formFullName,
+                                        mobileNumber = formMobile,
+                                        addressLocation = formAddressLocation,
+                                        label = formLabel,
+                                        isDefaultShipping = formIsDefaultShipping,
+                                        isDefaultBilling = formIsDefaultBilling
+                                    )
+                                    checkoutViewModel.deleteAddress(id)
+                                    deletedAddressForUndo = addressToUndo
+                                }
 
                                 formFullName = ""
                                 formMobile = ""
