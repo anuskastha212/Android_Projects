@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,7 +36,6 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.model.PlaceTypes
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
@@ -53,6 +53,7 @@ fun MapLocation(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val initialLocation = LatLng(27.6766, 85.3184)
+    val focusManager = LocalFocusManager.current
 
     val placesClient = remember {
         try {
@@ -84,11 +85,13 @@ fun MapLocation(
     var suggestions by remember { mutableStateOf<List<LocationSearchResult>>(emptyList()) }
     var isSearching by remember { mutableStateOf(false) }
     var currentAddressName by remember { mutableStateOf("Fetching address...") }
+    var userSelectedAPlace by remember { mutableStateOf(false) }
 
     LaunchedEffect(cameraPositionState.isMoving) {
-        if (!cameraPositionState.isMoving) {
+        if (!userSelectedAPlace) {
             val target = cameraPositionState.position.target
             currentAddressName = getReadableAddress(context, target.latitude, target.longitude)
+            userSelectedAPlace = false
         }
     }
 
@@ -248,6 +251,9 @@ fun MapLocation(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
+                                        focusManager.clearFocus()
+                                        currentAddressName = "${result.title}, ${result.subtitle}"
+                                        userSelectedAPlace = true
                                         if (result.placeId != null && placesClient != null) {
                                             val placeFields = listOf(Place.Field.LOCATION)
                                             val fetchRequest = FetchPlaceRequest.newInstance(
