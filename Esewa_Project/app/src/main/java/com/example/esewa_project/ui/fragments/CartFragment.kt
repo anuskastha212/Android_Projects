@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -33,8 +34,8 @@ class CartFragment : Fragment(R.layout.fragment_cart) {
     private val binding get() = _binding!!
 
     private val cartViewModel: CartViewModel by viewModels()
-    private val favouriteViewModel: FavouriteViewModel by viewModels()
-    private val homeViewModel: HomeViewModel by viewModels()
+    private val favouriteViewModel: FavouriteViewModel by activityViewModels()
+    private val homeViewModel: HomeViewModel by activityViewModels()
 
     private lateinit var cartAdapter: CartAdapter
     private lateinit var recommendedAdapter: AllProductAdapter
