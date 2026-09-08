@@ -84,8 +84,6 @@ class CheckoutActivity : ComponentActivity() {
         }
 
         setContent {
-            val context = LocalContext.current
-            val coroutineScope = rememberCoroutineScope()
             val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
             val discount by checkoutViewModel.promoDiscount.collectAsState()
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
@@ -283,11 +281,9 @@ class CheckoutActivity : ComponentActivity() {
 
                     CheckoutFlowRoute.MAP_PICKER -> {
                         MapLocation(
-                            onLocationConfirmed = { lat, lng ->
-                                coroutineScope.launch {
-                                    formAddressLocation = getReadableAddress(context, lat, lng)
+                            onLocationConfirmed = { lat, lng, addressName ->
+                                    formAddressLocation = addressName
                                     currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
-                                }
                             },
                             onClose = {
                                 currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS

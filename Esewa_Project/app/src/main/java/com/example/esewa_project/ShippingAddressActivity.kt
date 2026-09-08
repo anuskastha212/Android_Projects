@@ -202,12 +202,11 @@ class ShippingAddressActivity : ComponentActivity() {
 
                 AddressRoute.MAP_PICKER -> {
                     MapLocation(
-                        onLocationConfirmed = { lat, lng ->
-                            coroutineScope.launch {
-                                formAddressLocation = getReadableAddress(context, lat, lng)
+                        onLocationConfirmed = { lat, lng, addressName ->
+                                formAddressLocation = addressName
                                 addressError = null
                                 currentRoute = AddressRoute.ADD_NEW
-                            }
+
                         },
                         onClose = {
                             currentRoute = AddressRoute.ADD_NEW

@@ -8,15 +8,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import com.example.esewa_project.data.model.LocationSearchResult
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +36,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.PlaceTypes
+import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +47,7 @@ import java.util.Locale
 
 @Composable
 fun MapLocation(
-    onLocationConfirmed: (Double, Double) -> Unit,
+    onLocationConfirmed: (Double, Double, String) -> Unit,
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
@@ -59,13 +62,16 @@ fun MapLocation(
                     PackageManager.GET_META_DATA
                 )
                 val apiKey = appInfo.metaData?.getString("com.google.android.geo.API_KEY") ?: ""
-                if (apiKey.isNotEmpty()) {
-                    Places.initialize(context.applicationContext, apiKey)
+                if (apiKey.isNotEmpty() && !apiKey.startsWith("$")) {
+                    Places.initializeWithNewPlacesApiEnabled(
+                        context.applicationContext,
+                        apiKey
+                    )
                 }
             }
             if (Places.isInitialized()) Places.createClient(context) else null
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("MapSearch", "Places init failed", e)
             null
         }
     }
@@ -77,25 +83,34 @@ fun MapLocation(
     var searchQuery by remember { mutableStateOf("") }
     var suggestions by remember { mutableStateOf<List<LocationSearchResult>>(emptyList()) }
     var isSearching by remember { mutableStateOf(false) }
+    var currentAddressName by remember { mutableStateOf("Fetching address...") }
+
+    LaunchedEffect(cameraPositionState.isMoving) {
+        if (!cameraPositionState.isMoving) {
+            val target = cameraPositionState.position.target
+            currentAddressName = getReadableAddress(context, target.latitude, target.longitude)
+        }
+    }
 
     LaunchedEffect(searchQuery) {
         if (searchQuery.trim().length >= 2) {
             isSearching = true
-            delay(400)
+            delay(500)
 
             if (placesClient != null) {
                 val request = FindAutocompletePredictionsRequest.builder()
                     .setQuery(searchQuery)
-//                    .setTypesFilter(listOf<PlaceTypes>(PlaceTypes.))
                     .setCountries("NP")
+                    .setLocationBias(
+                        RectangularBounds.newInstance(
+                            LatLng(26.347, 80.058),
+                            LatLng(30.447, 88.201)
+                        )
+                    )
                     .build()
 
                 placesClient.findAutocompletePredictions(request)
                     .addOnSuccessListener { response ->
-                        response.autocompletePredictions.forEach {
-                            Log.d("Result","$it")
-                        }
-
                         suggestions = response.autocompletePredictions.map { prediction ->
                             LocationSearchResult(
                                 title = prediction.getPrimaryText(null).toString(),
@@ -105,8 +120,8 @@ fun MapLocation(
                         }
                         isSearching = false
                     }
-                    .addOnFailureListener {
-                        Log.e("Result", it.toString())
+                    .addOnFailureListener { exception ->
+                        Log.e("MapSearch", "Autocomplete failed: ${exception.message}")
                         coroutineScope.launch(Dispatchers.IO) {
                             val results = queryGeocoderFallback(context, searchQuery)
                             withContext(Dispatchers.Main) {
@@ -137,6 +152,7 @@ fun MapLocation(
             properties = MapProperties(isMyLocationEnabled = false),
             uiSettings = MapUiSettings(zoomControlsEnabled = false)
         )
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.align(Alignment.Center)
@@ -147,7 +163,7 @@ fun MapLocation(
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "Selected ✓",
+                    "Selected ✓",
                     color = Color.White,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -161,7 +177,7 @@ fun MapLocation(
             )
         }
 
-        // Search Bar
+        // Search
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -181,7 +197,7 @@ fun MapLocation(
                     IconButton(onClick = onClose) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Close",
+                            "Close",
                             tint = Color.Gray
                         )
                     }
@@ -209,14 +225,14 @@ fun MapLocation(
                         IconButton(onClick = { searchQuery = "" }) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Clear",
+                                "Clear",
                                 tint = Color.Gray
                             )
                         }
                     }
                 }
             }
-            // Suggestions List
+
             if (suggestions.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Card(
@@ -225,26 +241,22 @@ fun MapLocation(
                     elevation = CardDefaults.cardElevation(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = 220.dp)
-                    ) {
-                        items(suggestions.size) { index ->
-                            val result = suggestions[index]
+                    LazyColumn(modifier = Modifier.heightIn(max = 220.dp)) {
+                        items(suggestions) { result ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
                                         if (result.placeId != null && placesClient != null) {
-                                            val placeFields = listOf(Place.Field.LAT_LNG)
+                                            val placeFields = listOf(Place.Field.LOCATION)
                                             val fetchRequest = FetchPlaceRequest.newInstance(
                                                 result.placeId,
                                                 placeFields
                                             )
                                             placesClient.fetchPlace(fetchRequest)
-                                                .addOnSuccessListener { response ->
-                                                    val latLng = response.place.latLng
-                                                    if (latLng != null) {
+                                                .addOnSuccessListener { res ->
+                                                    res.place.location?.let { latLng ->
                                                         coroutineScope.launch {
                                                             cameraPositionState.animate(
                                                                 CameraUpdateFactory.newLatLngZoom(
@@ -254,8 +266,6 @@ fun MapLocation(
                                                             )
                                                         }
                                                     }
-                                                    searchQuery = ""
-                                                    suggestions = emptyList()
                                                 }
                                         } else if (result.latLng != null) {
                                             coroutineScope.launch {
@@ -266,32 +276,28 @@ fun MapLocation(
                                                     )
                                                 )
                                             }
-                                            searchQuery = ""
-                                            suggestions = emptyList()
                                         }
+                                        searchQuery = ""
+                                        suggestions = emptyList()
                                     }
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
+                                    Icons.Default.Search,
+                                    null,
                                     tint = Color.Gray,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = result.title,
+                                        result.title,
                                         fontSize = 14.sp,
                                         color = Color(0xFF292A40),
                                         fontWeight = FontWeight.Bold
                                     )
                                     if (result.subtitle.isNotEmpty()) {
-                                        Text(
-                                            text = result.subtitle,
-                                            fontSize = 12.sp,
-                                            color = Color.Gray
-                                        )
+                                        Text(result.subtitle, fontSize = 12.sp, color = Color.Gray)
                                     }
                                 }
                             }
@@ -302,72 +308,44 @@ fun MapLocation(
             }
         }
 
-        // My Location FAB
-        FloatingActionButton(
-            onClick = {
-                coroutineScope.launch {
-                    cameraPositionState.animate(
-                        CameraUpdateFactory.newLatLngZoom(initialLocation, 17f)
-                    )
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 140.dp, end = 16.dp),
-            containerColor = Color.White,
-            contentColor = Color(0xFF2ABB00)
-        ) {
-            Icon(
-                Icons.Default.LocationOn,
-                contentDescription = "My Location"
-            )
-        }
-
         // Bottom Confirmation Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(16.dp),
+                .padding(
+                    top = 0.dp,
+                    bottom = 32.dp,
+                    start = 8.dp,
+                    end = 8.dp
+                ),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(10.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Selected Location",
+                    "Selected Location",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF292A40)
                 )
-
-                val currentTarget = cameraPositionState.position.target
                 Text(
-                    text = "Lat: ${
-                        String.format(
-                            Locale.US,
-                            "%.4f",
-                            currentTarget.latitude
-                        )
-                    }, Lng: ${String.format(Locale.US, "%.4f", currentTarget.longitude)}",
+                    text = currentAddressName,
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    maxLines = 2
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        onLocationConfirmed(
-                            currentTarget.latitude,
-                            currentTarget.longitude
-                        )
+                        val target = cameraPositionState.position.target
+                        onLocationConfirmed(target.latitude, target.longitude, currentAddressName)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2ABB00)
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
@@ -381,24 +359,44 @@ fun MapLocation(
 }
 
 @Suppress("DEPRECATION")
-private fun queryGeocoderFallback(
-    context: Context,
-    query: String
-): List<LocationSearchResult> {
+private fun queryGeocoderFallback(context: Context, query: String): List<LocationSearchResult> {
     return try {
         val geocoder = Geocoder(context, Locale.getDefault())
-        val queryWithCountry = if (query.lowercase().contains("nepal")) query else "$query, Nepal"
-
-        val addresses = geocoder.getFromLocationName(queryWithCountry, 5) ?: emptyList()
-
+        val addresses = geocoder.getFromLocationName("$query, Nepal", 10) ?: emptyList()
         addresses.map { address ->
+            val title = address.featureName ?: address.locality ?: query
+            val subtitle = address.getAddressLine(0) ?: "Nepal"
             LocationSearchResult(
-                title = address.featureName ?: address.locality ?: query,
-                subtitle = address.getAddressLine(0) ?: "Nepal",
+                title = title,
+                subtitle = subtitle,
                 latLng = LatLng(address.latitude, address.longitude)
             )
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         emptyList()
+    }
+}
+
+@Suppress("DEPRECATION")
+suspend fun getReadableAddress(context: Context, lat: Double, lng: Double): String {
+    return withContext(Dispatchers.IO) {
+        try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(lat, lng, 3)
+            if (!addresses.isNullOrEmpty()) {
+                val addr = addresses[0]
+                val feature = addr.featureName
+                val fullAddress = addr.getAddressLine(0) ?: ""
+                if (feature != null && !fullAddress.startsWith(feature)) {
+                    "$feature, $fullAddress"
+                } else {
+                    fullAddress
+                }
+            } else {
+                "Location ($lat, $lng)"
+            }
+        } catch (_: Exception) {
+            "Location ($lat, $lng)"
+        }
     }
 }
