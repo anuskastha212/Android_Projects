@@ -3,6 +3,7 @@ package com.example.esewa_project.ui.compose
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,6 +33,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.PlaceTypes
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import kotlinx.coroutines.Dispatchers
@@ -84,11 +86,16 @@ fun MapLocation(
             if (placesClient != null) {
                 val request = FindAutocompletePredictionsRequest.builder()
                     .setQuery(searchQuery)
+//                    .setTypesFilter(listOf<PlaceTypes>(PlaceTypes.))
                     .setCountries("NP")
                     .build()
 
                 placesClient.findAutocompletePredictions(request)
                     .addOnSuccessListener { response ->
+                        response.autocompletePredictions.forEach {
+                            Log.d("Result","$it")
+                        }
+
                         suggestions = response.autocompletePredictions.map { prediction ->
                             LocationSearchResult(
                                 title = prediction.getPrimaryText(null).toString(),
@@ -99,6 +106,7 @@ fun MapLocation(
                         isSearching = false
                     }
                     .addOnFailureListener {
+                        Log.e("Result", it.toString())
                         coroutineScope.launch(Dispatchers.IO) {
                             val results = queryGeocoderFallback(context, searchQuery)
                             withContext(Dispatchers.Main) {
