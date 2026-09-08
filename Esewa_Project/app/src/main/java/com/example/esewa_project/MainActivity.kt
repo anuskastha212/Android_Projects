@@ -14,6 +14,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import com.google.android.material.snackbar.Snackbar
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -79,6 +80,20 @@ class MainActivity : AppCompatActivity() {
                                 favouriteBadge.visibility = View.GONE
                             }
                         }
+                    }
+                }
+                launch {
+                    cartViewModel.onItemAddedFirstTime.collect {
+                        Snackbar.make(
+                            binding.root,
+                            "Added to cart successfully",
+                            Snackbar.LENGTH_LONG
+                        ).setAction("GOTO CART") {
+                            binding.bottomNav.navItemCart.performClick()
+                        }
+                            .setActionTextColor(ContextCompat.getColor(this@MainActivity, R.color.green))
+                            .setAnchorView(binding.bottomNav.root)
+                            .show()
                     }
                 }
             }
@@ -211,7 +226,7 @@ class MainActivity : AppCompatActivity() {
         layout: LinearLayout,
         text: TextView,
         icon: ImageView
-    ){
+    ) {
         text.visibility = View.GONE
         icon.imageTintList =
             ColorStateList.valueOf(

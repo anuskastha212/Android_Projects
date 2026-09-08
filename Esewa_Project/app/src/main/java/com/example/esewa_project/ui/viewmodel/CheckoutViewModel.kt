@@ -68,7 +68,7 @@ class CheckoutViewModel(
                         _isAddressLoading.value = false
                     }
                     .addOnFailureListener {
-                        _isAddressLoading.value = false // Stop loading even on error
+                        _isAddressLoading.value = false
 
                     }
             } catch (e: Exception) {

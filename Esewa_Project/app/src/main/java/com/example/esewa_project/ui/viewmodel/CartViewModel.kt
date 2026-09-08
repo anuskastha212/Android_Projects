@@ -26,6 +26,9 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _onItemAddedFirstTime = MutableSharedFlow<Unit>()
+    val onItemAddedFirstTime = _onItemAddedFirstTime.asSharedFlow()
+
     val userSession: StateFlow<String> = userSessionRepo.currentUserId
         .map { it ?: "" }
         .stateIn(
@@ -92,6 +95,9 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             if (newQty <= 0) {
                 cartRepo.removeFromCart(currentUid, productId)
             } else {
+                if (currentQty == 0 && delta > 0) {
+                    _onItemAddedFirstTime.emit(Unit)
+                }
                 cartRepo.addToCart(CartEntity(currentUid, productId, newQty))
             }
         }

@@ -84,8 +84,6 @@ class CheckoutActivity : ComponentActivity() {
         }
 
         setContent {
-            val context = LocalContext.current
-            val coroutineScope = rememberCoroutineScope()
             val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
             val discount by checkoutViewModel.promoDiscount.collectAsState()
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
@@ -103,6 +101,10 @@ class CheckoutActivity : ComponentActivity() {
             var formIsDefaultBilling by remember { mutableStateOf(false) }
             var pendingSnackbarMessage by remember { mutableStateOf<String?>(null) }
             var deletedAddressForUndo by remember { mutableStateOf<ShippingAddress?>(null) }
+
+            var fullNameError by remember { mutableStateOf<String?>(null) }
+            var mobileError by remember { mutableStateOf<String?>(null) }
+            var addressError by remember { mutableStateOf<String?>(null) }
 
             if (checkoutItems.isNotEmpty()) {
                 when (currentRoute) {
@@ -181,10 +183,19 @@ class CheckoutActivity : ComponentActivity() {
                         ShippingAddressForm(
                             isEditing = editingAddressId != null,
                             fullName = formFullName,
-                            onFullNameChange = { formFullName = it },
+                            onFullNameChange = {
+                                formFullName = it
+                                fullNameError = null
+                            },
+                            fullNameError = fullNameError,
                             mobileNumber = formMobile,
-                            onMobileChange = { formMobile = it },
+                            onMobileChange = {
+                                formMobile = it
+                                mobileError = null
+                            },
+                            mobileNumberError = mobileError,
                             pickedAddressLocation = formAddressLocation,
+                            addressError = addressError,
                             selectedLabel = formLabel,
                             onLabelChange = { formLabel = it },
                             isDefaultShipping = formIsDefaultShipping,
@@ -193,31 +204,46 @@ class CheckoutActivity : ComponentActivity() {
                             onDefaultBillingChange = { formIsDefaultBilling = it },
                             onOpenMapPick = { currentRoute = CheckoutFlowRoute.MAP_PICKER },
                             onSave = {
-                                val isEditing = editingAddressId != null
-                                val newAddress = ShippingAddress(
-                                    id = editingAddressId ?: UUID.randomUUID().toString(),
-                                    fullName = formFullName,
-                                    mobileNumber = formMobile,
-                                    addressLocation = formAddressLocation,
-                                    label = formLabel,
-                                    isDefaultShipping = formIsDefaultShipping,
-                                    isDefaultBilling = formIsDefaultBilling
-                                )
-                                checkoutViewModel.addNewAddress(newAddress)
-
-                                pendingSnackbarMessage = if (isEditing) {
-                                    "Address has been edited successfully"
-                                } else {
-                                    "Address has been added successfully"
+                                var isValid = true
+                                if (formFullName.isBlank()) {
+                                    fullNameError = "Full name is required"
+                                    isValid = false
+                                } else if (formFullName.length < 3 || !formFullName.matches(Regex("^[a-zA-Z\\s]+$"))) {
+                                    fullNameError = "Enter a valid full name"
+                                    isValid = false
+                                }
+                                if (formMobile.isBlank()) {
+                                    mobileError = "Mobile number is required"
+                                    isValid = false
+                                } else if (!formMobile.matches(Regex("^[0-9]{10}$"))) {
+                                    mobileError = "Enter a valid 10-digit number"
+                                    isValid = false
+                                }
+                                if (formAddressLocation.isBlank()) {
+                                    addressError = "Please pick a location from map"
+                                    isValid = false
                                 }
 
-                                formFullName = ""
-                                formMobile = ""
-                                formAddressLocation = ""
-                                formLabel = "Home"
-                                editingAddressId = null
+                                if (isValid) {
+                                    val isEditing = editingAddressId != null
+                                    val newAddress = ShippingAddress(
+                                        id = editingAddressId ?: UUID.randomUUID().toString(),
+                                        fullName = formFullName,
+                                        mobileNumber = formMobile,
+                                        addressLocation = formAddressLocation,
+                                        label = formLabel,
+                                        isDefaultShipping = formIsDefaultShipping,
+                                        isDefaultBilling = formIsDefaultBilling
+                                    )
+                                    checkoutViewModel.addNewAddress(newAddress)
 
-                                currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
+                                    pendingSnackbarMessage = if (isEditing) {
+                                        "Address has been edited successfully"
+                                    } else {
+                                        "Address has been added successfully"
+                                    }
+                                    currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
+                                }
                             },
                             onDelete = {
                                 editingAddressId?.let { id ->
@@ -255,11 +281,9 @@ class CheckoutActivity : ComponentActivity() {
 
                     CheckoutFlowRoute.MAP_PICKER -> {
                         MapLocation(
-                            onLocationConfirmed = { lat, lng ->
-                                coroutineScope.launch {
-                                    formAddressLocation = getReadableAddress(context, lat, lng)
+                            onLocationConfirmed = { lat, lng, addressName ->
+                                    formAddressLocation = addressName
                                     currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
-                                }
                             },
                             onClose = {
                                 currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS

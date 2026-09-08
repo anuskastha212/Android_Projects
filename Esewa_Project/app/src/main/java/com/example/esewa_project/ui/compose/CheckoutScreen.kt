@@ -298,23 +298,3 @@ fun PaymentOptionRow(
         )
     }
 }
-
-@Suppress("DEPRECATION")
-suspend fun getReadableAddress(context: Context, lat: Double, lng: Double): String {
-    return withContext(Dispatchers.IO) {
-        try {
-            val geocoder = Geocoder(context, Locale.getDefault())
-            val addresses = geocoder.getFromLocation(lat, lng, 1)
-            if (!addresses.isNullOrEmpty()) {
-                val address = addresses[0]
-                address.getAddressLine(0)
-                    ?: "${address.subLocality ?: ""}, ${address.locality ?: ""}".trim(',', ' ')
-            } else {
-                "Location ($lat, $lng)"
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            "Location ($lat, $lng)"
-        }
-    }
-}

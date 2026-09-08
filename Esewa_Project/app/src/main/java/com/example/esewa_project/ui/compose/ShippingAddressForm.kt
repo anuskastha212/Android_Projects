@@ -10,7 +10,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,9 +32,12 @@ fun ShippingAddressForm(
     isEditing: Boolean,
     fullName: String,
     onFullNameChange: (String) -> Unit,
+    fullNameError: String? = null,
     mobileNumber: String,
     onMobileChange: (String) -> Unit,
+    mobileNumberError: String? = null,
     pickedAddressLocation: String,
+    addressError: String? = null,
     selectedLabel: String,
     onLabelChange: (String) -> Unit,
     isDefaultShipping: Boolean,
@@ -44,7 +46,7 @@ fun ShippingAddressForm(
     onDefaultBillingChange: (Boolean) -> Unit,
     onOpenMapPick: () -> Unit,
     onSave: () -> Unit,
-    onDelete: () -> Unit, // <--- ADDED THIS
+    onDelete: () -> Unit,
     onClose: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -157,6 +159,8 @@ fun ShippingAddressForm(
                     value = fullName,
                     onValueChange = onFullNameChange,
                     modifier = Modifier.fillMaxWidth(),
+                    isError = fullNameError != null,
+                    supportingText = fullNameError?.let { { Text(it) } },
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFFF5F6F8),
@@ -184,6 +188,8 @@ fun ShippingAddressForm(
                 TextField(
                     value = mobileNumber,
                     onValueChange = onMobileChange,
+                    isError = mobileNumberError != null,
+                    supportingText = mobileNumberError?.let { { Text(it) } },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
@@ -212,7 +218,9 @@ fun ShippingAddressForm(
                 TextField(
                     value = pickedAddressLocation,
                     onValueChange = { },
-                    readOnly = true,
+                    isError = addressError != null,
+                    supportingText = addressError?.let { { Text(it) } },
+//                    readOnly = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(
