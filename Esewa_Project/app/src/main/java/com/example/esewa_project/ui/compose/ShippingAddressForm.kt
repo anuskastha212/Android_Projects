@@ -9,7 +9,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import com.example.esewa_project.R
@@ -30,6 +30,7 @@ import com.example.esewa_project.R
 @Composable
 fun ShippingAddressForm(
     isEditing: Boolean,
+    isSaving: Boolean = false,
     fullName: String,
     onFullNameChange: (String) -> Unit,
     fullNameError: String? = null,
@@ -73,8 +74,7 @@ fun ShippingAddressForm(
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(
-                            Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "Back",
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,                            contentDescription = "Back",
                             tint = Color(0xFF292A40)
                         )
                     }
@@ -115,6 +115,7 @@ fun ShippingAddressForm(
             ) {
                 Button(
                     onClick = onSave,
+                    enabled = !isSaving,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -220,7 +221,7 @@ fun ShippingAddressForm(
                     onValueChange = { },
                     isError = addressError != null,
                     supportingText = addressError?.let { { Text(it) } },
-//                    readOnly = true,
+                    readOnly = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(

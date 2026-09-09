@@ -1,15 +1,17 @@
 package com.example.esewa_project.ui.compose
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import com.example.esewa_project.data.model.LocationSearchResult
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,18 +29,24 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import com.example.esewa_project.data.model.LocationSearchResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,8 +59,9 @@ fun MapLocation(
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
+    val locationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     val coroutineScope = rememberCoroutineScope()
-    val initialLocation = LatLng(27.6766, 85.3184)
+    val fallbackLocation = LatLng(27.7172, 85.3240)
     val focusManager = LocalFocusManager.current
 
     val placesClient = remember {
@@ -64,10 +73,7 @@ fun MapLocation(
                 )
                 val apiKey = appInfo.metaData?.getString("com.google.android.geo.API_KEY") ?: ""
                 if (apiKey.isNotEmpty() && !apiKey.startsWith("$")) {
-                    Places.initializeWithNewPlacesApiEnabled(
-                        context.applicationContext,
-                        apiKey
-                    )
+                    Places.initializeWithNewPlacesApiEnabled(context.applicationContext, apiKey)
                 }
             }
             if (Places.isInitialized()) Places.createClient(context) else null
@@ -78,20 +84,64 @@ fun MapLocation(
     }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(initialLocation, 17f)
+        position = CameraPosition.fromLatLngZoom(fallbackLocation, 17f)
     }
 
     var searchQuery by remember { mutableStateOf("") }
     var suggestions by remember { mutableStateOf<List<LocationSearchResult>>(emptyList()) }
     var isSearching by remember { mutableStateOf(false) }
-    var currentAddressName by remember { mutableStateOf("Fetching address...") }
-    var userSelectedAPlace by remember { mutableStateOf(false) }
+    var currentAddressName by remember { mutableStateOf("Locating...") }
+    val sessionToken = remember { AutocompleteSessionToken.newInstance() }
 
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            hasLocationPermission = isGranted
+        }
+
+    LaunchedEffect(hasLocationPermission) {
+        if (!hasLocationPermission) {
+            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            locationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    val userLatLng = LatLng(it.latitude, it.longitude)
+                    coroutineScope.launch {
+                        cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(userLatLng, 17f))
+                    }
+                }
+            }
+            locationClient.getCurrentLocation(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                CancellationTokenSource().token
+            )
+                .addOnSuccessListener { location ->
+                    location?.let {
+                        val userLatLng = LatLng(it.latitude, it.longitude)
+                        coroutineScope.launch {
+                            cameraPositionState.animate(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    userLatLng,
+                                    17f
+                                )
+                            )
+                        }
+                    }
+                }
+        }
+    }
     LaunchedEffect(cameraPositionState.isMoving) {
-        if (!userSelectedAPlace) {
+        if (!cameraPositionState.isMoving) {
             val target = cameraPositionState.position.target
             currentAddressName = getReadableAddress(context, target.latitude, target.longitude)
-            userSelectedAPlace = false
         }
     }
 
@@ -103,6 +153,7 @@ fun MapLocation(
             if (placesClient != null) {
                 val request = FindAutocompletePredictionsRequest.builder()
                     .setQuery(searchQuery)
+                    .setSessionToken(sessionToken)
                     .setCountries("NP")
                     .setLocationBias(
                         RectangularBounds.newInstance(
@@ -123,8 +174,7 @@ fun MapLocation(
                         }
                         isSearching = false
                     }
-                    .addOnFailureListener { exception ->
-                        Log.e("MapSearch", "Autocomplete failed: ${exception.message}")
+                    .addOnFailureListener {
                         coroutineScope.launch(Dispatchers.IO) {
                             val results = queryGeocoderFallback(context, searchQuery)
                             withContext(Dispatchers.Main) {
@@ -152,10 +202,14 @@ fun MapLocation(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            properties = MapProperties(isMyLocationEnabled = false),
-            uiSettings = MapUiSettings(zoomControlsEnabled = false)
+            properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
+            uiSettings = MapUiSettings(
+                zoomControlsEnabled = false,
+                myLocationButtonEnabled = hasLocationPermission
+            )
         )
 
+        // Center Marker
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.align(Alignment.Center)
@@ -180,7 +234,7 @@ fun MapLocation(
             )
         }
 
-        // Search
+        // Search Section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -252,14 +306,13 @@ fun MapLocation(
                                     .fillMaxWidth()
                                     .clickable {
                                         focusManager.clearFocus()
-                                        currentAddressName = "${result.title}, ${result.subtitle}"
-                                        userSelectedAPlace = true
                                         if (result.placeId != null && placesClient != null) {
                                             val placeFields = listOf(Place.Field.LOCATION)
-                                            val fetchRequest = FetchPlaceRequest.newInstance(
+                                            val fetchRequest = FetchPlaceRequest.builder(
                                                 result.placeId,
                                                 placeFields
                                             )
+                                                .setSessionToken(sessionToken).build()
                                             placesClient.fetchPlace(fetchRequest)
                                                 .addOnSuccessListener { res ->
                                                     res.place.location?.let { latLng ->
@@ -303,7 +356,11 @@ fun MapLocation(
                                         fontWeight = FontWeight.Bold
                                     )
                                     if (result.subtitle.isNotEmpty()) {
-                                        Text(result.subtitle, fontSize = 12.sp, color = Color.Gray)
+                                        Text(
+                                            result.subtitle,
+                                            fontSize = 12.sp,
+                                            color = Color.Gray
+                                        )
                                     }
                                 }
                             }
@@ -319,12 +376,7 @@ fun MapLocation(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(
-                    top = 0.dp,
-                    bottom = 32.dp,
-                    start = 8.dp,
-                    end = 8.dp
-                ),
+                .padding(bottom = 32.dp, start = 8.dp, end = 8.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(10.dp)
@@ -370,11 +422,9 @@ private fun queryGeocoderFallback(context: Context, query: String): List<Locatio
         val geocoder = Geocoder(context, Locale.getDefault())
         val addresses = geocoder.getFromLocationName("$query, Nepal", 10) ?: emptyList()
         addresses.map { address ->
-            val title = address.featureName ?: address.locality ?: query
-            val subtitle = address.getAddressLine(0) ?: "Nepal"
             LocationSearchResult(
-                title = title,
-                subtitle = subtitle,
+                title = address.featureName ?: address.locality ?: query,
+                subtitle = address.getAddressLine(0) ?: "Nepal",
                 latLng = LatLng(address.latitude, address.longitude)
             )
         }

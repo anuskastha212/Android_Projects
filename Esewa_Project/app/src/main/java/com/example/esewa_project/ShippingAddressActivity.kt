@@ -49,14 +49,12 @@ class ShippingAddressActivity : ComponentActivity() {
         checkoutViewModel.loadSavedAddress()
 
         setContent {
-            val context = LocalContext.current
-            val coroutineScope = rememberCoroutineScope()
-
             var pendingSnackbarMessage by remember { mutableStateOf<String?>(null) }
             var deletedAddressForUndo by remember { mutableStateOf<ShippingAddress?>(null) }
 
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
             val isAddressLoading by checkoutViewModel.isAddressLoading.collectAsState()
+            var isSaving by remember { mutableStateOf(false) }
 
             var currentRoute by remember { mutableStateOf(AddressRoute.LIST) }
             var formAddressLocation by remember { mutableStateOf("") }
@@ -139,44 +137,49 @@ class ShippingAddressActivity : ComponentActivity() {
                         onDefaultBillingChange = { formIsDefaultBilling = it },
                         onOpenMapPick = { currentRoute = AddressRoute.MAP_PICKER },
                         onSave = {
-                            var isValid = true
-                            if (formFullName.isBlank()) {
-                                fullNameError = "Full name is required"
-                                isValid = false
-                            } else if (formFullName.length < 3 || !formFullName.matches(Regex("^[a-zA-Z\\s]+$"))) {
-                                fullNameError = "Enter a valid full name"
-                                isValid = false
-                            }
-                            if (formMobile.isBlank()) {
-                                mobileError = "Mobile number is required"
-                                isValid = false
-                            } else if (!formMobile.matches(Regex("^[0-9]{10}$"))) {
-                                mobileError = "Enter a valid 10-digit number"
-                                isValid = false
-                            }
-                            if (formAddressLocation.isBlank()) {
-                                addressError = "Please pick a location from map"
-                                isValid = false
-                            }
-
-                            if (isValid) {
-                                val isEditing = editingAddressId != null
-                                val newAddress = ShippingAddress(
-                                    id = editingAddressId ?: UUID.randomUUID().toString(),
-                                    fullName = formFullName,
-                                    mobileNumber = formMobile,
-                                    addressLocation = formAddressLocation,
-                                    label = formLabel,
-                                    isDefaultShipping = formIsDefaultShipping,
-                                    isDefaultBilling = formIsDefaultBilling
-                                )
-                                checkoutViewModel.addNewAddress(newAddress)
-                                pendingSnackbarMessage = if (isEditing) {
-                                    "Address has been edited successfully"
-                                } else {
-                                    "Address has been added successfully"
+                            if (!isSaving) {
+                                isSaving = true
+                                var isValid = true
+                                if (formFullName.isBlank()) {
+                                    fullNameError = "Full name is required"
+                                    isValid = false
+                                } else if (formFullName.length < 3 || !formFullName.matches(Regex("^[a-zA-Z\\s]+$"))) {
+                                    fullNameError = "Enter a valid full name"
+                                    isValid = false
                                 }
-                                currentRoute = AddressRoute.LIST
+                                if (formMobile.isBlank()) {
+                                    mobileError = "Mobile number is required"
+                                    isValid = false
+                                } else if (!formMobile.matches(Regex("^[0-9]{10}$"))) {
+                                    mobileError = "Enter a valid 10-digit number"
+                                    isValid = false
+                                }
+                                if (formAddressLocation.isBlank()) {
+                                    addressError = "Please pick a location from map"
+                                    isValid = false
+                                }
+
+                                if (isValid) {
+                                    val isEditing = editingAddressId != null
+                                    val newAddress = ShippingAddress(
+                                        id = editingAddressId ?: UUID.randomUUID().toString(),
+                                        fullName = formFullName,
+                                        mobileNumber = formMobile,
+                                        addressLocation = formAddressLocation,
+                                        label = formLabel,
+                                        isDefaultShipping = formIsDefaultShipping,
+                                        isDefaultBilling = formIsDefaultBilling
+                                    )
+                                    checkoutViewModel.addNewAddress(newAddress)
+                                    pendingSnackbarMessage = if (isEditing) {
+                                        "Address has been edited successfully"
+                                    } else {
+                                        "Address has been added successfully"
+                                    }
+                                    currentRoute = AddressRoute.LIST
+                                }
+                            } else {
+                                isSaving = false
                             }
                         },
                         onDelete = {
@@ -203,9 +206,9 @@ class ShippingAddressActivity : ComponentActivity() {
                 AddressRoute.MAP_PICKER -> {
                     MapLocation(
                         onLocationConfirmed = { lat, lng, addressName ->
-                                formAddressLocation = addressName
-                                addressError = null
-                                currentRoute = AddressRoute.ADD_NEW
+                            formAddressLocation = addressName
+                            addressError = null
+                            currentRoute = AddressRoute.ADD_NEW
 
                         },
                         onClose = {

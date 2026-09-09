@@ -25,16 +25,12 @@ import com.google.android.libraries.places.api.Places
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.ui.compose.MapLocation
 import com.example.esewa_project.ui.compose.ShippingAddressForm
 import com.example.esewa_project.ui.compose.ShippingAddressScreen
-import com.example.esewa_project.ui.compose.getReadableAddress
-import kotlinx.coroutines.launch
 import java.util.UUID
 
 enum class CheckoutFlowRoute {
@@ -92,6 +88,7 @@ class CheckoutActivity : ComponentActivity() {
 
             var currentRoute by remember { mutableStateOf(CheckoutFlowRoute.CHECKOUT) }
 
+            var isSaving by remember { mutableStateOf(false) }
             var editingAddressId by remember { mutableStateOf<String?>(null) }
             var formFullName by remember { mutableStateOf("") }
             var formMobile by remember { mutableStateOf("") }
@@ -182,6 +179,7 @@ class CheckoutActivity : ComponentActivity() {
                     CheckoutFlowRoute.ADD_NEW_ADDRESS -> {
                         ShippingAddressForm(
                             isEditing = editingAddressId != null,
+                            isSaving = isSaving,
                             fullName = formFullName,
                             onFullNameChange = {
                                 formFullName = it
@@ -204,45 +202,53 @@ class CheckoutActivity : ComponentActivity() {
                             onDefaultBillingChange = { formIsDefaultBilling = it },
                             onOpenMapPick = { currentRoute = CheckoutFlowRoute.MAP_PICKER },
                             onSave = {
-                                var isValid = true
-                                if (formFullName.isBlank()) {
-                                    fullNameError = "Full name is required"
-                                    isValid = false
-                                } else if (formFullName.length < 3 || !formFullName.matches(Regex("^[a-zA-Z\\s]+$"))) {
-                                    fullNameError = "Enter a valid full name"
-                                    isValid = false
-                                }
-                                if (formMobile.isBlank()) {
-                                    mobileError = "Mobile number is required"
-                                    isValid = false
-                                } else if (!formMobile.matches(Regex("^[0-9]{10}$"))) {
-                                    mobileError = "Enter a valid 10-digit number"
-                                    isValid = false
-                                }
-                                if (formAddressLocation.isBlank()) {
-                                    addressError = "Please pick a location from map"
-                                    isValid = false
-                                }
-
-                                if (isValid) {
-                                    val isEditing = editingAddressId != null
-                                    val newAddress = ShippingAddress(
-                                        id = editingAddressId ?: UUID.randomUUID().toString(),
-                                        fullName = formFullName,
-                                        mobileNumber = formMobile,
-                                        addressLocation = formAddressLocation,
-                                        label = formLabel,
-                                        isDefaultShipping = formIsDefaultShipping,
-                                        isDefaultBilling = formIsDefaultBilling
-                                    )
-                                    checkoutViewModel.addNewAddress(newAddress)
-
-                                    pendingSnackbarMessage = if (isEditing) {
-                                        "Address has been edited successfully"
-                                    } else {
-                                        "Address has been added successfully"
+                                if (!isSaving) {
+                                    isSaving = true
+                                    var isValid = true
+                                    if (formFullName.isBlank()) {
+                                        fullNameError = "Full name is required"
+                                        isValid = false
+                                    } else if (formFullName.length < 3 || !formFullName.matches(
+                                            Regex("^[a-zA-Z\\s]+$")
+                                        )
+                                    ) {
+                                        fullNameError = "Enter a valid full name"
+                                        isValid = false
                                     }
-                                    currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
+                                    if (formMobile.isBlank()) {
+                                        mobileError = "Mobile number is required"
+                                        isValid = false
+                                    } else if (!formMobile.matches(Regex("^[0-9]{10}$"))) {
+                                        mobileError = "Enter a valid 10-digit number"
+                                        isValid = false
+                                    }
+                                    if (formAddressLocation.isBlank()) {
+                                        addressError = "Please pick a location from map"
+                                        isValid = false
+                                    }
+
+                                    if (isValid) {
+                                        val isEditing = editingAddressId != null
+                                        val newAddress = ShippingAddress(
+                                            id = editingAddressId ?: UUID.randomUUID().toString(),
+                                            fullName = formFullName,
+                                            mobileNumber = formMobile,
+                                            addressLocation = formAddressLocation,
+                                            label = formLabel,
+                                            isDefaultShipping = formIsDefaultShipping,
+                                            isDefaultBilling = formIsDefaultBilling
+                                        )
+                                        checkoutViewModel.addNewAddress(newAddress)
+
+                                        pendingSnackbarMessage = if (isEditing) {
+                                            "Address has been edited successfully"
+                                        } else {
+                                            "Address has been added successfully"
+                                        }
+                                        currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
+                                    }
+                                } else {
+                                    isSaving = false
                                 }
                             },
                             onDelete = {
@@ -282,8 +288,8 @@ class CheckoutActivity : ComponentActivity() {
                     CheckoutFlowRoute.MAP_PICKER -> {
                         MapLocation(
                             onLocationConfirmed = { lat, lng, addressName ->
-                                    formAddressLocation = addressName
-                                    currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
+                                formAddressLocation = addressName
+                                currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
                             },
                             onClose = {
                                 currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
