@@ -126,8 +126,7 @@ fun ShippingAddressScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(addresses, key = { it.id }) { address ->
-                        ShippingAddressItemCard(
+                    items(addresses.distinctBy { it.id }, key = { it.id }) { address ->                        ShippingAddressItemCard(
                             address = address,
                             onClick = { onAddressSelected(address) },
                             onEdit = { onEdit(address) },
