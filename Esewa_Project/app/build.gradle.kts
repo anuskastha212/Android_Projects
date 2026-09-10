@@ -27,8 +27,18 @@ android {
         versionName = "1.0"
 
         manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY") ?: ""
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "ESEWA_CLIENT_ID",
+            "\"${localProperties.getProperty("CONFIG_CLIENT_ID") ?: ""}\""
+        )
+        buildConfigField(
+            "String",
+            "ESEWA_SECRET_KEY",
+            "\"${localProperties.getProperty("CONFIG_SECRET_KEY") ?: ""}\""
+        )
     }
 
     buildTypes {
@@ -40,6 +50,7 @@ android {
     buildFeatures {
         viewBinding = true
         compose = true
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -49,6 +60,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
 }
 
 dependencies {
@@ -117,5 +129,10 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.0")
 
     implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    implementation(files("libs/eSewaPaymentSdk-debug.aar"))
+    implementation("com.android.support:cardview-v7:27.1.1")
+    implementation("com.android.support:design:27.1.1")
+
 }
 

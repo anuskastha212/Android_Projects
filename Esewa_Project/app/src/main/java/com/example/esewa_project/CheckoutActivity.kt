@@ -23,7 +23,6 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 import com.google.android.libraries.places.api.Places
 import android.content.pm.PackageManager
-import android.widget.Toast
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
@@ -124,12 +123,23 @@ class CheckoutActivity : ComponentActivity() {
                             discount = discount,
                             onBackClick = { currentRoute = CheckoutFlowRoute.CHECKOUT },
                             onConfirmClick = {
-                                Toast.makeText(
+                                val subTotal = checkoutItems.sumOf { it.price * it.quantity }
+                                val tax = 1500.0
+                                val shipping = 50.0
+                                val grandTotal = (subTotal + tax + shipping) - discount
+
+                                val intent = android.content.Intent(
                                     this@CheckoutActivity,
-                                    "Order Confirmed Successfully!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                finish()
+                                    PaymentActivity::class.java
+                                ).apply {
+                                    putExtra(
+                                        "amount",
+                                        String.format(java.util.Locale.US, "%.2f", grandTotal)
+                                    )
+                                    putExtra("product_name", "Order from Esewa Market")
+                                    putExtra("product_id", "ORDER_${System.currentTimeMillis()}")
+                                }
+                                startActivity(intent)
                             }
                         )
                     }
