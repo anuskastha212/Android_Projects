@@ -134,5 +134,6 @@ dependencies {
     implementation("com.android.support:cardview-v7:27.1.1")
     implementation("com.android.support:design:27.1.1")
 
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
 

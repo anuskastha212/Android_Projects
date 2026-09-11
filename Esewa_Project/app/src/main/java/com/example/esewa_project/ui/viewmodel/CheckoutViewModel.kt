@@ -3,6 +3,7 @@ package com.example.esewa_project.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.model.CartItem
+import com.example.esewa_project.data.model.Order
 import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.ProductRepository
@@ -191,6 +192,59 @@ class CheckoutViewModel(
                         categoryName = it.categoryName
                     )
                 )
+            }
+        }
+    }
+
+    fun clearPurchasedItems(singleProductId: Int) {
+        val uid = sessionRepo.getUid() ?: return
+        viewModelScope.launch {
+            if (singleProductId != -1) {
+                cartRepo.removeFromCart(uid, singleProductId)
+            } else {
+                cartRepo.clearCart(uid)
+            }
+        }
+    }
+
+    fun createPendingOrder(
+        orderId: String,
+        items: List<CartItem>,
+        total: Double,
+        address: String
+    ) {
+        val uid = sessionRepo.getUid() ?: return
+        viewModelScope.launch {
+            try {
+                val order = Order(
+                    orderId = orderId,
+                    userId = uid,
+                    items = items,
+                    totalAmount = total,
+                    deliveryAddress = address,
+                    status = "PENDING"
+                )
+                firestore.collection("users").document(uid).collection("orders")
+                    .document(orderId).set(order)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun markOrderAsComplete(orderId: String, singleProductId: Int) {
+        val uid = sessionRepo.getUid() ?: return
+        viewModelScope.launch {
+            try {
+                firestore.collection("users").document(uid).collection("orders").document(orderId)
+                    .update("status", "COMPLETE")
+                if (singleProductId != -1) {
+                    cartRepo.removeFromCart(uid, singleProductId)
+                } else {
+                    cartRepo.clearCart(uid)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

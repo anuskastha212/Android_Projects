@@ -35,9 +35,8 @@ fun CheckoutBottomBar(
     var isExpanded by remember { mutableStateOf(false) }
 
     val subTotal = items.sumOf { it.price * it.quantity }
-    val tax = 1500.0
-    val shipping = 50.0
-    val grandTotal = (subTotal + tax + shipping) - discount
+    val shipping = 1.0
+    val grandTotal = (subTotal + shipping) - discount
     val totalItems = items.sumOf { it.quantity }
 
     Box(
@@ -64,7 +63,6 @@ fun CheckoutBottomBar(
                         PriceRow("Promo Discount", -discount)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                    PriceRow("Tax", tax)
                     Spacer(modifier = Modifier.height(8.dp))
                     PriceRow("Shipping Charge", shipping)
                     Spacer(modifier = Modifier.height(24.dp))

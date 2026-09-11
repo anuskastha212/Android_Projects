@@ -12,7 +12,7 @@ import com.f1soft.esewapaymentsdk.ui.screens.EsewaPaymentActivity
 
 class PaymentActivity : ComponentActivity() {
 
-    private val REQUEST_CODE_PAYMENT = 101
+    private val requestCodePayment = 101
 
     private val eSewaConfiguration = EsewaConfiguration(
         clientId = BuildConfig.ESEWA_CLIENT_ID,
@@ -31,14 +31,15 @@ class PaymentActivity : ComponentActivity() {
     }
 
     private fun initiatePayment(amount: String, name: String, id: String) {
-        val esewaPayment = EsewaPayment(amount, name, id, "")
+        val esewaPayment = EsewaPayment(amount, name, id, "https://www.google.com")
 
         val intent = Intent(this, EsewaPaymentActivity::class.java)
 
         intent.putExtra(EsewaConfiguration.ESEWA_CONFIGURATION, eSewaConfiguration)
         intent.putExtra(EsewaPayment.ESEWA_PAYMENT, esewaPayment)
 
-        startActivityForResult(intent, REQUEST_CODE_PAYMENT)
+        @Suppress("DEPRECATION")
+        startActivityForResult(intent, requestCodePayment)
     }
 
     @Suppress("DEPRECATION")
@@ -48,35 +49,30 @@ class PaymentActivity : ComponentActivity() {
         data: Intent?,
     ) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_PAYMENT) {
+        if (requestCode == requestCodePayment) {
             when (resultCode) {
                 Activity.RESULT_OK -> {
                     val message = data?.getStringExtra(EsewaPayment.EXTRA_RESULT_MESSAGE)
                     Log.d("eSewaSuccess", "Proof of Payment: $message")
-
-                    Toast.makeText(
-                        this,
-                        "Payment successful!",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    finish()
+                    setResult(Activity.RESULT_OK)
                 }
 
                 Activity.RESULT_CANCELED -> {
                     Toast.makeText(
                         this,
-                        "Payment cancelled by user",
+                        "Payment cancelled",
                         Toast.LENGTH_SHORT
                     ).show()
-                    finish()
+                    setResult(Activity.RESULT_CANCELED)
                 }
 
-                EsewaPayment.RESULT_EXTRAS_INVALID -> {
+                else -> {
                     val message = data?.getStringExtra(EsewaPayment.EXTRA_RESULT_MESSAGE)
-                    Log.e("eSewaError", "Invalid Extras: $message")
-                    finish()
+                    Log.e("eSewaError", "Payment Error: $message")
+                    setResult(Activity.RESULT_CANCELED)
                 }
             }
+            finish()
         }
     }
 }
