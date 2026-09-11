@@ -76,3 +76,5 @@ class PaymentActivity : ComponentActivity() {
         }
     }
 }
+
+//10:54:26.730  D  Proof of Payment: {"productId":"ORD_1789103357407","productName":"EPAYTEST","totalAmount":"2.29","environment":"test","code":"00","merchantName":"EPAYTEST","message":{"technicalSuccessMessage":"Your transaction has been completed.","successMessage":"Your transaction has been completed."},"transactionDetails":{"status":"COMPLETE","referenceId":"000H2AH","date":"Fri Sep 11 10:54:27 NPT 2026"}}

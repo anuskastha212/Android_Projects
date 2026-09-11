@@ -6,6 +6,7 @@ import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.data.model.Order
 import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.data.repository.CartRepository
+import com.example.esewa_project.data.repository.FavouriteRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 class CheckoutViewModel(
     private val productRepo: ProductRepository,
     private val cartRepo: CartRepository,
+    private val favRepo: FavouriteRepository,
     private val sessionRepo: UserSessionRepository
 ) : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
@@ -196,17 +198,6 @@ class CheckoutViewModel(
         }
     }
 
-    fun clearPurchasedItems(singleProductId: Int) {
-        val uid = sessionRepo.getUid() ?: return
-        viewModelScope.launch {
-            if (singleProductId != -1) {
-                cartRepo.removeFromCart(uid, singleProductId)
-            } else {
-                cartRepo.clearCart(uid)
-            }
-        }
-    }
-
     fun createPendingOrder(
         orderId: String,
         items: List<CartItem>,
@@ -236,12 +227,18 @@ class CheckoutViewModel(
         val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
             try {
-                firestore.collection("users").document(uid).collection("orders").document(orderId)
+                firestore.collection("users").document(uid).collection("orders")
+                    .document(orderId)
                     .update("status", "COMPLETE")
                 if (singleProductId != -1) {
                     cartRepo.removeFromCart(uid, singleProductId)
+                    favRepo.removeFavourite(uid, singleProductId)
                 } else {
+                    val itemsInCart = _checkoutItems.value
                     cartRepo.clearCart(uid)
+                    itemsInCart.forEach { item ->
+                        favRepo.removeFavourite(uid, item.productId)
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

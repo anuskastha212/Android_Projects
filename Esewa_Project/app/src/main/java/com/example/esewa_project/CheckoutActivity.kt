@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.example.esewa_project.data.model.ShippingAddress
+import com.example.esewa_project.data.repository.FavouriteRepository
 import com.example.esewa_project.ui.compose.MapLocation
 import com.example.esewa_project.ui.compose.ShippingAddressForm
 import com.example.esewa_project.ui.compose.ShippingAddressScreen
@@ -84,8 +85,9 @@ class CheckoutActivity : ComponentActivity() {
         val productRepo = ProductRepository(database.productDao())
         val cartRepo = CartRepository(database.cartDao())
         val sessionRepo = UserSessionRepository(this)
+        val favRepo = FavouriteRepository(database.favouriteDao())
 
-        val factory = CheckoutViewModelFactory(productRepo, cartRepo, sessionRepo)
+        val factory = CheckoutViewModelFactory(productRepo, cartRepo,favRepo, sessionRepo)
         checkoutViewModel = ViewModelProvider(this, factory)[CheckoutViewModel::class.java]
 
         checkoutViewModel.loadSavedAddress()
