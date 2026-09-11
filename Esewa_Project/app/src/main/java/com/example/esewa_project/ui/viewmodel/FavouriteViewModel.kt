@@ -48,6 +48,16 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
         SharingStarted.Eagerly,
         null)
 
+    init {
+        viewModelScope.launch {
+            userSession.collectLatest { uid ->
+                if (uid.isNotEmpty()) {
+                    favRepo.syncFavouritesFromCloud(uid)
+                }
+            }
+        }
+    }
+
     fun toggleFavourite(productId: Int) {
         val uid = userSession.value
         if (uid.isEmpty()) {

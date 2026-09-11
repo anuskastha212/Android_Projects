@@ -29,9 +29,8 @@ fun ConfirmationScreen(
     onConfirmClick: () -> Unit
 ) {
     val subTotal = items.sumOf { it.price * it.quantity }
-    val tax = 1500.0
-    val shipping = 50.0
-    val grandTotal = (subTotal + tax + shipping) - discount
+    val shipping = 1.0
+    val grandTotal = (subTotal + shipping) - discount
 
     Scaffold(
         topBar = {
@@ -121,7 +120,7 @@ fun ConfirmationScreen(
                             )
                         }
                         ConfirmationRow("Vehicle Number", "BA 98 PA 8080")
-                        ConfirmationRow("Delivery Charge", "200.00")
+                        ConfirmationRow("Delivery Charge", String.format(Locale.getDefault(), "%.2f", shipping))
 
                         DottedDivider()
 

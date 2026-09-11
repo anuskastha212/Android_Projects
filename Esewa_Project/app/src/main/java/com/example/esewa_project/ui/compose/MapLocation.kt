@@ -83,8 +83,11 @@ fun MapLocation(
         }
     }
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(fallbackLocation, 17f)
+    val cameraPositionState = rememberCameraPositionState { // state/controller of map camera
+        position = CameraPosition.fromLatLngZoom(
+            fallbackLocation,
+            17f
+        )
     }
 
     var searchQuery by remember { mutableStateOf("") }

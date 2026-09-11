@@ -18,12 +18,10 @@ import com.example.esewa_project.data.repository.UserSessionRepository
 import com.example.esewa_project.ui.compose.ShippingAddressForm
 import com.example.esewa_project.ui.compose.MapLocation
 import com.example.esewa_project.ui.compose.ShippingAddressScreen
-import com.example.esewa_project.ui.compose.getReadableAddress
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
-import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalContext
 import com.example.esewa_project.data.model.ShippingAddress
+import com.example.esewa_project.data.repository.FavouriteRepository
 import java.util.UUID
 
 enum class AddressRoute {
@@ -43,8 +41,9 @@ class ShippingAddressActivity : ComponentActivity() {
         val productRepo = ProductRepository(database.productDao())
         val cartRepo = CartRepository(database.cartDao())
         val sessionRepo = UserSessionRepository(this)
+        val favRepo = FavouriteRepository(database.favouriteDao())
 
-        val factory = CheckoutViewModelFactory(productRepo, cartRepo, sessionRepo)
+        val factory = CheckoutViewModelFactory(productRepo, cartRepo, favRepo, sessionRepo)
         checkoutViewModel = ViewModelProvider(this, factory)[CheckoutViewModel::class.java]
         checkoutViewModel.loadSavedAddress()
 
@@ -68,12 +67,6 @@ class ShippingAddressActivity : ComponentActivity() {
             var fullNameError by remember { mutableStateOf<String?>(null) }
             var mobileError by remember { mutableStateOf<String?>(null) }
             var addressError by remember { mutableStateOf<String?>(null) }
-
-            fun clearErrors() {
-                fullNameError = null
-                mobileError = null
-                addressError = null
-            }
 
             when (currentRoute) {
                 AddressRoute.LIST -> {

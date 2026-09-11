@@ -24,10 +24,13 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 import com.google.android.libraries.places.api.Places
 import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import com.example.esewa_project.data.model.ShippingAddress
+import com.example.esewa_project.data.repository.FavouriteRepository
 import com.example.esewa_project.ui.compose.MapLocation
 import com.example.esewa_project.ui.compose.ShippingAddressForm
 import com.example.esewa_project.ui.compose.ShippingAddressScreen
@@ -43,6 +46,22 @@ enum class CheckoutFlowRoute {
 
 class CheckoutActivity : ComponentActivity() {
     private lateinit var checkoutViewModel: CheckoutViewModel
+    private var currentOrderId: String = ""
+    private val paymentLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val singleProductId = intent.getIntExtra("product_id", -1)
+            checkoutViewModel.markOrderAsComplete(currentOrderId, singleProductId)
+
+            Toast.makeText(
+                this,
+                "Order placed successfully!",
+                Toast.LENGTH_LONG
+            ).show()
+            finish()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,8 +85,9 @@ class CheckoutActivity : ComponentActivity() {
         val productRepo = ProductRepository(database.productDao())
         val cartRepo = CartRepository(database.cartDao())
         val sessionRepo = UserSessionRepository(this)
+        val favRepo = FavouriteRepository(database.favouriteDao())
 
-        val factory = CheckoutViewModelFactory(productRepo, cartRepo, sessionRepo)
+        val factory = CheckoutViewModelFactory(productRepo, cartRepo,favRepo, sessionRepo)
         checkoutViewModel = ViewModelProvider(this, factory)[CheckoutViewModel::class.java]
 
         checkoutViewModel.loadSavedAddress()
@@ -80,6 +100,7 @@ class CheckoutActivity : ComponentActivity() {
         }
 
         setContent {
+            val context = LocalContext.current
             val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
             val discount by checkoutViewModel.promoDiscount.collectAsState()
             val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
@@ -102,6 +123,7 @@ class CheckoutActivity : ComponentActivity() {
             var fullNameError by remember { mutableStateOf<String?>(null) }
             var mobileError by remember { mutableStateOf<String?>(null) }
             var addressError by remember { mutableStateOf<String?>(null) }
+            var currentOrder by remember { mutableStateOf("") }
 
             if (checkoutItems.isNotEmpty()) {
                 when (currentRoute) {
@@ -124,12 +146,31 @@ class CheckoutActivity : ComponentActivity() {
                             discount = discount,
                             onBackClick = { currentRoute = CheckoutFlowRoute.CHECKOUT },
                             onConfirmClick = {
-                                Toast.makeText(
+                                val subTotal = checkoutItems.sumOf { it.price * it.quantity }
+                                val shipping = 1.0
+                                val grandTotal = (subTotal + shipping) - discount
+                                val newOrderId = "ORD_${System.currentTimeMillis()}"
+                                currentOrderId = newOrderId
+
+                                checkoutViewModel.createPendingOrder(
+                                    newOrderId,
+                                    checkoutItems,
+                                    grandTotal,
+                                    deliveryAddress ?: ""
+                                )
+
+                                val intent = android.content.Intent(
                                     this@CheckoutActivity,
-                                    "Order Confirmed Successfully!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                finish()
+                                    PaymentActivity::class.java
+                                ).apply {
+                                    putExtra(
+                                        "amount",
+                                        String.format(java.util.Locale.US, "%.2f", grandTotal)
+                                    )
+                                    putExtra("product_name", "Order from Esewa Market")
+                                    putExtra("product_id", newOrderId)
+                                }
+                                paymentLauncher.launch(intent)
                             }
                         )
                     }
