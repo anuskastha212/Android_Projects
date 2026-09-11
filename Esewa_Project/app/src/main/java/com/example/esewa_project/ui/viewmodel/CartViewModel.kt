@@ -50,17 +50,17 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             cartRepo.getCartWithProducts(uid)
                 .onEach { _isLoading.value = false }
                 .map { itemsMap ->
-                itemsMap.map { (cart, product) ->
-                    CartItem(
-                        productId = product.id,
-                        title = product.title,
-                        price = product.price,
-                        quantity = cart.quantity,
-                        thumbnail = product.thumbnail,
-                        categoryName = product.categoryName
-                    )
+                    itemsMap.map { (cart, product) ->
+                        CartItem(
+                            productId = product.id,
+                            title = product.title,
+                            price = product.price,
+                            quantity = cart.quantity,
+                            thumbnail = product.thumbnail,
+                            categoryName = product.categoryName
+                        )
+                    }
                 }
-            }
         }
     }
 
@@ -77,6 +77,16 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         started = SharingStarted.Eagerly,
         initialValue = emptyMap()
     )
+
+    init {
+        viewModelScope.launch {
+            userSession.collectLatest { uid ->
+                if (uid.isNotEmpty()) {
+                    cartRepo.syncCartFromCloud(uid)
+                }
+            }
+        }
+    }
 
     fun updateQuantity(productId: Int, delta: Int) {
         val currentUid = userSession.value

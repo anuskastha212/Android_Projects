@@ -1,5 +1,7 @@
 package com.example.esewa_project
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,9 +40,6 @@ import java.util.UUID
 
 enum class CheckoutFlowRoute {
     CHECKOUT,
-    SHIPPING_ADDRESS_LIST,
-    ADD_NEW_ADDRESS,
-    MAP_PICKER,
     CONFIRMATION
 }
 
@@ -63,6 +62,16 @@ class CheckoutActivity : ComponentActivity() {
         }
     }
 
+    private val addressLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val addressName = result.data?.getStringExtra("selected_address_name")
+                addressName?.let {
+                    checkoutViewModel.saveDeliveryAddress(it)
+                }
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -70,8 +79,12 @@ class CheckoutActivity : ComponentActivity() {
         if (!Places.isInitialized()) {
             try {
                 val applicationInfo =
-                    packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
-                val apiKey = applicationInfo.metaData.getString("com.google.android.geo.API_KEY")
+                    packageManager.getApplicationInfo(
+                        packageName,
+                        PackageManager.GET_META_DATA
+                    )
+                val apiKey =
+                    applicationInfo.metaData.getString("com.google.android.geo.API_KEY")
 
                 if (!apiKey.isNullOrEmpty()) {
                     Places.initialize(applicationContext, apiKey)
@@ -87,8 +100,10 @@ class CheckoutActivity : ComponentActivity() {
         val sessionRepo = UserSessionRepository(this)
         val favRepo = FavouriteRepository(database.favouriteDao())
 
-        val factory = CheckoutViewModelFactory(productRepo, cartRepo,favRepo, sessionRepo)
-        checkoutViewModel = ViewModelProvider(this, factory)[CheckoutViewModel::class.java]
+        val factory =
+            CheckoutViewModelFactory(productRepo, cartRepo, favRepo, sessionRepo)
+        checkoutViewModel =
+            ViewModelProvider(this, factory)[CheckoutViewModel::class.java]
 
         checkoutViewModel.loadSavedAddress()
 
@@ -100,30 +115,11 @@ class CheckoutActivity : ComponentActivity() {
         }
 
         setContent {
-            val context = LocalContext.current
             val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
             val discount by checkoutViewModel.promoDiscount.collectAsState()
-            val savedAddresses by checkoutViewModel.savedAddresses.collectAsState()
-            val isAddressLoading by checkoutViewModel.isAddressLoading.collectAsState()
             val deliveryAddress by checkoutViewModel.deliveryAddress.collectAsState()
 
             var currentRoute by remember { mutableStateOf(CheckoutFlowRoute.CHECKOUT) }
-
-            var isSaving by remember { mutableStateOf(false) }
-            var editingAddressId by remember { mutableStateOf<String?>(null) }
-            var formFullName by remember { mutableStateOf("") }
-            var formMobile by remember { mutableStateOf("") }
-            var formAddressLocation by remember { mutableStateOf("") }
-            var formLabel by remember { mutableStateOf("Home") }
-            var formIsDefaultShipping by remember { mutableStateOf(true) }
-            var formIsDefaultBilling by remember { mutableStateOf(false) }
-            var pendingSnackbarMessage by remember { mutableStateOf<String?>(null) }
-            var deletedAddressForUndo by remember { mutableStateOf<ShippingAddress?>(null) }
-
-            var fullNameError by remember { mutableStateOf<String?>(null) }
-            var mobileError by remember { mutableStateOf<String?>(null) }
-            var addressError by remember { mutableStateOf<String?>(null) }
-            var currentOrder by remember { mutableStateOf("") }
 
             if (checkoutItems.isNotEmpty()) {
                 when (currentRoute) {
@@ -132,9 +128,15 @@ class CheckoutActivity : ComponentActivity() {
                             items = checkoutItems,
                             checkoutViewModel = checkoutViewModel,
                             onBackClick = { finish() },
-                            onProceedClick = { currentRoute = CheckoutFlowRoute.CONFIRMATION },
+                            onProceedClick = {
+                                currentRoute = CheckoutFlowRoute.CONFIRMATION
+                            },
                             onEditAddressClick = {
-                                currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
+                                val intent = Intent(
+                                    this,
+                                    ShippingAddressActivity::class.java
+                                )
+                                addressLauncher.launch(intent)
                             }
                         )
                     }
@@ -146,7 +148,8 @@ class CheckoutActivity : ComponentActivity() {
                             discount = discount,
                             onBackClick = { currentRoute = CheckoutFlowRoute.CHECKOUT },
                             onConfirmClick = {
-                                val subTotal = checkoutItems.sumOf { it.price * it.quantity }
+                                val subTotal =
+                                    checkoutItems.sumOf { it.price * it.quantity }
                                 val shipping = 1.0
                                 val grandTotal = (subTotal + shipping) - discount
                                 val newOrderId = "ORD_${System.currentTimeMillis()}"
@@ -159,181 +162,22 @@ class CheckoutActivity : ComponentActivity() {
                                     deliveryAddress ?: ""
                                 )
 
-                                val intent = android.content.Intent(
+                                val intent = Intent(
                                     this@CheckoutActivity,
                                     PaymentActivity::class.java
                                 ).apply {
                                     putExtra(
                                         "amount",
-                                        String.format(java.util.Locale.US, "%.2f", grandTotal)
+                                        String.format(
+                                            java.util.Locale.US,
+                                            "%.2f",
+                                            grandTotal
+                                        )
                                     )
-                                    putExtra("product_name", "Order from Esewa Market")
+                                    putExtra("product_name", "Order from eBazar")
                                     putExtra("product_id", newOrderId)
                                 }
                                 paymentLauncher.launch(intent)
-                            }
-                        )
-                    }
-
-                    CheckoutFlowRoute.SHIPPING_ADDRESS_LIST -> {
-                        ShippingAddressScreen(
-                            addresses = savedAddresses,
-                            isLoading = isAddressLoading,
-                            pendingSnackbarMessage = pendingSnackbarMessage,
-                            onSnackbarMessageShown = { pendingSnackbarMessage = null },
-                            deletedAddressForUndo = deletedAddressForUndo,
-                            onUndoSnackbarShown = { deletedAddressForUndo = null },
-                            onBackClick = { currentRoute = CheckoutFlowRoute.CHECKOUT },
-                            onAddAddressClick = {
-                                editingAddressId = null
-                                formFullName = ""
-                                formMobile = ""
-                                formAddressLocation = ""
-                                formLabel = "Home"
-                                formIsDefaultShipping = true
-                                formIsDefaultBilling = false
-                                currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
-                            },
-                            onAddressSelected = { address ->
-                                checkoutViewModel.selectAddress(address)
-                                currentRoute = CheckoutFlowRoute.CHECKOUT
-                            },
-                            onEdit = { address ->
-                                editingAddressId = address.id
-                                formFullName = address.fullName
-                                formMobile = address.mobileNumber
-                                formAddressLocation = address.addressLocation
-                                formLabel = address.label
-                                formIsDefaultShipping = address.isDefaultShipping
-                                formIsDefaultBilling = address.isDefaultBilling
-                                currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
-                            },
-                            onDelete = { address ->
-                                checkoutViewModel.deleteAddress(address.id)
-                            },
-                            onUndoDelete = { address ->
-                                checkoutViewModel.addNewAddress(address)
-                            }
-                        )
-                    }
-
-                    CheckoutFlowRoute.ADD_NEW_ADDRESS -> {
-                        ShippingAddressForm(
-                            isEditing = editingAddressId != null,
-                            isSaving = isSaving,
-                            fullName = formFullName,
-                            onFullNameChange = {
-                                formFullName = it
-                                fullNameError = null
-                            },
-                            fullNameError = fullNameError,
-                            mobileNumber = formMobile,
-                            onMobileChange = {
-                                formMobile = it
-                                mobileError = null
-                            },
-                            mobileNumberError = mobileError,
-                            pickedAddressLocation = formAddressLocation,
-                            addressError = addressError,
-                            selectedLabel = formLabel,
-                            onLabelChange = { formLabel = it },
-                            isDefaultShipping = formIsDefaultShipping,
-                            onDefaultShippingChange = { formIsDefaultShipping = it },
-                            isDefaultBilling = formIsDefaultBilling,
-                            onDefaultBillingChange = { formIsDefaultBilling = it },
-                            onOpenMapPick = { currentRoute = CheckoutFlowRoute.MAP_PICKER },
-                            onSave = {
-                                if (!isSaving) {
-                                    isSaving = true
-                                    var isValid = true
-                                    if (formFullName.isBlank()) {
-                                        fullNameError = "Full name is required"
-                                        isValid = false
-                                    } else if (formFullName.length < 3 || !formFullName.matches(
-                                            Regex("^[a-zA-Z\\s]+$")
-                                        )
-                                    ) {
-                                        fullNameError = "Enter a valid full name"
-                                        isValid = false
-                                    }
-                                    if (formMobile.isBlank()) {
-                                        mobileError = "Mobile number is required"
-                                        isValid = false
-                                    } else if (!formMobile.matches(Regex("^[0-9]{10}$"))) {
-                                        mobileError = "Enter a valid 10-digit number"
-                                        isValid = false
-                                    }
-                                    if (formAddressLocation.isBlank()) {
-                                        addressError = "Please pick a location from map"
-                                        isValid = false
-                                    }
-
-                                    if (isValid) {
-                                        val isEditing = editingAddressId != null
-                                        val newAddress = ShippingAddress(
-                                            id = editingAddressId ?: UUID.randomUUID().toString(),
-                                            fullName = formFullName,
-                                            mobileNumber = formMobile,
-                                            addressLocation = formAddressLocation,
-                                            label = formLabel,
-                                            isDefaultShipping = formIsDefaultShipping,
-                                            isDefaultBilling = formIsDefaultBilling
-                                        )
-                                        checkoutViewModel.addNewAddress(newAddress)
-
-                                        pendingSnackbarMessage = if (isEditing) {
-                                            "Address has been edited successfully"
-                                        } else {
-                                            "Address has been added successfully"
-                                        }
-                                        currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
-                                    }
-                                } else {
-                                    isSaving = false
-                                }
-                            },
-                            onDelete = {
-                                editingAddressId?.let { id ->
-                                    val addressToUndo = ShippingAddress(
-                                        id = id,
-                                        fullName = formFullName,
-                                        mobileNumber = formMobile,
-                                        addressLocation = formAddressLocation,
-                                        label = formLabel,
-                                        isDefaultShipping = formIsDefaultShipping,
-                                        isDefaultBilling = formIsDefaultBilling
-                                    )
-                                    checkoutViewModel.deleteAddress(id)
-                                    deletedAddressForUndo = addressToUndo
-                                }
-
-                                formFullName = ""
-                                formMobile = ""
-                                formAddressLocation = ""
-                                formLabel = "Home"
-                                editingAddressId = null
-
-                                currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
-                            },
-                            onClose = {
-                                formFullName = ""
-                                formMobile = ""
-                                formAddressLocation = ""
-                                formLabel = "Home"
-                                editingAddressId = null
-                                currentRoute = CheckoutFlowRoute.SHIPPING_ADDRESS_LIST
-                            }
-                        )
-                    }
-
-                    CheckoutFlowRoute.MAP_PICKER -> {
-                        MapLocation(
-                            onLocationConfirmed = { lat, lng, addressName ->
-                                formAddressLocation = addressName
-                                currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
-                            },
-                            onClose = {
-                                currentRoute = CheckoutFlowRoute.ADD_NEW_ADDRESS
                             }
                         )
                     }

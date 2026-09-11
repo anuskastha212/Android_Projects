@@ -26,7 +26,7 @@ class FavouriteRepository(private val favouriteDao: FavouriteDao) {
             .delete().await()
     }
 
-    suspend fun clearAllFavourites(userId: String){
+    suspend fun clearAllFavourites(userId: String) {
         favouriteDao.clearAllFavourites(userId)
 
         val snapshot = firestore.collection("users").document(userId)
@@ -41,7 +41,8 @@ class FavouriteRepository(private val favouriteDao: FavouriteDao) {
         try {
             val snapshot = firestore.collection("users").document(userId)
                 .collection("favourites").get().await()
-            snapshot.toObjects(FavouriteEntity::class.java).forEach { favouriteDao.addFavourite(it) }
+            snapshot.toObjects(FavouriteEntity::class.java)
+                .forEach { favouriteDao.addFavourite(it) }
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -26,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.esewa_project.R
 import com.example.esewa_project.data.model.LocationSearchResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -256,7 +258,7 @@ fun MapLocation(
                 ) {
                     IconButton(onClick = onClose) {
                         Icon(
-                            Icons.Default.Close,
+                            painter = painterResource(id = R.drawable.back),
                             "Close",
                             tint = Color.Gray
                         )
