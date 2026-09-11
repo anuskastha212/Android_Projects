@@ -1,7 +1,5 @@
 package com.example.esewa_project.ui.compose
 
-import android.content.Context
-import android.location.Geocoder
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -26,9 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

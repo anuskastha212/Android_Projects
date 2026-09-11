@@ -2,6 +2,7 @@ package com.example.esewa_project.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.esewa_project.data.model.AddressFormState
 import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.data.model.Order
 import com.example.esewa_project.data.model.ShippingAddress
@@ -61,13 +62,15 @@ class CheckoutViewModel(
                     .get()
                     .addOnSuccessListener { snapshot ->
                         val addresses = snapshot.toObjects(ShippingAddress::class.java)
-                        val defaultAddress =
-                            addresses.find { it.isDefaultShipping } ?: addresses.first()
-                        val syncedAddresses = addresses.map {
-                            it.copy(isSelected = it.id == defaultAddress.id)
+                        if (addresses.isNotEmpty()) {
+                            val defaultAddress =
+                                addresses.find { it.isDefaultShipping } ?: addresses.first()
+                            val syncedAddresses = addresses.map {
+                                it.copy(isSelected = it.id == defaultAddress.id)
+                            }
+                            _savedAddresses.value = syncedAddresses
+                            _deliveryAddress.value = defaultAddress.addressLocation
                         }
-                        _savedAddresses.value = syncedAddresses
-                        _deliveryAddress.value = defaultAddress.addressLocation
                         _isAddressLoading.value = false
                     }
                     .addOnFailureListener {
@@ -80,79 +83,14 @@ class CheckoutViewModel(
         }
     }
 
-    fun addNewAddress(address: ShippingAddress) {
-        val uid = sessionRepo.getUid() ?: return
-        viewModelScope.launch {
-            try {
-                firestore.collection("users").document(uid)
-                    .collection("addresses").document(address.id)
-                    .set(address, SetOptions.merge())
-                    .addOnSuccessListener {
-                        val currentList = _savedAddresses.value.toMutableList()
-                        val existingIndex = currentList.indexOfFirst { it.id == address.id }
-                        if (existingIndex != -1) {
-                            currentList[existingIndex] = address
-                        } else {
-                            currentList.add(address)
-                        }
-                        if (address.isDefaultShipping || currentList.size == 1) {
-                            currentList.forEachIndexed { index, item ->
-                                currentList[index] = item.copy(isSelected = (item.id == address.id))
-                            }
-                            _deliveryAddress.value = address.addressLocation
-                            saveDeliveryAddress(address.addressLocation)
-                        }
-                        _savedAddresses.value = currentList
-                    }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun selectAddress(address: ShippingAddress) {
-        val updatedList = _savedAddresses.value.map {
-            it.copy(isSelected = it.id == address.id)
-        }
-        _savedAddresses.value = updatedList
-        _deliveryAddress.value = address.addressLocation
-        saveDeliveryAddress(address.addressLocation)
-    }
-
     fun saveDeliveryAddress(addressLocation: String) {
         val uid = sessionRepo.getUid() ?: return
+        _deliveryAddress.value = addressLocation
         viewModelScope.launch {
             try {
                 val addressMap = mapOf("address" to addressLocation)
                 firestore.collection("users").document(uid)
                     .set(addressMap, SetOptions.merge())
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun deleteAddress(addressId: String) {
-        val uid = sessionRepo.getUid() ?: return
-        viewModelScope.launch {
-            try {
-                firestore.collection("users").document(uid)
-                    .collection("addresses").document(addressId)
-                    .delete()
-                    .addOnSuccessListener {
-                        val currentList = _savedAddresses.value.toMutableList()
-                        val removedAddress = currentList.find { it.id == addressId }
-                        currentList.removeAll { it.id == addressId }
-                        _savedAddresses.value = currentList
-                        if (removedAddress?.isSelected == true) {
-                            if (currentList.isNotEmpty()) {
-                                selectAddress(currentList.first())
-                            } else {
-                                _deliveryAddress.value = null
-                                saveDeliveryAddress("")
-                            }
-                        }
-                    }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -230,6 +168,8 @@ class CheckoutViewModel(
                 firestore.collection("users").document(uid).collection("orders")
                     .document(orderId)
                     .update("status", "COMPLETE")
+
+                //from room
                 if (singleProductId != -1) {
                     cartRepo.removeFromCart(uid, singleProductId)
                     favRepo.removeFavourite(uid, singleProductId)

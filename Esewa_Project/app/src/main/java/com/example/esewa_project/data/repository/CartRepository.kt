@@ -9,7 +9,7 @@ import kotlinx.coroutines.tasks.await
 
 class CartRepository(private val cartDao: CartDao) {
     private val firestore = FirebaseFirestore.getInstance()
-    fun getCartWithProducts(userId: String): Flow<Map<CartEntity, ProductEntity>>{
+    fun getCartWithProducts(userId: String): Flow<Map<CartEntity, ProductEntity>> {
         return cartDao.getCartWithProducts(userId)
     }
 
@@ -17,7 +17,8 @@ class CartRepository(private val cartDao: CartDao) {
         return cartDao.getCartCount(userId)
     }
 
-    suspend fun addToCart(cartItem: CartEntity){
+
+    suspend fun addToCart(cartItem: CartEntity) {
         cartDao.upsertCartItem(cartItem)
         firestore.collection("users").document(cartItem.userId)
             .collection("cart").document(cartItem.productId.toString())
@@ -33,8 +34,11 @@ class CartRepository(private val cartDao: CartDao) {
 
     suspend fun syncCartFromCloud(userId: String) {
         try {
-            val snapshot = firestore.collection("users").document(userId).collection("cart").get().await()
-            snapshot.toObjects(CartEntity::class.java).forEach { cartDao.upsertCartItem(it) }
+            val snapshot =
+                firestore.collection("users").document(userId).collection("cart")
+                    .get().await()
+            snapshot.toObjects(CartEntity::class.java)
+                .forEach { cartDao.upsertCartItem(it) }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -42,5 +46,11 @@ class CartRepository(private val cartDao: CartDao) {
 
     suspend fun clearCart(userId: String) {
         cartDao.clearCart(userId)
+        val snapshot = firestore.collection("users").document(userId)
+            .collection("cart").get().await()
+
+        val batch = firestore.batch()
+        snapshot.documents.forEach { batch.delete(it.reference) }
+        batch.commit().await()
     }
 }
