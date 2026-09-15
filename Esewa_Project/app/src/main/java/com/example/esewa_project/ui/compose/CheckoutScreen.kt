@@ -27,6 +27,8 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 fun CheckoutScreen(
     items: List<CartItem>,
     checkoutViewModel: CheckoutViewModel,
+    selectedPaymentMethod: PaymentMethod = PaymentMethod.COD,
+    onPaymentMethodSelected: (PaymentMethod) -> Unit = {},
     onBackClick: () -> Unit,
     onProceedClick: () -> Unit,
     onEditAddressClick: () -> Unit
@@ -94,7 +96,7 @@ fun CheckoutScreen(
                 PromoCodeButton(onClick = { showPromoSheet = true })
                 PaymentOptionsCard(
                     selectedMethod = selectedPaymentMethod,
-                    onMethodSelected = { selectedPaymentMethod = it }
+                    onMethodSelected = onPaymentMethodSelected
                 )
             }
         }

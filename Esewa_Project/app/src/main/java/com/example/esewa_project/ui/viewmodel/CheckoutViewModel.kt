@@ -2,7 +2,7 @@ package com.example.esewa_project.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.esewa_project.data.model.AddressFormState
+import kotlinx.coroutines.tasks.await
 import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.data.model.Order
 import com.example.esewa_project.data.model.ShippingAddress
@@ -161,7 +161,7 @@ class CheckoutViewModel(
         }
     }
 
-    fun markOrderAsComplete(orderId: String, singleProductId: Int) {
+    fun markOrderAsComplete(orderId: String, singleProductId: Int, onComplete: () -> Unit) {
         val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
             try {
@@ -169,7 +169,6 @@ class CheckoutViewModel(
                     .document(orderId)
                     .update("status", "COMPLETE")
 
-                //from room
                 if (singleProductId != -1) {
                     cartRepo.removeFromCart(uid, singleProductId)
                     favRepo.removeFavourite(uid, singleProductId)
@@ -182,6 +181,8 @@ class CheckoutViewModel(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                onComplete()
             }
         }
     }
