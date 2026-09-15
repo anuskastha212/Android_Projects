@@ -7,5 +7,5 @@ data class Order(
     val totalAmount: Double = 0.0,
     val deliveryAddress: String = "",
     val timestamp: Long = System.currentTimeMillis(),
-    val status: String = ""
+    val paymentMethod: String = ""
 )

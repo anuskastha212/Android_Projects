@@ -20,48 +20,19 @@ import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
 import com.example.esewa_project.ui.compose.CheckoutScreen
-import com.example.esewa_project.ui.compose.ConfirmationScreen
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 import com.google.android.libraries.places.api.Places
 import android.content.pm.PackageManager
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import com.example.esewa_project.data.model.ShippingAddress
+import com.example.esewa_project.data.model.PaymentMethod
 import com.example.esewa_project.data.repository.FavouriteRepository
-import com.example.esewa_project.ui.compose.MapLocation
-import com.example.esewa_project.ui.compose.ShippingAddressForm
-import com.example.esewa_project.ui.compose.ShippingAddressScreen
-import java.util.UUID
-
-enum class CheckoutFlowRoute {
-    CHECKOUT,
-    CONFIRMATION
-}
 
 class CheckoutActivity : ComponentActivity() {
     private lateinit var checkoutViewModel: CheckoutViewModel
-    private var currentOrderId: String = ""
-    private val paymentLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val singleProductId = intent.getIntExtra("product_id", -1)
-            checkoutViewModel.markOrderAsComplete(currentOrderId, singleProductId)
-
-            Toast.makeText(
-                this,
-                "Order placed successfully!",
-                Toast.LENGTH_LONG
-            ).show()
-            finish()
-        }
-    }
-
     private val addressLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -69,6 +40,14 @@ class CheckoutActivity : ComponentActivity() {
                 addressName?.let {
                     checkoutViewModel.saveDeliveryAddress(it)
                 }
+            }
+        }
+
+    private val confirmationLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                setResult(Activity.RESULT_OK)
+                finish()
             }
         }
 
@@ -118,70 +97,33 @@ class CheckoutActivity : ComponentActivity() {
             val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
             val discount by checkoutViewModel.promoDiscount.collectAsState()
             val deliveryAddress by checkoutViewModel.deliveryAddress.collectAsState()
-
-            var currentRoute by remember { mutableStateOf(CheckoutFlowRoute.CHECKOUT) }
+            var selectedPaymentMethod by remember { mutableStateOf(PaymentMethod.COD) }
 
             if (checkoutItems.isNotEmpty()) {
-                when (currentRoute) {
-                    CheckoutFlowRoute.CHECKOUT -> {
-                        CheckoutScreen(
-                            items = checkoutItems,
-                            checkoutViewModel = checkoutViewModel,
-                            onBackClick = { finish() },
-                            onProceedClick = {
-                                currentRoute = CheckoutFlowRoute.CONFIRMATION
-                            },
-                            onEditAddressClick = {
-                                val intent = Intent(
-                                    this,
-                                    ShippingAddressActivity::class.java
-                                )
-                                addressLauncher.launch(intent)
-                            }
+                CheckoutScreen(
+                    items = checkoutItems,
+                    checkoutViewModel = checkoutViewModel,
+                    selectedPaymentMethod = selectedPaymentMethod,
+                    onPaymentMethodSelected = { selectedPaymentMethod = it },
+                    onBackClick = { finish() },
+                    onProceedClick = {
+                        val intent = Intent(this, ConfirmationActivity::class.java).apply {
+                            putExtra("delivery_address", deliveryAddress ?: "Address Not Set")
+                            putExtra("payment_method", selectedPaymentMethod.name)
+                            putExtra("discount", discount)
+                            putExtra("product_id", productId)
+                        }
+                        confirmationLauncher.launch(intent)
+                    },
+                    onEditAddressClick = {
+                        val intent = Intent(
+                            this,
+                            ShippingAddressActivity::class.java
                         )
+                        addressLauncher.launch(intent)
                     }
+                )
 
-                    CheckoutFlowRoute.CONFIRMATION -> {
-                        ConfirmationScreen(
-                            items = checkoutItems,
-                            deliveryAddress = deliveryAddress ?: "Address Not Set",
-                            discount = discount,
-                            onBackClick = { currentRoute = CheckoutFlowRoute.CHECKOUT },
-                            onConfirmClick = {
-                                val subTotal =
-                                    checkoutItems.sumOf { it.price * it.quantity }
-                                val shipping = 1.0
-                                val grandTotal = (subTotal + shipping) - discount
-                                val newOrderId = "ORD_${System.currentTimeMillis()}"
-                                currentOrderId = newOrderId
-
-                                checkoutViewModel.createPendingOrder(
-                                    newOrderId,
-                                    checkoutItems,
-                                    grandTotal,
-                                    deliveryAddress ?: ""
-                                )
-
-                                val intent = Intent(
-                                    this@CheckoutActivity,
-                                    PaymentActivity::class.java
-                                ).apply {
-                                    putExtra(
-                                        "amount",
-                                        String.format(
-                                            java.util.Locale.US,
-                                            "%.2f",
-                                            grandTotal
-                                        )
-                                    )
-                                    putExtra("product_name", "Order from eBazar")
-                                    putExtra("product_id", newOrderId)
-                                }
-                                paymentLauncher.launch(intent)
-                            }
-                        )
-                    }
-                }
             } else {
                 Box(
                     modifier = Modifier.fillMaxSize(),

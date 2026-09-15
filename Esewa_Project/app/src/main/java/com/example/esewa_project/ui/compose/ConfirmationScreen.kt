@@ -18,12 +18,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.data.model.CartItem
+import com.example.esewa_project.data.model.PaymentMethod
 import java.util.Locale
 
 @Composable
 fun ConfirmationScreen(
     items: List<CartItem>,
     deliveryAddress: String,
+    paymentMethod: PaymentMethod = PaymentMethod.COD,
     discount: Double = 0.0,
     onBackClick: () -> Unit,
     onConfirmClick: () -> Unit
@@ -112,7 +114,7 @@ fun ConfirmationScreen(
                         HorizontalDivider(color = Color(0xFFF1F1F5))
 
                         ConfirmationRow("Delivery Address", deliveryAddress)
-                        ConfirmationRow("Payment Option", "Cash on Delivery")
+                        ConfirmationRow("Payment Option", paymentMethod.title)
                         if (discount > 0) {
                             ConfirmationRow(
                                 "Promo Discount",
@@ -120,7 +122,10 @@ fun ConfirmationScreen(
                             )
                         }
                         ConfirmationRow("Vehicle Number", "BA 98 PA 8080")
-                        ConfirmationRow("Delivery Charge", String.format(Locale.getDefault(), "%.2f", shipping))
+                        ConfirmationRow(
+                            "Delivery Charge",
+                            String.format(Locale.getDefault(), "%.2f", shipping)
+                        )
 
                         DottedDivider()
 
