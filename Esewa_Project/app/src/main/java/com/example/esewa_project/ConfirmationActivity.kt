@@ -30,14 +30,24 @@ import java.util.Locale
 
 class ConfirmationActivity : ComponentActivity() {
     private lateinit var checkoutViewModel: CheckoutViewModel
-    private var currentOrderId: String = ""
+    private var pendingOrderId: String = ""
+    private var pendingGrandTotal: Double = 0.0
+    private var pendingDeliveryAddress: String = ""
+    private var pendingPaymentMethodName: String = ""
 
     private val paymentLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val singleProductId = intent.getIntExtra("product_id", -1)
-            checkoutViewModel.markOrderAsComplete(currentOrderId, singleProductId) {
+            checkoutViewModel.saveOrder(
+                orderId = pendingOrderId,
+                items = checkoutViewModel.checkoutItems.value,
+                total = pendingGrandTotal,
+                address = pendingDeliveryAddress,
+                paymentMethod = pendingPaymentMethodName,
+                singleProductId = singleProductId
+            ) {
                 Toast.makeText(
                     this,
                     "Payment successful!",
@@ -95,14 +105,17 @@ class ConfirmationActivity : ComponentActivity() {
                         val shipping = 1.0
                         val grandTotal = (subTotal + shipping) - discount
                         val newOrderId = "ORD_${System.currentTimeMillis()}"
-                        currentOrderId = newOrderId
 
                         if (paymentMethod == PaymentMethod.COD) {
                             // CASH ON DELIVERY FLOW
-                            checkoutViewModel.createPendingOrder(
-                                newOrderId, checkoutItems, grandTotal, deliveryAddress
-                            )
-                            checkoutViewModel.markOrderAsComplete(newOrderId, productId) {
+                            checkoutViewModel.saveOrder(
+                                orderId = newOrderId,
+                                items = checkoutItems,
+                                total = grandTotal,
+                                address = deliveryAddress,
+                                paymentMethod = paymentMethod.title,
+                                singleProductId = productId
+                            ) {
                                 Toast.makeText(
                                     this,
                                     "Order placed successfully!",
@@ -112,10 +125,12 @@ class ConfirmationActivity : ComponentActivity() {
                                 finish()
                             }
                         } else {
-                            // ESEWA FLOW
-                            checkoutViewModel.createPendingOrder(
-                                newOrderId, checkoutItems, grandTotal, deliveryAddress
-                            )
+                            // ESEWA FLOW (Save temporary variables & launch SDK)
+                            pendingOrderId = newOrderId
+                            pendingGrandTotal = grandTotal
+                            pendingDeliveryAddress = deliveryAddress
+                            pendingPaymentMethodName = paymentMethod.title
+
                             val intent = Intent(this, PaymentActivity::class.java).apply {
                                 putExtra("amount", String.format(Locale.US, "%.2f", grandTotal))
                                 putExtra("product_name", "Order from eSewa Market")
@@ -135,5 +150,4 @@ class ConfirmationActivity : ComponentActivity() {
             }
         }
     }
-
 }

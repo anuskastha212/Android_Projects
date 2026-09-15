@@ -41,7 +41,6 @@ fun CheckoutScreen(
     var showPromoSheet by remember { mutableStateOf(false) }
     var promoCodeInput by remember { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var selectedPaymentMethod by remember { mutableStateOf(PaymentMethod.COD) }
 
     Scaffold(
         topBar = {

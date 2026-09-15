@@ -104,6 +104,7 @@ class CheckoutActivity : ComponentActivity() {
                     items = checkoutItems,
                     checkoutViewModel = checkoutViewModel,
                     selectedPaymentMethod = selectedPaymentMethod,
+                    onPaymentMethodSelected = { selectedPaymentMethod = it },
                     onBackClick = { finish() },
                     onProceedClick = {
                         val intent = Intent(this, ConfirmationActivity::class.java).apply {
