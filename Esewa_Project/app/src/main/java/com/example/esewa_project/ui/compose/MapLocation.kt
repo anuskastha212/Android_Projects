@@ -96,6 +96,7 @@ fun MapLocation(
     var suggestions by remember { mutableStateOf<List<LocationSearchResult>>(emptyList()) }
     var isSearching by remember { mutableStateOf(false) }
     var currentAddressName by remember { mutableStateOf("Locating...") }
+    var isSelectedFromSearch by remember { mutableStateOf(false) }
     val sessionToken = remember { AutocompleteSessionToken.newInstance() }
 
     var hasLocationPermission by remember {
@@ -107,15 +108,24 @@ fun MapLocation(
         )
     }
 
+    var showPermissionRationale by remember { mutableStateOf(false) }
+
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             hasLocationPermission = isGranted
+            if (!isGranted) {
+                showPermissionRationale = true
+            }
         }
 
-    LaunchedEffect(hasLocationPermission) {
+    LaunchedEffect(Unit) {
         if (!hasLocationPermission) {
             launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        } else {
+        }
+    }
+
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) {
             locationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
                     val userLatLng = LatLng(it.latitude, it.longitude)
@@ -143,17 +153,22 @@ fun MapLocation(
                 }
         }
     }
+
     LaunchedEffect(cameraPositionState.isMoving) {
         if (!cameraPositionState.isMoving) {
-            val target = cameraPositionState.position.target
-            currentAddressName = getReadableAddress(context, target.latitude, target.longitude)
+            if (isSelectedFromSearch) {
+                isSelectedFromSearch = false
+            } else {
+                val target = cameraPositionState.position.target
+                currentAddressName = getReadableAddress(context, target.latitude, target.longitude)
+            }
         }
     }
 
     LaunchedEffect(searchQuery) {
         if (searchQuery.trim().length >= 2) {
             isSearching = true
-            delay(500)
+            delay(500L)
 
             if (placesClient != null) {
                 val request = FindAutocompletePredictionsRequest.builder()
@@ -311,13 +326,19 @@ fun MapLocation(
                                     .fillMaxWidth()
                                     .clickable {
                                         focusManager.clearFocus()
+                                        currentAddressName = if (result.subtitle.isNotEmpty()) {
+                                            "${result.title}, ${result.subtitle}"
+                                        } else {
+                                            result.title
+                                        }
+                                        isSelectedFromSearch = true
                                         if (result.placeId != null && placesClient != null) {
                                             val placeFields = listOf(Place.Field.LOCATION)
                                             val fetchRequest = FetchPlaceRequest.builder(
                                                 result.placeId,
                                                 placeFields
-                                            )
-                                                .setSessionToken(sessionToken).build()
+                                            ).setSessionToken(sessionToken).build()
+
                                             placesClient.fetchPlace(fetchRequest)
                                                 .addOnSuccessListener { res ->
                                                     res.place.location?.let { latLng ->
@@ -418,6 +439,53 @@ fun MapLocation(
                 }
             }
         }
+    }
+
+    if (showPermissionRationale) {
+        AlertDialog(
+            onDismissRequest = { showPermissionRationale = false },
+            title = {
+                Text(
+                    "Location Access Needed",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color(0xFF292A40)
+                )
+            },
+            text = {
+                Text(
+                    "Location access helps us automatically find your exact delivery address on the map for faster and more accurate order delivery.",
+                    fontSize = 14.sp,
+                    color = Color(0xFF555770)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showPermissionRationale = false
+                        launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                ) {
+                    Text(
+                        "GRANT PERMISSION",
+                        color = Color(0xFF2ABB00),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showPermissionRationale = false }
+                ) {
+                    Text(
+                        "NOT NOW",
+                        color = Color.Gray
+                    )
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 }
 
