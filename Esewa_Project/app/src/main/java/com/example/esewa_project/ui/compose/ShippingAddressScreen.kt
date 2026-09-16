@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.sp
 import com.example.esewa_project.R
 import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.ui.util.SnackBar
+import com.example.esewa_project.ui.util.UiState
 import kotlinx.coroutines.launch
 
 @Composable
 fun ShippingAddressScreen(
-    addresses: List<ShippingAddress>,
-    isLoading: Boolean,
+    uiState: UiState<List<ShippingAddress>>,
     pendingSnackbarMessage: String? = null,
     onSnackbarMessageShown: () -> Unit = {},
     deletedAddressForUndo: ShippingAddress? = null,
@@ -36,6 +36,7 @@ fun ShippingAddressScreen(
     onAddressSelected: (ShippingAddress) -> Unit,
     onEdit: (ShippingAddress) -> Unit,
     onDelete: (ShippingAddress) -> Unit,
+    onRetry: () -> Unit = {},
     onUndoDelete: (ShippingAddress) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -87,7 +88,7 @@ fun ShippingAddressScreen(
             )
         },
         floatingActionButton = {
-            if (addresses.isNotEmpty()) {
+            if (uiState is UiState.Success) {
                 ExtendedFloatingActionButton(
                     onClick = onAddAddressClick,
                     containerColor = Color(0xFF2ABB00),
@@ -114,115 +115,130 @@ fun ShippingAddressScreen(
                 .background(Color(0xFFF8F9FA))
                 .padding(paddingValues)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color(0xFF2ABB00)
-                )
-            } else if (addresses.isEmpty()) {
-                EmptyAddressState(onAddAddressClick)
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(addresses.distinctBy { it.id }, key = { it.id }) { address ->                        ShippingAddressItemCard(
-                            address = address,
-                            onClick = { onAddressSelected(address) },
-                            onEdit = { onEdit(address) },
+            when (uiState) {
+                is UiState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color(0xFF2ABB00)
+                    )
+                }
 
-                            onDelete = {
-                                onDelete(address)
+                is UiState.Empty -> {
+                    EmptyAddressState(onAddAddressClick)
+                }
 
-                                coroutineScope.launch {
-                                    val result = snackbarHostState.showSnackbar(
-                                        message = "Address has been deleted",
-                                        actionLabel = "UNDO",
-                                        duration = SnackbarDuration.Short
-                                    )
+                is UiState.Success -> {
+                    val addresses = uiState.data
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(addresses.distinctBy { it.id }, key = { it.id }) { address ->
+                            ShippingAddressItemCard(
+                                address = address,
+                                onClick = { onAddressSelected(address) },
+                                onEdit = { onEdit(address) },
+                                onDelete = {
+                                    onDelete(address)
 
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        onUndoDelete(address)
-
-                                        snackbarHostState.showSnackbar(
-                                            message = "Address has been added successfully",
-                                            actionLabel = "OK",
+                                    coroutineScope.launch {
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "Address has been deleted",
+                                            actionLabel = "UNDO",
                                             duration = SnackbarDuration.Short
                                         )
+
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            onUndoDelete(address)
+                                            snackbarHostState.showSnackbar(
+                                                message = "Address has been added successfully",
+                                                actionLabel = "OK",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
                                     }
                                 }
-                            }
+                            )
+                        }
+                    }
+                }
+                is UiState.Error -> {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = uiState.message, color = Color.Red)
+                        Button(onClick = onRetry) { Text("Retry") }
+                    }
+                }
+            }
+            }
+        }
+    }
+
+    @Composable
+    fun EmptyAddressState(onAddClick: () -> Unit) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(0.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 48.dp, horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.empty_shipping_address),
+                        contentDescription = "No address empty state",
+                        modifier = Modifier.size(180.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(
+                        text = "No address added yet!",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF292A40)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "You have not added any shipping\naddress yet.",
+                        fontSize = 14.sp,
+                        color = Color(0xFF717282),
+                        textAlign = TextAlign.Center,
+                        lineHeight = 22.sp
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        onClick = onAddClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .height(48.dp)
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            "ADD ADDRESS NOW",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-fun EmptyAddressState(onAddClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(0.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 48.dp, horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.empty_shipping_address),
-                    contentDescription = "No address empty state",
-                    modifier = Modifier.size(180.dp)
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Text(
-                    text = "No address added yet!",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF292A40)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "You have not added any shipping\naddress yet.",
-                    fontSize = 14.sp,
-                    color = Color(0xFF717282),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 22.sp
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = onAddClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ABB00)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .height(48.dp)
-                        .padding(horizontal = 8.dp)
-                ) {
-                    Text(
-                        "ADD ADDRESS NOW",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-        }
-    }
-}

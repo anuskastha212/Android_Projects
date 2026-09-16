@@ -44,8 +44,7 @@ class ShippingAddressActivity : ComponentActivity() {
             var pendingSnackbarMessage by remember { mutableStateOf<String?>(null) }
             var deletedAddressForUndo by remember { mutableStateOf<ShippingAddress?>(null) }
 
-            val savedAddresses by shippingViewModel.savedAddresses.collectAsState()
-            val isAddressLoading by shippingViewModel.isLoading.collectAsState()
+            val addressUiState by shippingViewModel.addressState.collectAsState()
 
             var currentRoute by remember { mutableStateOf(AddressRoute.LIST) }
             var editingAddressId by remember { mutableStateOf<String?>(null) }
@@ -55,8 +54,7 @@ class ShippingAddressActivity : ComponentActivity() {
             when (currentRoute) {
                 AddressRoute.LIST -> {
                     ShippingAddressScreen(
-                        addresses = savedAddresses,
-                        isLoading = isAddressLoading,
+                        uiState = addressUiState,
                         pendingSnackbarMessage = pendingSnackbarMessage,
                         onSnackbarMessageShown = { pendingSnackbarMessage = null },
                         deletedAddressForUndo = deletedAddressForUndo,
