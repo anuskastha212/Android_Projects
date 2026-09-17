@@ -11,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import com.example.esewa_project.data.local.entity.ProductEntity
+import com.example.esewa_project.ui.util.UiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FavouriteViewModel(application: Application) : AndroidViewModel(application) {
@@ -20,12 +21,16 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
     private val _navigateToLogin = MutableSharedFlow<Unit>()
     val navigateToLogin = _navigateToLogin.asSharedFlow()
 
+    private val _favState = MutableStateFlow<UiState<List<ProductEntity>>>(UiState.Loading)
+    val favState: StateFlow<UiState<List<ProductEntity>>> = _favState.asStateFlow()
+
     val userSession: StateFlow<String> = sessionRepo.currentUserId
         .map { it ?: "" }
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            sessionRepo.getUid() ?: "")
+            sessionRepo.getUid() ?: ""
+        )
 
     val favouriteCount: Flow<Int> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(0)
@@ -38,7 +43,8 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
     }.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
-        emptySet())
+        emptySet()
+    )
 
     val favouriteProducts: StateFlow<List<ProductEntity>?> = userSession.flatMapLatest { uid ->
         if (uid.isEmpty()) flowOf(emptyList())
@@ -46,13 +52,23 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
     }.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
-        null)
+        null
+    )
 
     init {
         viewModelScope.launch {
             userSession.collectLatest { uid ->
-                if (uid.isNotEmpty()) {
+                if (uid.isEmpty()) {
+                    _favState.value = UiState.Empty
+                } else {
                     favRepo.syncFavouritesFromCloud(uid)
+                    favRepo.getFavouriteProducts(uid).collectLatest { products ->
+                        _favState.value = if (products.isEmpty()) {
+                            UiState.Empty
+                        } else{
+                            UiState.Success(products)
+                        }
+                    }
                 }
             }
         }
@@ -75,7 +91,7 @@ class FavouriteViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun clearAllFavourites(){
+    fun clearAllFavourites() {
         val uid = userSession.value
         if (uid.isEmpty()) return
         viewModelScope.launch {

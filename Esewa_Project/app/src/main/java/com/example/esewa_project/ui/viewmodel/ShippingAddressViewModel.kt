@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.esewa_project.data.model.ShippingAddress
 import com.example.esewa_project.data.repository.UserSessionRepository
+import com.example.esewa_project.ui.util.UiState
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ShippingAddressViewModel(
     private val sessionRepo: UserSessionRepository
@@ -19,8 +21,8 @@ class ShippingAddressViewModel(
     private val _savedAddresses = MutableStateFlow<List<ShippingAddress>>(emptyList())
     val savedAddresses: StateFlow<List<ShippingAddress>> = _savedAddresses
 
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _addressState = MutableStateFlow<UiState<List<ShippingAddress>>>(UiState.Loading)
+    val addressState: StateFlow<UiState<List<ShippingAddress>>> = _addressState.asStateFlow()
 
     init {
         loadAddresses()
@@ -28,14 +30,21 @@ class ShippingAddressViewModel(
 
     fun loadAddresses() {
         val uid = sessionRepo.getUid() ?: return
-        _isLoading.value = true
         viewModelScope.launch {
-            firestore.collection("users").document(uid).collection("addresses").get()
-                .addOnSuccessListener { snapshot ->
-                    _savedAddresses.value = snapshot.toObjects(ShippingAddress::class.java)
-                    _isLoading.value = false
+            _addressState.value = UiState.Loading
+            try {
+                val snapshot = firestore.collection("users").document(uid)
+                    .collection("addresses").get().await()
+                val list = snapshot.toObjects(ShippingAddress::class.java)
+
+                if (list.isEmpty()) {
+                    _addressState.value = UiState.Empty
+                } else {
+                    _addressState.value = UiState.Success(list)
                 }
-                .addOnFailureListener { _isLoading.value = false }
+            } catch (e: Exception) {
+                _addressState.value = UiState.Error(e.message ?: "Unknown Error")
+            }
         }
     }
 

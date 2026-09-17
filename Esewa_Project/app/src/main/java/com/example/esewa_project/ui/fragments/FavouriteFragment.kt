@@ -18,6 +18,7 @@ import com.example.esewa_project.CheckoutActivity
 import com.example.esewa_project.MainActivity
 import com.example.esewa_project.R
 import com.example.esewa_project.ui.compose.FavouriteScreen
+import com.example.esewa_project.ui.util.UiState
 import com.example.esewa_project.ui.viewmodel.CartViewModel
 import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 
@@ -33,20 +34,20 @@ class FavouriteFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 var selectedProductIds by remember { mutableStateOf(emptySet<Int>()) }
-                val products by favViewModel.favouriteProducts.collectAsState()
+                val favUiState by favViewModel.favState.collectAsState()
 
                 FavouriteScreen(
+                    uiState = favUiState,
                     favouriteViewModel = favViewModel,
                     cartViewModel = cartViewModel,
                     selectedProductIds = selectedProductIds,
                     onSelectAllClick = { isChecked ->
-                        selectedProductIds = if (isChecked) {
-                            products?.map { it.id }?.toSet() ?: emptySet()
-                        } else {
-                            emptySet()
-                        }
+                        if (isChecked) {
+                            val currentProducts = (favUiState as? UiState.Success)?.data
+                            selectedProductIds =
+                                currentProducts?.map { it.id }?.toSet() ?: emptySet()
+                        } else selectedProductIds = emptySet()
                     },
-
                     onBackClick = {
                         requireActivity().onBackPressedDispatcher.onBackPressed()
                     },
@@ -86,8 +87,8 @@ class FavouriteFragment : Fragment() {
                         }
                     },
                     onContinueShoppingClick = {
-                        val mainActivity = requireActivity() as? MainActivity
-                        mainActivity?.findViewById<View>(R.id.navItemShop)?.performClick()
+                        (requireActivity() as? MainActivity)?.findViewById<View>(R.id.navItemShop)
+                            ?.performClick()
                     }
                 )
             }
