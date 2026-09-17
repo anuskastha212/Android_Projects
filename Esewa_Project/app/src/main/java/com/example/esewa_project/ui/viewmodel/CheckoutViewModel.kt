@@ -9,12 +9,14 @@ import com.example.esewa_project.data.repository.CartRepository
 import com.example.esewa_project.data.repository.FavouriteRepository
 import com.example.esewa_project.data.repository.ProductRepository
 import com.example.esewa_project.data.repository.UserSessionRepository
+import com.example.esewa_project.ui.util.UiState
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class CheckoutViewModel(
     private val productRepo: ProductRepository,
@@ -24,20 +26,14 @@ class CheckoutViewModel(
 ) : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
-    private val _checkoutItems = MutableStateFlow<List<CartItem>>(emptyList())
-    val checkoutItems: StateFlow<List<CartItem>> = _checkoutItems.asStateFlow()
+    private val _checkoutState = MutableStateFlow<UiState<List<CartItem>>>(UiState.Loading)
+    val checkoutState: StateFlow<UiState<List<CartItem>>> = _checkoutState.asStateFlow()
 
     private val _promoDiscount = MutableStateFlow(0.0)
     val promoDiscount: StateFlow<Double> = _promoDiscount.asStateFlow()
 
     private val _deliveryAddress = MutableStateFlow<String?>(null)
     val deliveryAddress: StateFlow<String?> = _deliveryAddress.asStateFlow()
-
-    private val _savedAddresses = MutableStateFlow<List<ShippingAddress>>(emptyList())
-    val savedAddresses: StateFlow<List<ShippingAddress>> = _savedAddresses.asStateFlow()
-
-    private val _isAddressLoading = MutableStateFlow(true)
-    val isAddressLoading: StateFlow<Boolean> = _isAddressLoading.asStateFlow()
 
     fun applyPromoCode(code: String): Boolean {
         return if (code.trim().equals("eBazar-33", ignoreCase = true)) {
@@ -50,88 +46,73 @@ class CheckoutViewModel(
     }
 
     fun loadSavedAddress() {
-        val uid = sessionRepo.getUid() ?: run {
-            _isAddressLoading.value = false
-            return
-        }
+        val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
-            try {
-                firestore.collection("users").document(uid)
-                    .collection("addresses")
-                    .get()
-                    .addOnSuccessListener { snapshot ->
-                        val addresses = snapshot.toObjects(ShippingAddress::class.java)
-                        if (addresses.isNotEmpty()) {
-                            val defaultAddress =
-                                addresses.find { it.isDefaultShipping } ?: addresses.first()
-                            val syncedAddresses = addresses.map {
-                                it.copy(isSelected = it.id == defaultAddress.id)
-                            }
-                            _savedAddresses.value = syncedAddresses
-                            _deliveryAddress.value = defaultAddress.addressLocation
-                        }
-                        _isAddressLoading.value = false
-                    }
-                    .addOnFailureListener {
-                        _isAddressLoading.value = false
-
-                    }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val snapshot = firestore.collection("users").document(uid)
+                .collection("addresses")
+                .get()
+                .await()
+            val addresses = snapshot.toObjects(ShippingAddress::class.java)
+            if (addresses.isNotEmpty()) {
+                val defaultAddress =
+                    addresses.find { it.isDefaultShipping } ?: addresses.first()
+                _deliveryAddress.value = defaultAddress.addressLocation
             }
         }
     }
 
     fun saveDeliveryAddress(addressLocation: String) {
-        val uid = sessionRepo.getUid() ?: return
         _deliveryAddress.value = addressLocation
+        val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
-            try {
-                val addressMap = mapOf("address" to addressLocation)
-                firestore.collection("users").document(uid)
-                    .set(addressMap, SetOptions.merge())
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            firestore.collection("users").document(uid)
+                .set("address" to addressLocation, SetOptions.merge())
         }
     }
 
     fun loadCartItems() {
+        val uid = sessionRepo.getUid() ?: return
         viewModelScope.launch {
-            val userId = sessionRepo.getUid() ?: ""
-            if (userId.isNotEmpty()) {
-                cartRepo.getCartWithProducts(userId).collect { cartMap ->
-                    val items = cartMap.map { (cartEntity, productEntity) ->
-                        CartItem(
-                            productId = productEntity.id,
-                            title = productEntity.title,
-                            price = productEntity.price,
-                            quantity = cartEntity.quantity,
-                            thumbnail = productEntity.thumbnail,
-                            categoryName = productEntity.categoryName
-                        )
-                    }
-                    _checkoutItems.value = items
+            _checkoutState.value = UiState.Loading
+            cartRepo.getCartWithProducts(uid).collect { cartMap ->
+                val items = cartMap.map { (cart, prod) ->
+                    CartItem(
+                        prod.id,
+                        prod.title,
+                        prod.price,
+                        cart.quantity,
+                        prod.thumbnail,
+                        prod.categoryName
+                    )
                 }
+                _checkoutState.value =
+                    if (items.isEmpty()) {
+                        UiState.Empty
+                    } else {
+                        UiState.Success(items)
+                    }
             }
         }
     }
 
     fun loadSingleProduct(productId: Int) {
         viewModelScope.launch {
-            val product = productRepo.getLocalProductById(productId)
-            product?.let {
-                _checkoutItems.value = listOf(
-                    CartItem(
-                        productId = it.id,
-                        title = it.title,
-                        price = it.price,
-                        quantity = 1,
-                        thumbnail = it.thumbnail,
-                        categoryName = it.categoryName
+            _checkoutState.value = UiState.Loading
+            val prod = productRepo.getLocalProductById(productId)
+            if (prod != null) {
+                _checkoutState.value = UiState.Success(
+                    listOf(
+                        CartItem(
+                            prod.id,
+                            prod.title,
+                            prod.price,
+                            1,
+                            prod.thumbnail,
+                            prod.categoryName
+                        )
                     )
                 )
-            }
+            } else _checkoutState.value = UiState.Error("Product not found")
         }
     }
 
@@ -158,16 +139,14 @@ class CheckoutViewModel(
                 firestore.collection("users").document(uid).collection("orders")
                     .document(orderId)
                     .set(order)
+                    .await()
 
                 if (singleProductId != -1) {
                     cartRepo.removeFromCart(uid, singleProductId)
                     favRepo.removeFavourite(uid, singleProductId)
                 } else {
-                    val itemsInCart = _checkoutItems.value
                     cartRepo.clearCart(uid)
-                    itemsInCart.forEach { item ->
-                        favRepo.removeFavourite(uid, item.productId)
-                    }
+                    items.forEach { favRepo.removeFavourite(uid, it.productId) }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -20,15 +20,74 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.data.model.PaymentMethod
+import com.example.esewa_project.ui.util.UiState
 import com.example.esewa_project.ui.viewmodel.CheckoutViewModel
+
+@Composable
+fun CheckoutScreen(
+    uiState: UiState<List<CartItem>>,
+    checkoutViewModel: CheckoutViewModel,
+    selectedPaymentMethod: PaymentMethod,
+    onPaymentMethodSelected: (PaymentMethod) -> Unit,
+    onBackClick: () -> Unit,
+    onProceedClick: () -> Unit,
+    onEditAddressClick: () -> Unit,
+    onRetry: () -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (uiState) {
+            is UiState.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color(0xFF2ABB00)
+                )
+            }
+
+            is UiState.Success -> {
+                CheckoutScreenContent(
+                    items = uiState.data,
+                    checkoutViewModel = checkoutViewModel,
+                    selectedPaymentMethod = selectedPaymentMethod,
+                    onPaymentMethodSelected = onPaymentMethodSelected,
+                    onBackClick = onBackClick,
+                    onProceedClick = onProceedClick,
+                    onEditAddressClick = onEditAddressClick
+                )
+            }
+
+            is UiState.Empty -> {
+                Text(
+                    "No items for checkout",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            is UiState.Error -> {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = uiState.message,
+                        color = Color.Red
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = onRetry) {
+                        Text("Retry")
+                    }
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheckoutScreen(
+fun CheckoutScreenContent(
     items: List<CartItem>,
     checkoutViewModel: CheckoutViewModel,
-    selectedPaymentMethod: PaymentMethod = PaymentMethod.COD,
-    onPaymentMethodSelected: (PaymentMethod) -> Unit = {},
+    selectedPaymentMethod: PaymentMethod,
+    onPaymentMethodSelected: (PaymentMethod) -> Unit,
     onBackClick: () -> Unit,
     onProceedClick: () -> Unit,
     onEditAddressClick: () -> Unit
@@ -75,23 +134,19 @@ fun CheckoutScreen(
                     CheckoutDelivery(
                         currentAddress = deliveryAddress,
                         onEditClick = {
-                            if (deliveryAddress.isNullOrEmpty()) {
-                                showNoAddressSheet = true
-                            } else {
-                                onEditAddressClick()
-                            }
+                            if (deliveryAddress.isNullOrEmpty()) showNoAddressSheet = true
+                            else onEditAddressClick()
                         }
                     )
                     Text(
                         text = "Order Summary",
                         fontSize = 14.sp,
-                        color = Color(0xFF555770),
+                        color = Color(0xFF555770)
                     )
                     items.forEach { item ->
                         CheckoutProductCard(item = item)
                     }
                 }
-
                 PromoCodeButton(onClick = { showPromoSheet = true })
                 PaymentOptionsCard(
                     selectedMethod = selectedPaymentMethod,
@@ -142,9 +197,7 @@ fun CheckoutScreen(
                     showNoAddressSheet = false
                     onEditAddressClick()
                 },
-                onCancel = {
-                    showNoAddressSheet = false
-                }
+                onCancel = { showNoAddressSheet = false }
             )
         }
     }

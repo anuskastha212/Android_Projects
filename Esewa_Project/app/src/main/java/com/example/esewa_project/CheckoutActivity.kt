@@ -25,11 +25,13 @@ import com.example.esewa_project.ui.viewmodel.CheckoutViewModelFactory
 import com.google.android.libraries.places.api.Places
 import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import com.example.esewa_project.data.model.PaymentMethod
 import com.example.esewa_project.data.repository.FavouriteRepository
+import com.example.esewa_project.ui.util.UiState
 
 class CheckoutActivity : ComponentActivity() {
     private lateinit var checkoutViewModel: CheckoutViewModel
@@ -94,44 +96,41 @@ class CheckoutActivity : ComponentActivity() {
         }
 
         setContent {
-            val checkoutItems by checkoutViewModel.checkoutItems.collectAsState()
+            val checkoutUiState by checkoutViewModel.checkoutState.collectAsState()
             val discount by checkoutViewModel.promoDiscount.collectAsState()
             val deliveryAddress by checkoutViewModel.deliveryAddress.collectAsState()
             var selectedPaymentMethod by remember { mutableStateOf(PaymentMethod.COD) }
 
-            if (checkoutItems.isNotEmpty()) {
-                CheckoutScreen(
-                    items = checkoutItems,
-                    checkoutViewModel = checkoutViewModel,
-                    selectedPaymentMethod = selectedPaymentMethod,
-                    onPaymentMethodSelected = { selectedPaymentMethod = it },
-                    onBackClick = { finish() },
-                    onProceedClick = {
-                        val intent = Intent(this, ConfirmationActivity::class.java).apply {
-                            putExtra("delivery_address", deliveryAddress ?: "Address Not Set")
-                            putExtra("payment_method", selectedPaymentMethod.name)
-                            putExtra("discount", discount)
-                            putExtra("product_id", productId)
-                        }
-                        confirmationLauncher.launch(intent)
-                    },
-                    onEditAddressClick = {
-                        val intent = Intent(
-                            this,
-                            ShippingAddressActivity::class.java
-                        )
-                        addressLauncher.launch(intent)
+            CheckoutScreen(
+                uiState = checkoutUiState,
+                checkoutViewModel = checkoutViewModel,
+                selectedPaymentMethod = selectedPaymentMethod,
+                onPaymentMethodSelected = { selectedPaymentMethod = it },
+                onBackClick = { finish() },
+                onProceedClick = {
+                    val intent = Intent(this, ConfirmationActivity::class.java).apply {
+                        putExtra("delivery_address", deliveryAddress ?: "Address Not Set")
+                        putExtra("payment_method", selectedPaymentMethod.name)
+                        putExtra("discount", discount)
+                        putExtra("product_id", productId)
                     }
-                )
-
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color(0xFF2ABB00))
+                    confirmationLauncher.launch(intent)
+                },
+                onEditAddressClick = {
+                    val intent = Intent(
+                        this,
+                        ShippingAddressActivity::class.java
+                    )
+                    addressLauncher.launch(intent)
+                },
+                onRetry = {
+                    if (productId != 1) {
+                        checkoutViewModel.loadSingleProduct(productId)
+                    } else {
+                        checkoutViewModel.loadCartItems()
+                    }
                 }
-            }
+            )
         }
     }
 }
