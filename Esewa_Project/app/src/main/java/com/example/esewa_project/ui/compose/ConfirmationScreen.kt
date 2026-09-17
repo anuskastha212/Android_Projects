@@ -14,19 +14,65 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esewa_project.data.model.CartItem
 import com.example.esewa_project.data.model.PaymentMethod
+import com.example.esewa_project.ui.util.UiState
 import java.util.Locale
 
 @Composable
 fun ConfirmationScreen(
-    items: List<CartItem>,
+    uiState: UiState<List<CartItem>>,
     deliveryAddress: String,
     paymentMethod: PaymentMethod = PaymentMethod.COD,
     discount: Double = 0.0,
+    onBackClick: () -> Unit,
+    onConfirmClick: (List<CartItem>) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (uiState) {
+            is UiState.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color(0xFF2ABB00)
+                )
+            }
+
+            is UiState.Success -> {
+                ConfirmationContent(
+                    items = uiState.data,
+                    deliveryAddress = deliveryAddress,
+                    paymentMethod = paymentMethod,
+                    discount = discount,
+                    onBackClick = onBackClick,
+                    onConfirmClick = { onConfirmClick(uiState.data) }
+                )
+            }
+
+            is UiState.Empty -> {
+                Text("No items found", modifier = Modifier.align(Alignment.Center))
+            }
+
+            is UiState.Error -> {
+                Text(
+                    "Error: ${uiState.message}",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Red
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ConfirmationContent(
+    items: List<CartItem>,
+    deliveryAddress: String,
+    paymentMethod: PaymentMethod,
+    discount: Double,
     onBackClick: () -> Unit,
     onConfirmClick: () -> Unit
 ) {

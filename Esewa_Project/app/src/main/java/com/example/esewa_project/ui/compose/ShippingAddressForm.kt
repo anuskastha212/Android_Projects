@@ -74,7 +74,8 @@ fun ShippingAddressForm(
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,                            contentDescription = "Back",
+                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            contentDescription = "Back",
                             tint = Color(0xFF292A40)
                         )
                     }
@@ -339,7 +340,7 @@ fun ShippingAddressForm(
                 }
             }
 
-            // RED DELETE BUTTON (Only shows if editing)
+            // RED DELETE BUTTON
             if (isEditing) {
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 4.dp),
