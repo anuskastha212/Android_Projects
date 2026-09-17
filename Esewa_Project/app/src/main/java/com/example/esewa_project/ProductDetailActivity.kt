@@ -3,6 +3,7 @@ package com.example.esewa_project
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -23,13 +24,13 @@ import com.example.esewa_project.ui.adapter.ProductSizeAdapter
 import com.example.esewa_project.ui.viewmodel.CartViewModel
 import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.ProductDetailViewModel
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class ProductDetailActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityProductDetailBinding
     private val productDetailViewModel: ProductDetailViewModel by viewModels()
     private val cartViewModel: CartViewModel by viewModels()
@@ -49,11 +50,21 @@ class ProductDetailActivity : AppCompatActivity() {
                 systemBars.left,
                 0,
                 systemBars.right,
-                systemBars.bottom)
+                systemBars.bottom
+            )
             insets
         }
         binding.btnBack.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
+        }
+
+        binding.btnCart.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("OPEN_CART", true)
+                flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+            }
+            startActivity(intent)
+            finish()
         }
 
         val productId = intent.getIntExtra("product_id", -1)
@@ -72,12 +83,32 @@ class ProductDetailActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 favouriteViewModel.favouriteIds.collectLatest { ids ->
                     val isFav = ids.contains(productId)
-                    if (isFav){
-                        binding.favouriteButton.setCardBackgroundColor(ContextCompat.getColor(this@ProductDetailActivity, R.color.green))
-                        binding.favouriteIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this@ProductDetailActivity, android.R.color.white))
-                    } else{
-                        binding.favouriteButton.setCardBackgroundColor(ContextCompat.getColor(this@ProductDetailActivity, R.color.green))
-                        binding.favouriteIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this@ProductDetailActivity, R.color.light_gray))
+                    if (isFav) {
+                        binding.favouriteButton.setCardBackgroundColor(
+                            ContextCompat.getColor(
+                                this@ProductDetailActivity,
+                                R.color.green
+                            )
+                        )
+                        binding.favouriteIcon.imageTintList = ColorStateList.valueOf(
+                            ContextCompat.getColor(
+                                this@ProductDetailActivity,
+                                android.R.color.white
+                            )
+                        )
+                    } else {
+                        binding.favouriteButton.setCardBackgroundColor(
+                            ContextCompat.getColor(
+                                this@ProductDetailActivity,
+                                R.color.green
+                            )
+                        )
+                        binding.favouriteIcon.imageTintList = ColorStateList.valueOf(
+                            ContextCompat.getColor(
+                                this@ProductDetailActivity,
+                                R.color.light_gray
+                            )
+                        )
                     }
                 }
             }
@@ -85,24 +116,58 @@ class ProductDetailActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                cartViewModel.navigateToLogin.collect {
-                    startActivity(Intent(this@ProductDetailActivity, LoginActivity::class.java))
+                cartViewModel.cartQuantities.collect { quantities ->
+                    val qty = quantities[productId] ?: 0
+                    if (qty > 0) {
+                        binding.btnAddToCart.visibility = View.GONE
+                        binding.layoutQuantitySelector.visibility = View.VISIBLE
+                        binding.tvQuantity.text = String.format(Locale.getDefault(), "%02d", qty)
+                    } else {
+                        binding.btnAddToCart.visibility = View.VISIBLE
+                        binding.layoutQuantitySelector.visibility = View.GONE
+                    }
                 }
             }
         }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                cartViewModel.onItemAddedFirstTime.collect {
+                    Snackbar.make(
+                        binding.root,
+                        "Added to cart successfully.",
+                        Snackbar.LENGTH_LONG
+                    ).apply {
+                        anchorView = binding.bottomBar
+                        setAction("GOTO CART") {
+                            binding.btnCart.performClick()
+                        }
+                        setActionTextColor(
+                            ContextCompat.getColor(
+                                this@ProductDetailActivity,
+                                R.color.green
+                            )
+                        )
+                    }.show()
+                }
+            }
+        }
+        setupQuantityListeners(productId)
     }
+
+    private fun setupQuantityListeners(productId: Int) {
+        binding.btnIncrease.setOnClickListener {
+            cartViewModel.updateQuantity(productId, 1)
+        }
+        binding.btnDecrease.setOnClickListener {
+            cartViewModel.updateQuantity(productId, -1)
+        }
+    }
+
     private fun setupClickListeners(product: Product) {
         binding.btnAddToCart.setOnClickListener {
             cartViewModel.updateQuantity(product.id, 1)
-
-            if (FirebaseAuth.getInstance().currentUser != null) {
-                Toast.makeText(
-                    this,
-                    "${product.title} added to cart",
-                    Toast.LENGTH_SHORT).show()
-            }
         }
-
         binding.favouriteButton.setOnClickListener {
             favouriteViewModel.toggleFavourite(product.id)
         }
@@ -125,7 +190,8 @@ class ProductDetailActivity : AppCompatActivity() {
             rvProductSize.layoutManager = LinearLayoutManager(
                 this@ProductDetailActivity,
                 LinearLayoutManager.HORIZONTAL,
-                false)
+                false
+            )
             val sizes = product.options["Size"] ?: emptyList()
             rvProductSize.adapter = ProductSizeAdapter({ selectedSize ->
                 Toast.makeText(
@@ -138,7 +204,8 @@ class ProductDetailActivity : AppCompatActivity() {
             rvProductColors.layoutManager = LinearLayoutManager(
                 this@ProductDetailActivity,
                 LinearLayoutManager.HORIZONTAL,
-                false)
+                false
+            )
             val colors = colorsData.getColorData()
             rvProductColors.adapter = ProductColorAdapter({ selectedColor ->
                 Toast.makeText(
