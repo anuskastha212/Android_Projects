@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -54,6 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun MapLocation(
@@ -130,7 +132,12 @@ fun MapLocation(
                 location?.let {
                     val userLatLng = LatLng(it.latitude, it.longitude)
                     coroutineScope.launch {
-                        cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(userLatLng, 17f))
+                        cameraPositionState.move(
+                            CameraUpdateFactory.newLatLngZoom(
+                                userLatLng,
+                                17f
+                            )
+                        )
                     }
                 }
             }
@@ -168,7 +175,7 @@ fun MapLocation(
     LaunchedEffect(searchQuery) {
         if (searchQuery.trim().length >= 2) {
             isSearching = true
-            delay(500L)
+            delay(500.milliseconds)
 
             if (placesClient != null) {
                 val request = FindAutocompletePredictionsRequest.builder()
@@ -326,12 +333,13 @@ fun MapLocation(
                                     .fillMaxWidth()
                                     .clickable {
                                         focusManager.clearFocus()
-                                        currentAddressName = if (result.subtitle.isNotEmpty()) {
-                                            "${result.title}, ${result.subtitle}"
-                                        } else {
-                                            result.title
-                                        }
-                                        isSelectedFromSearch = true
+                                        val selectedDisplayName =
+                                            if (result.subtitle.isNotEmpty()) {
+                                                "${result.title}, ${result.subtitle}"
+                                            } else {
+                                                result.title
+                                            }
+
                                         if (result.placeId != null && placesClient != null) {
                                             val placeFields = listOf(Place.Field.LOCATION)
                                             val fetchRequest = FetchPlaceRequest.builder(
@@ -342,6 +350,8 @@ fun MapLocation(
                                             placesClient.fetchPlace(fetchRequest)
                                                 .addOnSuccessListener { res ->
                                                     res.place.location?.let { latLng ->
+                                                        currentAddressName = selectedDisplayName
+                                                        isSelectedFromSearch = true
                                                         coroutineScope.launch {
                                                             cameraPositionState.animate(
                                                                 CameraUpdateFactory.newLatLngZoom(
@@ -350,7 +360,21 @@ fun MapLocation(
                                                                 )
                                                             )
                                                         }
+                                                    } ?: run {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Location coordinates not found",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
                                                     }
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    Log.e("MapSearch", "Fetch place failed", e)
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Failed to load place location",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
                                                 }
                                         } else if (result.latLng != null) {
                                             coroutineScope.launch {
@@ -424,7 +448,11 @@ fun MapLocation(
                 Button(
                     onClick = {
                         val target = cameraPositionState.position.target
-                        onLocationConfirmed(target.latitude, target.longitude, currentAddressName)
+                        onLocationConfirmed(
+                            target.latitude,
+                            target.longitude,
+                            currentAddressName
+                        )
                     },
                     modifier = Modifier
                         .fillMaxWidth()

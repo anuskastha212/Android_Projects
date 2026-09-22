@@ -1,5 +1,6 @@
 package com.example.esewa_project
 
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.os.Bundle
@@ -91,7 +92,12 @@ class MainActivity : AppCompatActivity() {
                         ).setAction("GOTO CART") {
                             binding.bottomNav.navItemCart.performClick()
                         }
-                            .setActionTextColor(ContextCompat.getColor(this@MainActivity, R.color.green))
+                            .setActionTextColor(
+                                ContextCompat.getColor(
+                                    this@MainActivity,
+                                    R.color.green
+                                )
+                            )
                             .setAnchorView(binding.bottomNav.root)
                             .show()
                     }
@@ -108,6 +114,13 @@ class MainActivity : AppCompatActivity() {
             updateBottomNavUI(1)
         }
         setupBottomNavigation()
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra("OPEN_CART", false) == true) {
+            binding.bottomNav.navItemCart.performClick()
+        }
     }
 
     private fun setupBottomNavigation() {
@@ -204,6 +217,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
     }
 
     private fun onSelect(layout: LinearLayout, text: TextView, icon: ImageView) {
