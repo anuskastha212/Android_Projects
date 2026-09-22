@@ -206,6 +206,7 @@ class ProductDetailActivity : AppCompatActivity() {
                 LinearLayoutManager.HORIZONTAL,
                 false
             )
+
             val colors = colorsData.getColorData()
             rvProductColors.adapter = ProductColorAdapter({ selectedColor ->
                 Toast.makeText(

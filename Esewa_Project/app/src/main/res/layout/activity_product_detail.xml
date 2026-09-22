@@ -279,6 +279,8 @@
                 android:id="@+id/btnAddToCart"
                 android:layout_width="170dp"
                 android:layout_height="55dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
                 android:text="@string/add_to_cart"
                 android:visibility="gone"
                 app:backgroundTint="#2ABB00"
