@@ -45,7 +45,7 @@ fun FavouriteScreenContent(
                 hostState = snackbarHostState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = 40.dp)
+                    .padding(bottom = 5.dp)
             ) { data ->
                 SnackBar(snackBarData = data)
             }
@@ -91,12 +91,12 @@ fun FavouriteScreenContent(
                     modifier = Modifier.weight(1f)
                 )
 
-                if (allSelected && products.isNotEmpty()) {
+                if (selectedProductIds.isNotEmpty()) {
                     Text(
-                        text = "DELETE ALL",
+                        text = if (allSelected) "DELETE ALL" else "DELETE (${selectedProductIds.size})",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF555770),
+                        color = Color(0xFFC0392B),
                         modifier = Modifier.clickable { onDeleteAllClick() }
                     )
                 }

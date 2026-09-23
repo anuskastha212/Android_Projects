@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.text.HtmlCompat
 import androidx.fragment.app.activityViewModels
 import com.example.esewa_project.R
 import androidx.fragment.app.viewModels
@@ -25,6 +26,7 @@ import com.example.esewa_project.ui.adapter.AllProductAdapter
 import com.example.esewa_project.ui.viewmodel.CartViewModel
 import com.example.esewa_project.ui.viewmodel.FavouriteViewModel
 import com.example.esewa_project.ui.viewmodel.HomeViewModel
+import com.example.esewa_project.ui.viewmodel.UserSessionViewModel
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -35,11 +37,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.getValue
 
-class HomeFragment : Fragment(R.layout.fragment_home){
+class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val homeViewModel: HomeViewModel by viewModels()
     private val cartViewModel: CartViewModel by activityViewModels()
     private val favouriteViewModel: FavouriteViewModel by viewModels()
+    private val userSessionViewModel: UserSessionViewModel by activityViewModels()
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private lateinit var featuredProductAdapter: AllProductAdapter
@@ -61,24 +64,28 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         super.onViewCreated(view, savedInstanceState)
 
         val menu = binding.homeToolBar.menu
-        menu.findItem(R.id.action_cart).isVisible= false
+        menu.findItem(R.id.action_cart).isVisible = false
 
         binding.homeToolBar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId){
+            when (menuItem.itemId) {
                 R.id.action_notifications -> {
                     Toast.makeText(
                         requireContext(),
                         "Notifications Clicked",
-                        Toast.LENGTH_SHORT).show()
+                        Toast.LENGTH_SHORT
+                    ).show()
                     true
                 }
+
                 R.id.action_options -> {
                     Toast.makeText(
                         requireContext(),
                         "Options Clicked",
-                        Toast.LENGTH_SHORT).show()
+                        Toast.LENGTH_SHORT
+                    ).show()
                     true
                 }
+
                 else -> false
             }
         }
@@ -88,21 +95,31 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         setupRecyclerViews()
         setupMostPopularRecyclerView()
 
+        userSessionViewModel.userProfile.observe(viewLifecycleOwner) { profile ->
+            val name = if (profile.uid.isNotEmpty() && profile.name.isNotEmpty()) {
+                profile.name
+            } else {
+                "Guest"
+            }
+            val greetingText = "Good morning <b>$name</b>, Everything you will discover here"
+            binding.john.text = HtmlCompat.fromHtml(greetingText, HtmlCompat.FROM_HTML_MODE_LEGACY)
+        }
+
         homeViewModel.fetchData()
 
-        homeViewModel.products.observe(viewLifecycleOwner){ allProducts ->
+        homeViewModel.products.observe(viewLifecycleOwner) { allProducts ->
             featuredProductAdapter.products = allProducts.take(7)
             hotDealsAdapter.products = allProducts.drop(7).take(7)
             popularBrandAdapter.products = allProducts.drop(14).take(4)
             recommendedAdapter.products = allProducts.drop(18).take(30)
         }
 
-        homeViewModel.popularCategories.observe(viewLifecycleOwner){categories ->
+        homeViewModel.popularCategories.observe(viewLifecycleOwner) { categories ->
             mostPopularAdapter.mostPopular = categories.take(7)
         }
 
         lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 cartViewModel.cartQuantities.collectLatest { quantities ->
                     featuredProductAdapter.currentQuantities = quantities
                     hotDealsAdapter.currentQuantities = quantities
@@ -113,7 +130,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
 
         lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 favouriteViewModel.favouriteIds.collectLatest { ids ->
                     featuredProductAdapter.favouriteIds = ids
                     hotDealsAdapter.favouriteIds = ids
@@ -124,7 +141,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     cartViewModel.navigateToLogin.collect {
                         showLoginRequiredDialog()
@@ -149,6 +166,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             .setNegativeButton("Maybe Later", null)
             .show()
     }
+
     private fun setupBanner() {
         val imagesList = homeViewModel.banners
         binding.viewPagerBanner.adapter = BannerAdapter(imagesList)
@@ -172,14 +190,15 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
     }
 
-    private fun setupRecyclerViews(){
+    private fun setupRecyclerViews() {
         featuredProductAdapter = createProductAdapter()
         binding.rvFeaturedProducts.apply {
             adapter = featuredProductAdapter
             layoutManager = LinearLayoutManager(
                 requireContext(),
                 LinearLayoutManager.HORIZONTAL,
-                false)
+                false
+            )
         }
 
         hotDealsAdapter = createProductAdapter()
@@ -189,7 +208,8 @@ class HomeFragment : Fragment(R.layout.fragment_home){
                 LinearLayoutManager(
                     requireContext(),
                     LinearLayoutManager.HORIZONTAL,
-                    false)
+                    false
+                )
         }
 
         popularBrandAdapter = createProductAdapter()
@@ -227,6 +247,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             isNestedScrollingEnabled = false
         }
     }
+
     private fun createProductAdapter(): AllProductAdapter {
         return AllProductAdapter(
             onClick = { product ->
@@ -237,7 +258,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             onFavouriteClick = { product ->
                 favouriteViewModel.toggleFavourite(product.id)
             },
-            onIncrementClick = { product->
+            onIncrementClick = { product ->
                 cartViewModel.updateQuantity(product.id, 1)
             },
             onDecrementClick = { product ->
@@ -245,6 +266,7 @@ class HomeFragment : Fragment(R.layout.fragment_home){
             }
         )
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
